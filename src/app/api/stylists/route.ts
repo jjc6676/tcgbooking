@@ -16,10 +16,14 @@ export async function GET() {
   // Fetch active services for each stylist — omit internal_price_cents
   const stylistIds = (stylists ?? []).map((s) => s.id);
 
+  if (stylistIds.length === 0) {
+    return NextResponse.json({ stylists: [] });
+  }
+
   const { data: services, error: svcError } = await supabase
     .from("services")
     .select("id, stylist_id, name, duration_minutes, is_active")
-    .in("stylist_id", stylistIds.length > 0 ? stylistIds : ["none"])
+    .in("stylist_id", stylistIds)
     .eq("is_active", true)
     .order("name");
 
