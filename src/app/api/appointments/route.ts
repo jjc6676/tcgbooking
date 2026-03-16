@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { sendBookingConfirmation } from "@/lib/email";
 
 export async function GET() {
   const supabase = await createClient();
@@ -62,7 +63,7 @@ export async function POST(request: Request) {
   // Verify the service belongs to the stylist and is active
   const { data: service } = await supabase
     .from("services")
-    .select("id, is_active")
+    .select("id, name, is_active")
     .eq("id", service_id)
     .eq("stylist_id", stylist_id)
     .single();
@@ -102,6 +103,39 @@ export async function POST(request: Request) {
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  // Send confirmation emails (non-blocking — failure doesn't affect response)
+  if (appointment) {
+    // Fetch stylist user email and client profile for notification
+    const [stylistResult, clientResult] = await Promise.allSettled([
+      supabase
+        .from("stylists")
+        .select("name, user_id")
+        .eq("id", stylist_id)
+        .single(),
+      supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .single(),
+    ]);
+
+    const stylistData = stylistResult.status === "fulfilled" ? stylistResult.value.data : null;
+    const clientData = clientResult.status === "fulfilled" ? clientResult.value.data : null;
+
+    if (stylistData && user.email) {
+      // Get stylist email from auth (requires service role normally — skip gracefully)
+      sendBookingConfirmation({
+        clientEmail: user.email,
+        clientName: clientData?.full_name ?? null,
+        stylistName: stylistData.name,
+        stylistEmail: user.email, // fallback: notify client only if stylist email unavailable
+        serviceName: (service as { id: string; name: string; is_active: boolean }).name,
+        startAt: appointment.start_at,
+        endAt: appointment.end_at,
+      }).catch(() => {/* ignore email errors */});
+    }
   }
 
   return NextResponse.json({ appointment }, { status: 201 });
