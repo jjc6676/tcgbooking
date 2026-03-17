@@ -2,7 +2,7 @@
 
 import { useEffect, useState, createContext, useContext, useCallback } from "react";
 
-type ToastType = "success" | "error" | "info";
+type ToastType = "success" | "error" | "info" | "warning";
 
 interface ToastItem {
   id: string;
@@ -34,7 +34,15 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-2 items-center pointer-events-none lg:bottom-6">
+      {/* Position above bottom nav on mobile, bottom corner on desktop */}
+      <div
+        className="fixed z-[9990] flex flex-col gap-2 items-center pointer-events-none"
+        style={{
+          bottom: "calc(env(safe-area-inset-bottom, 0px) + 80px)",
+          left: "50%",
+          transform: "translateX(-50%)",
+        }}
+      >
         {toasts.map((t) => (
           <ToastBubble key={t.id} item={t} />
         ))}
@@ -45,33 +53,39 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
 function ToastBubble({ item }: { item: ToastItem }) {
   const [visible, setVisible] = useState(false);
+
   useEffect(() => {
-    requestAnimationFrame(() => setVisible(true));
+    const raf = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(raf);
   }, []);
 
-  const colors = {
+  const styles: Record<ToastType, string> = {
     success: "bg-[#1a1714] text-white",
     error: "bg-red-600 text-white",
     info: "bg-[#1a1714] text-white",
+    warning: "bg-amber-600 text-white",
   };
 
-  const icons = {
+  const icons: Record<ToastType, string> = {
     success: "✓",
     error: "✕",
     info: "ℹ",
+    warning: "⚠",
   };
 
   return (
     <div
       className={`
-        ${colors[item.type]}
+        ${styles[item.type]}
         px-5 py-3 rounded-full text-sm font-medium shadow-lg
-        flex items-center gap-2 pointer-events-auto
+        flex items-center gap-2 pointer-events-auto whitespace-nowrap
         transition-all duration-300 ease-out
-        ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}
+        ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
       `}
+      role="alert"
+      aria-live="polite"
     >
-      <span className="font-bold">{icons[item.type]}</span>
+      <span className="font-bold text-base leading-none">{icons[item.type]}</span>
       {item.message}
     </div>
   );

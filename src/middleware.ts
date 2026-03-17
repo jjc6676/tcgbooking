@@ -31,8 +31,12 @@ export async function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  // Always allow signout and auth routes
-  if (pathname.startsWith("/api/signout") || pathname.startsWith("/auth/")) {
+  // Always allow signout, auth routes, and account deletion API
+  if (
+    pathname.startsWith("/api/signout") ||
+    pathname.startsWith("/api/account") ||
+    pathname.startsWith("/auth/")
+  ) {
     return supabaseResponse;
   }
 
@@ -41,7 +45,8 @@ export async function middleware(request: NextRequest) {
     if (
       pathname.startsWith("/admin") ||
       pathname.startsWith("/book") ||
-      pathname.startsWith("/appointments")
+      pathname.startsWith("/appointments") ||
+      pathname === "/account"
     ) {
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("redirectTo", pathname);
@@ -82,6 +87,7 @@ export const config = {
     "/admin/:path*",
     "/book/:path*",
     "/appointments/:path*",
+    "/account",
     "/login",
     "/",
   ],

@@ -1,12 +1,17 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import PendingRequestsList from "@/components/PendingRequestsList";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Dashboard · Keri Choplin Studio",
+};
 
 function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString([], {
+  return new Date(iso).toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
-    timeZone: "UTC",
+    timeZone: "America/Chicago",
   });
 }
 
@@ -17,31 +22,46 @@ function formatDuration(min: number): string {
   return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
-function getDayRange(offset: number = 0): { start: string; end: string } {
+function getTodayRange(): { start: string; end: string } {
   const now = new Date();
-  const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + offset));
-  const start = d.toISOString().split("T")[0]! + "T00:00:00.000Z";
-  const end = d.toISOString().split("T")[0]! + "T23:59:59.999Z";
-  return { start, end };
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  const start = new Date(d.toLocaleString("en-US", { timeZone: "America/Chicago" }));
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(start);
+  end.setHours(23, 59, 59, 999);
+  // Use UTC-based range for the CDT day
+  const todayStr = now.toLocaleDateString("en-CA", { timeZone: "America/Chicago" });
+  return {
+    start: `${todayStr}T00:00:00`,
+    end: `${todayStr}T23:59:59`,
+  };
 }
 
 function getWeekRange(): { start: string; end: string } {
   const now = new Date();
-  const monday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-  const dayOfWeek = monday.getUTCDay();
+  const todayStr = now.toLocaleDateString("en-CA", { timeZone: "America/Chicago" });
+  const [y, m, day] = todayStr.split("-").map(Number);
+  const date = new Date(Date.UTC(y!, m! - 1, day!));
+  const dayOfWeek = date.getUTCDay();
   const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-  monday.setUTCDate(monday.getUTCDate() + diff);
+  const monday = new Date(date);
+  monday.setUTCDate(date.getUTCDate() + diff);
   const sunday = new Date(monday);
   sunday.setUTCDate(monday.getUTCDate() + 6);
   return {
-    start: monday.toISOString().split("T")[0]! + "T00:00:00.000Z",
-    end: sunday.toISOString().split("T")[0]! + "T23:59:59.999Z",
+    start: monday.toISOString().split("T")[0]! + "T00:00:00",
+    end: sunday.toISOString().split("T")[0]! + "T23:59:59",
   };
 }
 
 function getGreeting(): string {
-  const hour = new Date().getUTCHours() - 5; // CDT offset approx
-  const h = ((hour % 24) + 24) % 24;
+  const hour = new Date().toLocaleString("en-US", {
+    hour: "numeric",
+    hour12: false,
+    timeZone: "America/Chicago",
+  });
+  const h = parseInt(hour, 10);
   if (h >= 5 && h < 12) return "Good morning";
   if (h >= 12 && h < 17) return "Good afternoon";
   return "Good evening";
@@ -74,11 +94,11 @@ export default async function AdminDashboardPage() {
               d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
         </div>
-        <h1 className="font-display text-2xl text-[#1a1714] mb-2">Welcome!</h1>
+        <h1 className="font-display text-2xl text-[#1a1714] mb-2">Welcome, Keri!</h1>
         <p className="text-[#8a7e78] text-sm mb-6">Let&apos;s set up your profile to start accepting bookings.</p>
         <Link
           href="/admin/profile"
-          className="inline-flex items-center px-6 py-2.5 bg-[#9b6f6f] text-white text-sm font-medium rounded-full hover:bg-[#8a5f5f] transition-colors"
+          className="inline-flex items-center px-6 py-3 bg-[#9b6f6f] text-white text-sm font-semibold rounded-full hover:bg-[#8a5f5f] transition-colors min-h-[48px]"
         >
           Create Profile
         </Link>
@@ -86,7 +106,7 @@ export default async function AdminDashboardPage() {
     );
   }
 
-  const today = getDayRange(0);
+  const today = getTodayRange();
   const week = getWeekRange();
 
   const [
@@ -144,67 +164,61 @@ export default async function AdminDashboardPage() {
       {/* Greeting */}
       <div className="mb-6">
         <p className="text-xs text-[#c9a96e] uppercase tracking-widest font-medium mb-1">{todayDate}</p>
-        <h1 className="font-display text-3xl text-[#1a1714]">
-          {greeting}, Keri
-        </h1>
+        <h1 className="font-display text-3xl text-[#1a1714]">{greeting}, Keri</h1>
       </div>
 
-      {/* Quick actions */}
-      <div className="flex gap-2 mb-5">
-        <Link
-          href="/admin/blocked-times"
-          className="flex items-center gap-1.5 px-4 py-2.5 bg-white border border-[#e8e2dc] text-[#5c4a42] text-xs font-semibold rounded-full hover:bg-[#f5ede8] hover:border-[#c9a96e] transition-all min-h-[44px]"
-        >
-          <svg className="w-3.5 h-3.5 text-[#9b6f6f]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-          </svg>
-          Block Time
-        </Link>
-        <Link
-          href="/admin/hours"
-          className="flex items-center gap-1.5 px-4 py-2.5 bg-white border border-[#e8e2dc] text-[#5c4a42] text-xs font-semibold rounded-full hover:bg-[#f5ede8] hover:border-[#c9a96e] transition-all min-h-[44px]"
-        >
-          <svg className="w-3.5 h-3.5 text-[#9b6f6f]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" />
-          </svg>
-          Hours
-        </Link>
-        <Link
-          href="/admin/services"
-          className="flex items-center gap-1.5 px-4 py-2.5 bg-white border border-[#e8e2dc] text-[#5c4a42] text-xs font-semibold rounded-full hover:bg-[#f5ede8] hover:border-[#c9a96e] transition-all min-h-[44px]"
-        >
-          <svg className="w-3.5 h-3.5 text-[#9b6f6f]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-          </svg>
-          Services
-        </Link>
-      </div>
-
-      {/* Quick stats row */}
-      <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="bg-white rounded-2xl border border-[#e8e2dc] p-4 text-center">
+      {/* Quick stats */}
+      <div className="grid grid-cols-3 gap-2 mb-5">
+        <div className="bg-white rounded-2xl border border-[#e8e2dc] p-3 sm:p-4 text-center">
           <p className="text-2xl font-bold text-[#9b6f6f]">{todayList.length}</p>
           <p className="text-[10px] text-[#8a7e78] mt-0.5 uppercase tracking-wide">Today</p>
         </div>
-        <div className="bg-white rounded-2xl border border-[#e8e2dc] p-4 text-center">
+        <div className="bg-white rounded-2xl border border-[#e8e2dc] p-3 sm:p-4 text-center">
           <p className="text-2xl font-bold text-[#c9a96e]">{weekCount ?? 0}</p>
           <p className="text-[10px] text-[#8a7e78] mt-0.5 uppercase tracking-wide">This Week</p>
         </div>
-        <div className={`rounded-2xl border p-4 text-center ${(pendingCount ?? 0) > 0 ? "bg-[#fffbeb] border-[#fcd34d]" : "bg-white border-[#e8e2dc]"}`}>
-          <p className={`text-2xl font-bold ${(pendingCount ?? 0) > 0 ? "text-[#d97706]" : "text-[#8a7e78]"}`}>{pendingCount ?? 0}</p>
+        <div className={`rounded-2xl border p-3 sm:p-4 text-center ${(pendingCount ?? 0) > 0 ? "bg-[#fffbeb] border-[#fcd34d]" : "bg-white border-[#e8e2dc]"}`}>
+          <p className={`text-2xl font-bold ${(pendingCount ?? 0) > 0 ? "text-[#d97706]" : "text-[#8a7e78]"}`}>
+            {pendingCount ?? 0}
+          </p>
           <p className="text-[10px] text-[#8a7e78] mt-0.5 uppercase tracking-wide">Pending</p>
         </div>
       </div>
 
-      {/* PENDING REQUESTS — big and prominent */}
-      <div className={`rounded-2xl border mb-6 overflow-hidden ${(pendingCount ?? 0) > 0 ? "border-[#fcd34d] bg-[#fffbeb]" : "border-[#e8e2dc] bg-white"}`}>
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#f3e8c8]">
-          <div className="flex items-center gap-3">
-            <div className={`flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm ${(pendingCount ?? 0) > 0 ? "bg-[#d97706] text-white" : "bg-[#e8e2dc] text-[#8a7e78]"}`}>
+      {/* Quick actions */}
+      <div className="grid grid-cols-2 gap-2 mb-5">
+        <Link
+          href="/admin/blocked-times"
+          className="flex items-center gap-2 bg-white border border-[#e8e2dc] rounded-xl px-3 py-3 text-sm font-medium text-[#5c4a42] hover:border-[#9b6f6f] hover:bg-[#fdf8f6] active:scale-[0.98] transition-all min-h-[48px]"
+        >
+          <div className="w-7 h-7 rounded-lg bg-[#f5ede8] flex items-center justify-center flex-shrink-0">
+            <svg className="w-3.5 h-3.5 text-[#9b6f6f]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          </div>
+          Block Time
+        </Link>
+        <Link
+          href="/admin/services"
+          className="flex items-center gap-2 bg-white border border-[#e8e2dc] rounded-xl px-3 py-3 text-sm font-medium text-[#5c4a42] hover:border-[#9b6f6f] hover:bg-[#fdf8f6] active:scale-[0.98] transition-all min-h-[48px]"
+        >
+          <div className="w-7 h-7 rounded-lg bg-[#f5ede8] flex items-center justify-center flex-shrink-0">
+            <svg className="w-3.5 h-3.5 text-[#9b6f6f]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+          </div>
+          Manage Services
+        </Link>
+      </div>
+
+      {/* PENDING REQUESTS */}
+      <div className={`rounded-2xl border mb-5 overflow-hidden ${(pendingCount ?? 0) > 0 ? "border-[#fcd34d] bg-[#fffbeb]" : "border-[#e8e2dc] bg-white"}`}>
+        <div className="flex items-center justify-between px-4 py-3.5 border-b border-[#f3e8c8]">
+          <div className="flex items-center gap-2.5">
+            <div className={`flex items-center justify-center w-7 h-7 rounded-full font-bold text-xs ${(pendingCount ?? 0) > 0 ? "bg-[#d97706] text-white" : "bg-[#e8e2dc] text-[#8a7e78]"}`}>
               {(pendingCount ?? 0) > 0 ? (
-                <span className="flex items-center gap-0.5">
+                <span className="flex items-center">
                   {pendingCount}
-                  {(pendingCount ?? 0) > 0 && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse ml-0.5" />}
                 </span>
               ) : "0"}
             </div>
@@ -216,7 +230,7 @@ export default async function AdminDashboardPage() {
             </div>
           </div>
           {(pendingCount ?? 0) > 0 && (
-            <Link href="/admin/appointments" className="text-xs text-[#d97706] font-semibold">
+            <Link href="/admin/appointments" className="text-xs text-[#d97706] font-semibold min-h-[44px] flex items-center">
               View all →
             </Link>
           )}
@@ -228,21 +242,22 @@ export default async function AdminDashboardPage() {
             start_at: appt.start_at as string,
             client: appt.client as { id: string; full_name: string | null } | null,
             service: appt.service as { id: string; name: string; duration_minutes: number } | null,
+            client_notes: (appt as { client_notes?: string | null }).client_notes ?? null,
           }))}
         />
       </div>
 
       {/* TODAY'S SCHEDULE */}
-      <div className="bg-white rounded-2xl border border-[#e8e2dc] overflow-hidden mb-6">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#e8e2dc]">
+      <div className="bg-white rounded-2xl border border-[#e8e2dc] overflow-hidden mb-5">
+        <div className="flex items-center justify-between px-4 py-3.5 border-b border-[#e8e2dc]">
           <h2 className="font-display text-lg text-[#1a1714]">Today&apos;s Schedule</h2>
-          <Link href="/admin/appointments" className="text-xs text-[#9b6f6f] font-medium">
+          <Link href="/admin/appointments" className="text-xs text-[#9b6f6f] font-medium min-h-[44px] flex items-center">
             View all →
           </Link>
         </div>
 
         {todayList.length === 0 ? (
-          <div className="px-5 py-10 text-center">
+          <div className="px-4 py-10 text-center">
             <div className="w-10 h-10 rounded-full bg-[#f5ede8] flex items-center justify-center mx-auto mb-3">
               <svg className="w-5 h-5 text-[#c9a96e]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
@@ -250,6 +265,7 @@ export default async function AdminDashboardPage() {
               </svg>
             </div>
             <p className="text-sm text-[#1a1714] font-medium">No confirmed appointments today</p>
+            <p className="text-xs text-[#8a7e78] mt-1">Enjoy your day ✨</p>
           </div>
         ) : (
           <div className="divide-y divide-[#f5f0eb]">
@@ -258,9 +274,9 @@ export default async function AdminDashboardPage() {
               const client = appt.client as { id: string; full_name: string | null } | null;
 
               return (
-                <div key={appt.id} className="px-5 py-4 flex items-center gap-4">
-                  <div className="flex-shrink-0 w-14 text-center">
-                    <p className="text-sm font-semibold text-[#1a1714]">{formatTime(appt.start_at)}</p>
+                <div key={appt.id} className="px-4 py-3.5 flex items-center gap-3">
+                  <div className="flex-shrink-0 text-center min-w-[56px]">
+                    <p className="text-sm font-bold text-[#1a1714]">{formatTime(appt.start_at as string)}</p>
                     <p className="text-[10px] text-[#8a7e78]">{service ? formatDuration(service.duration_minutes) : ""}</p>
                   </div>
                   <div className="flex-shrink-0 flex flex-col items-center self-stretch py-1">
