@@ -4,8 +4,6 @@ import { sendBookingConfirmation } from "@/lib/email";
 import { z } from "zod";
 
 
-const RATE_LIMIT_MAX = 10; // max bookings per day per client
-
 // ─── Zod validation ──────────────────────────────────────────────────────────
 
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -78,25 +76,7 @@ export async function POST(request: Request) {
 
   const { stylist_id, service_id, start_at, end_at, client_notes } = parsed.data;
 
-  // Rate limit: max 3 bookings per day per client
-  const todayStart = new Date();
-  todayStart.setUTCHours(0, 0, 0, 0);
-  const todayEnd = new Date();
-  todayEnd.setUTCHours(23, 59, 59, 999);
 
-  const { count: todayCount } = await supabase
-    .from("appointments")
-    .select("id", { count: "exact", head: true })
-    .eq("client_id", user.id)
-    .gte("created_at", todayStart.toISOString())
-    .lte("created_at", todayEnd.toISOString());
-
-  if ((todayCount ?? 0) >= RATE_LIMIT_MAX) {
-    return NextResponse.json(
-      { error: "Too many booking requests today. Please try again tomorrow." },
-      { status: 429 }
-    );
-  }
 
   // Verify service belongs to stylist and is active
   const { data: service } = await supabase
