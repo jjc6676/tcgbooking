@@ -53,7 +53,7 @@ const config: Config = {
           gold: "#c9a96e",
           dark: "#1a1714",
           muted: "#8a7e78",
-          warm: "#faf9f7",
+          warm: "#faf8f5",
         },
       },
       borderRadius: {

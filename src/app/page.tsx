@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[#faf9f7] flex flex-col">
+    <div className="min-h-screen bg-[#faf8f5] flex flex-col">
       {/* Hero */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-20 text-center">
         {/* Decorative line */}
@@ -46,7 +46,7 @@ export default function HomePage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
               d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" />
           </svg>
-          <span>Open Tuesday – Saturday &nbsp;·&nbsp; 9 AM – 6 PM</span>
+          <span>Open Tuesday – Saturday &nbsp;·&nbsp; 9 AM – 5 PM</span>
         </div>
       </div>
 

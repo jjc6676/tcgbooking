@@ -1,26 +1,27 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import AdminMobileNav from "@/components/AdminMobileNav";
 import AdminSignOutButton from "@/components/AdminSignOutButton";
+import AdminBottomNav from "@/components/AdminBottomNav";
 
 const NAV_ITEMS = [
   {
     href: "/admin",
-    label: "Dashboard",
+    label: "Schedule",
+    exact: true,
     icon: (
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
-          d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
       </svg>
     ),
   },
   {
     href: "/admin/appointments",
-    label: "Appointments",
+    label: "Requests",
     icon: (
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
-          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
       </svg>
     ),
   },
@@ -45,18 +46,8 @@ const NAV_ITEMS = [
     ),
   },
   {
-    href: "/admin/blocked-times",
-    label: "Blocked Times",
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
-          d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-      </svg>
-    ),
-  },
-  {
     href: "/admin/profile",
-    label: "My Profile",
+    label: "Profile",
     icon: (
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
@@ -93,48 +84,38 @@ export default async function AdminLayout({
 }) {
   const pendingCount = await getPendingCount();
 
-  const navItemsWithBadge = NAV_ITEMS.map((item) => ({
-    ...item,
-    badge: item.href === "/admin/appointments" && pendingCount > 0 ? pendingCount : 0,
-  }));
-
   return (
-    <div className="min-h-screen bg-[#f5f0eb]">
+    <div className="min-h-screen bg-[#faf8f5]">
       {/* Mobile top bar */}
-      <div className="lg:hidden flex items-center justify-between px-4 py-3.5 bg-[#1a1714] border-b border-[#2a2320]">
+      <div className="lg:hidden flex items-center justify-between px-4 py-3.5 bg-white border-b border-[#e8e2dc] sticky top-0 z-40">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-full bg-[#c9a96e] flex items-center justify-center">
-            <span className="text-[#1a1714] text-xs font-bold">K</span>
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#f5ede8] to-[#e8d8d0] flex items-center justify-center border border-[#e8e2dc]">
+            <span className="font-display text-[#9b6f6f] text-sm font-semibold">K</span>
           </div>
           <div className="leading-tight">
-            <p className="text-white text-sm font-semibold leading-none font-display">
-              Studio
+            <p className="font-display text-[#1a1714] text-base font-semibold leading-none">
+              Keri Choplin
             </p>
             <p className="text-[#c9a96e] text-[9px] tracking-widest uppercase leading-tight">
-              Dashboard
+              Studio Dashboard
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          {pendingCount > 0 && (
-            <Link href="/admin/appointments" className="relative">
-              <span className="flex items-center justify-center w-6 h-6 bg-[#c9a96e] text-[#1a1714] text-xs font-bold rounded-full">
-                {pendingCount}
-              </span>
-            </Link>
-          )}
-          <AdminMobileNav items={navItemsWithBadge} />
-        </div>
+        {pendingCount > 0 && (
+          <Link href="/admin/appointments" className="relative flex items-center gap-1.5 bg-[#fffbeb] border border-[#fcd34d] text-[#d97706] text-xs font-semibold rounded-full px-3 py-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#d97706] animate-pulse" />
+            {pendingCount} pending
+          </Link>
+        )}
       </div>
 
       <div className="flex">
         {/* Desktop sidebar */}
         <aside className="hidden lg:flex w-64 bg-[#1a1714] flex-col min-h-screen sticky top-0">
-          {/* Logo */}
           <div className="px-6 py-6 border-b border-[#2a2320]">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-[#c9a96e] flex items-center justify-center">
-                <span className="text-[#1a1714] text-sm font-bold">K</span>
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#f5ede8] to-[#e8d8d0] flex items-center justify-center">
+                <span className="font-display text-[#9b6f6f] text-lg font-semibold">K</span>
               </div>
               <div>
                 <p className="text-white font-semibold text-base leading-none font-display">
@@ -147,28 +128,29 @@ export default async function AdminLayout({
             </div>
           </div>
 
-          {/* Nav */}
           <nav className="flex-1 py-4 px-3">
-            {navItemsWithBadge.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#a89e96] hover:text-white hover:bg-[#2a2320] transition-colors mb-0.5 group"
-              >
-                <span className="text-[#6b5e56] group-hover:text-[#c9a96e] transition-colors">
-                  {item.icon}
-                </span>
-                <span className="text-sm font-medium">{item.label}</span>
-                {item.badge > 0 && (
-                  <span className="ml-auto flex items-center justify-center min-w-[20px] h-5 bg-[#c9a96e] text-[#1a1714] text-xs font-bold rounded-full px-1.5">
-                    {item.badge}
+            {NAV_ITEMS.map((item) => {
+              const isRequests = item.href === "/admin/appointments";
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#a89e96] hover:text-white hover:bg-[#2a2320] transition-colors mb-0.5 group"
+                >
+                  <span className="text-[#6b5e56] group-hover:text-[#c9a96e] transition-colors">
+                    {item.icon}
                   </span>
-                )}
-              </Link>
-            ))}
+                  <span className="text-sm font-medium">{item.label}</span>
+                  {isRequests && pendingCount > 0 && (
+                    <span className="ml-auto flex items-center justify-center min-w-[20px] h-5 bg-[#d97706] text-white text-xs font-bold rounded-full px-1.5">
+                      {pendingCount}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
           </nav>
 
-          {/* Bottom links */}
           <div className="px-6 py-5 border-t border-[#2a2320] space-y-3">
             <Link
               href="/book"
@@ -183,11 +165,14 @@ export default async function AdminLayout({
           </div>
         </aside>
 
-        {/* Main */}
-        <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 overflow-auto">
+        {/* Main content — with bottom padding for mobile nav */}
+        <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 overflow-auto pb-24 lg:pb-8">
           {children}
         </main>
       </div>
+
+      {/* Mobile bottom tab nav */}
+      <AdminBottomNav pendingCount={pendingCount} />
     </div>
   );
 }

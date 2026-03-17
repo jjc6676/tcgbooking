@@ -17,38 +17,6 @@ interface PublicStylist {
   services: PublicService[];
 }
 
-const SERVICE_CATEGORIES: Record<string, string[]> = {
-  "Hair Services": [
-    "Women's Haircut & Style",
-    "Men's Haircut",
-    "Children's Haircut",
-    "Blowout",
-    "Trim & Style",
-    "Bang Trim",
-  ],
-  "Color Services": [
-    "Single Process Color",
-    "Color Retouch",
-    "Full Highlights",
-    "Partial Highlights",
-    "Balayage",
-    "Ombre/Sombre",
-    "Gloss/Toner",
-    "Color Correction (Consultation Required)",
-  ],
-  "Treatments": [
-    "Deep Conditioning Treatment",
-    "Keratin Smoothing Treatment",
-    "Olaplex Treatment",
-    "Scalp Treatment",
-  ],
-  "Styling & Special Events": [
-    "Updo/Special Occasion Style",
-    "Bridal Hair",
-    "Blowout + Waves",
-  ],
-};
-
 function formatDuration(min: number): string {
   if (min < 60) return `${min} min`;
   const h = Math.floor(min / 60);
@@ -97,161 +65,100 @@ export default function BookPage() {
     );
   }
 
-  return (
-    <div>
-      {/* Hero */}
-      <div className="text-center mb-12">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <div className="h-px w-12 bg-[#c9a96e]" />
-          <span className="text-[#c9a96e] text-xs tracking-[0.25em] uppercase">Book Online</span>
-          <div className="h-px w-12 bg-[#c9a96e]" />
+  // Redirect to the single stylist booking page
+  if (stylists.length === 1 && stylists[0]) {
+    const stylist = stylists[0];
+
+    return (
+      <div className="max-w-xl mx-auto">
+        {/* Hero header */}
+        <div className="text-center mb-10">
+          {/* Monogram */}
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#f5ede8] to-[#e8d8d0] flex items-center justify-center mx-auto mb-5 border-2 border-[#e8e2dc] shadow-sm">
+            <span className="font-display text-4xl text-[#9b6f6f]">K</span>
+          </div>
+          <h1 className="font-display text-4xl text-[#1a1714] mb-2">Keri Choplin</h1>
+          <p className="text-[#8a7e78] text-base font-light">Luxury hair services in Lafayette, Louisiana</p>
+          {stylist.bio && (
+            <p className="text-[#8a7e78] text-sm mt-3 max-w-sm mx-auto leading-relaxed">{stylist.bio}</p>
+          )}
+          <div className="flex items-center justify-center gap-3 mt-5">
+            <div className="h-px w-10 bg-[#c9a96e]" />
+            <span className="text-[#c9a96e] text-[10px] tracking-[0.25em] uppercase">Select a Service</span>
+            <div className="h-px w-10 bg-[#c9a96e]" />
+          </div>
         </div>
-        <h1 className="font-display text-4xl sm:text-5xl text-[#1a1714] mb-3">
-          Our Services
-        </h1>
-        <p className="text-[#8a7e78] text-lg max-w-lg mx-auto font-light">
-          Choose your stylist and service to get started. Available Tuesday through Saturday.
+
+        {/* Flat service list */}
+        <div className="space-y-2">
+          {stylist.services.map((svc) => (
+            <Link
+              key={svc.id}
+              href={`/book/${stylist.id}?serviceId=${svc.id}`}
+              className="group flex items-center justify-between bg-white rounded-2xl border border-[#e8e2dc] px-5 py-4 hover:border-[#9b6f6f] hover:shadow-sm transition-all"
+            >
+              <div>
+                <p className="font-medium text-[#1a1714] text-sm group-hover:text-[#9b6f6f] transition-colors">
+                  {svc.name}
+                </p>
+                <p className="text-xs text-[#8a7e78] mt-0.5">{formatDuration(svc.duration_minutes)}</p>
+              </div>
+              <svg
+                className="w-4 h-4 text-[#c9a96e] flex-shrink-0 ml-3"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+          ))}
+        </div>
+
+        <p className="text-xs text-[#8a7e78] text-center mt-6">
+          Need to cancel? Contact Keri directly.
         </p>
       </div>
+    );
+  }
 
-      {stylists.map((stylist) => {
-        // Group services by category
-        const servicesByCategory: Record<string, PublicService[]> = {};
-        const uncategorized: PublicService[] = [];
-
-        stylist.services.forEach((svc) => {
-          let found = false;
-          for (const [cat, names] of Object.entries(SERVICE_CATEGORIES)) {
-            if (names.some((n) => svc.name.toLowerCase().includes(n.toLowerCase().split(" ")[0]!))) {
-              if (!servicesByCategory[cat]) servicesByCategory[cat] = [];
-              servicesByCategory[cat]!.push(svc);
-              found = true;
-              break;
-            }
-          }
-          if (!found) uncategorized.push(svc);
-        });
-
-        if (uncategorized.length > 0) {
-          servicesByCategory["Other"] = uncategorized;
-        }
-
-        return (
-          <div key={stylist.id}>
-            {/* Stylist card */}
-            <div className="bg-white rounded-2xl border border-[#e8e2dc] p-6 sm:p-8 mb-8 flex flex-col sm:flex-row gap-6 items-start">
-              {stylist.avatar_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={stylist.avatar_url}
-                  alt={stylist.name}
-                  className="w-20 h-20 rounded-full object-cover border-2 border-[#e8e2dc] flex-shrink-0"
-                />
-              ) : (
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#f5ede8] to-[#e8d8d0] flex items-center justify-center flex-shrink-0 border-2 border-[#e8e2dc]">
-                  <span className="text-3xl font-display text-[#9b6f6f]">
-                    {stylist.name.charAt(0)}
-                  </span>
-                </div>
-              )}
-              <div className="flex-1">
-                <h2 className="font-display text-2xl text-[#1a1714] mb-1">{stylist.name}</h2>
-                {stylist.bio && (
-                  <p className="text-[#8a7e78] text-sm leading-relaxed mb-4">{stylist.bio}</p>
-                )}
-                <div className="flex flex-wrap gap-2">
-                  {Object.keys(servicesByCategory).map((cat) => (
-                    <span
-                      key={cat}
-                      className="text-xs px-3 py-1 bg-[#f5ede8] text-[#9b6f6f] rounded-full"
-                    >
-                      {cat}
-                    </span>
-                  ))}
-                </div>
-              </div>
+  // Multiple stylists fallback
+  return (
+    <div>
+      <div className="text-center mb-10">
+        <h1 className="font-display text-4xl text-[#1a1714] mb-2">Book an Appointment</h1>
+        <p className="text-[#8a7e78]">Select a service to get started.</p>
+      </div>
+      {stylists.map((stylist) => (
+        <div key={stylist.id} className="mb-10">
+          <div className="flex items-center gap-4 mb-5">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#f5ede8] to-[#e8d8d0] flex items-center justify-center border-2 border-[#e8e2dc]">
+              <span className="font-display text-2xl text-[#9b6f6f]">{stylist.name.charAt(0)}</span>
             </div>
-
-            {/* Service menu by category */}
-            {Object.entries(SERVICE_CATEGORIES).map(([category]) => {
-              const catServices = servicesByCategory[category];
-              if (!catServices || catServices.length === 0) return null;
-
-              return (
-                <div key={category} className="mb-8">
-                  <h3 className="font-display text-xl text-[#1a1714] mb-4 pb-2 border-b border-[#e8e2dc]">
-                    {category}
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {catServices.map((svc) => (
-                      <Link
-                        key={svc.id}
-                        href={`/book/${stylist.id}?serviceId=${svc.id}`}
-                        className="group bg-white rounded-xl border border-[#e8e2dc] px-5 py-4 hover:border-[#9b6f6f] hover:shadow-sm transition-all flex items-center justify-between"
-                      >
-                        <div>
-                          <p className="font-medium text-[#1a1714] text-sm group-hover:text-[#9b6f6f] transition-colors">
-                            {svc.name}
-                          </p>
-                          <p className="text-xs text-[#8a7e78] mt-0.5">{formatDuration(svc.duration_minutes)}</p>
-                        </div>
-                        <svg
-                          className="w-4 h-4 text-[#c9a96e] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-3"
-                          fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-
-            {servicesByCategory["Other"] && servicesByCategory["Other"].length > 0 && (
-              <div className="mb-8">
-                <h3 className="font-display text-xl text-[#1a1714] mb-4 pb-2 border-b border-[#e8e2dc]">
-                  Other Services
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {servicesByCategory["Other"]!.map((svc) => (
-                    <Link
-                      key={svc.id}
-                      href={`/book/${stylist.id}?serviceId=${svc.id}`}
-                      className="group bg-white rounded-xl border border-[#e8e2dc] px-5 py-4 hover:border-[#9b6f6f] hover:shadow-sm transition-all flex items-center justify-between"
-                    >
-                      <div>
-                        <p className="font-medium text-[#1a1714] text-sm group-hover:text-[#9b6f6f] transition-colors">
-                          {svc.name}
-                        </p>
-                        <p className="text-xs text-[#8a7e78] mt-0.5">{formatDuration(svc.duration_minutes)}</p>
-                      </div>
-                      <svg
-                        className="w-4 h-4 text-[#c9a96e] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-3"
-                        fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* CTA */}
-            <div className="mt-6 mb-12 bg-gradient-to-r from-[#f5ede8] to-[#faf9f7] rounded-2xl p-6 sm:p-8 text-center border border-[#e8d8d0]">
-              <p className="font-display text-xl text-[#1a1714] mb-2">Ready to book?</p>
-              <p className="text-[#8a7e78] text-sm mb-4">Select any service above to choose your date and time.</p>
-              <Link
-                href={`/book/${stylist.id}`}
-                className="inline-flex items-center px-6 py-2.5 bg-[#9b6f6f] text-white text-sm font-medium rounded-full hover:bg-[#8a5f5f] transition-colors"
-              >
-                See All Available Times
-              </Link>
+            <div>
+              <h2 className="font-display text-2xl text-[#1a1714]">{stylist.name}</h2>
+              {stylist.bio && <p className="text-xs text-[#8a7e78] mt-0.5">{stylist.bio}</p>}
             </div>
           </div>
-        );
-      })}
+          <div className="space-y-2">
+            {stylist.services.map((svc) => (
+              <Link
+                key={svc.id}
+                href={`/book/${stylist.id}?serviceId=${svc.id}`}
+                className="group flex items-center justify-between bg-white rounded-2xl border border-[#e8e2dc] px-5 py-4 hover:border-[#9b6f6f] hover:shadow-sm transition-all"
+              >
+                <div>
+                  <p className="font-medium text-[#1a1714] text-sm group-hover:text-[#9b6f6f] transition-colors">
+                    {svc.name}
+                  </p>
+                  <p className="text-xs text-[#8a7e78] mt-0.5">{formatDuration(svc.duration_minutes)}</p>
+                </div>
+                <svg className="w-4 h-4 text-[#c9a96e] flex-shrink-0 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 
 interface PublicService {
   id: string;
@@ -23,21 +23,6 @@ interface Slot {
 }
 
 type Step = "service" | "date" | "slots" | "confirm" | "done";
-
-const SERVICE_CATEGORIES: Record<string, string[]> = {
-  "Hair Services": ["Women's Haircut", "Men's Haircut", "Children's Haircut", "Blowout", "Trim", "Bang"],
-  "Color Services": ["Color", "Highlights", "Balayage", "Ombre", "Gloss", "Toner"],
-  "Treatments": ["Treatment", "Keratin", "Olaplex", "Scalp"],
-  "Styling": ["Updo", "Bridal", "Waves"],
-};
-
-function categorizeService(name: string): string {
-  const lower = name.toLowerCase();
-  for (const [cat, keywords] of Object.entries(SERVICE_CATEGORIES)) {
-    if (keywords.some((k) => lower.includes(k.toLowerCase()))) return cat;
-  }
-  return "Other";
-}
 
 function formatTime(iso: string): string {
   const d = new Date(iso);
@@ -89,7 +74,6 @@ const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export default function StylistBookingPage() {
   const params = useParams();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const stylistId = params.stylistId as string;
   const preselectedServiceId = searchParams.get("serviceId");
@@ -116,7 +100,6 @@ export default function StylistBookingPage() {
         if (data.error) setError(data.error);
         else {
           setStylist(data.stylist);
-          // Preselect service if passed via query param
           if (preselectedServiceId && data.stylist?.services) {
             const svc = data.stylist.services.find((s: PublicService) => s.id === preselectedServiceId);
             if (svc) {
@@ -194,7 +177,6 @@ export default function StylistBookingPage() {
     );
   }
 
-  // Step progress
   const steps: Step[] = ["service", "date", "slots", "confirm"];
   const stepLabels: Record<Step, string> = {
     service: "Service",
@@ -206,27 +188,19 @@ export default function StylistBookingPage() {
   const currentStepIndex = steps.indexOf(step);
 
   return (
-    <div className="max-w-2xl mx-auto">
-      {/* Stylist header */}
-      <div className="flex items-center gap-4 mb-8">
-        {stylist.avatar_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={stylist.avatar_url}
-            alt={stylist.name}
-            className="w-16 h-16 rounded-full object-cover border-2 border-[#e8e2dc]"
-          />
-        ) : (
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#f5ede8] to-[#e8d8d0] flex items-center justify-center border-2 border-[#e8e2dc] flex-shrink-0">
-            <span className="text-2xl font-display text-[#9b6f6f]">
-              {stylist.name.charAt(0)}
-            </span>
-          </div>
-        )}
-        <div>
-          <h1 className="font-display text-2xl text-[#1a1714]">{stylist.name}</h1>
-          {stylist.bio && <p className="text-sm text-[#8a7e78] mt-0.5">{stylist.bio}</p>}
+    <div className="max-w-xl mx-auto">
+      {/* Header — always visible */}
+      <div className="text-center mb-8">
+        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#f5ede8] to-[#e8d8d0] flex items-center justify-center mx-auto mb-4 border-2 border-[#e8e2dc] shadow-sm">
+          {stylist.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={stylist.avatar_url} alt={stylist.name} className="w-full h-full rounded-full object-cover" />
+          ) : (
+            <span className="font-display text-3xl text-[#9b6f6f]">K</span>
+          )}
         </div>
+        <h1 className="font-display text-3xl text-[#1a1714]">Keri Choplin</h1>
+        <p className="text-[#8a7e78] text-sm mt-1 font-light">Luxury hair services in Lafayette, Louisiana</p>
       </div>
 
       {/* Progress indicator */}
@@ -267,17 +241,17 @@ export default function StylistBookingPage() {
       {/* ===== DONE ===== */}
       {step === "done" && (
         <div className="bg-white rounded-2xl border border-[#e8e2dc] p-8 sm:p-10 text-center">
-          <div className="w-16 h-16 rounded-full bg-[#f0f9f0] border border-[#c6e8c6] flex items-center justify-center mx-auto mb-5">
-            <svg className="w-8 h-8 text-[#4caf50]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          <div className="w-16 h-16 rounded-full bg-[#f5ede8] border border-[#e8d8d0] flex items-center justify-center mx-auto mb-5">
+            <svg className="w-8 h-8 text-[#9b6f6f]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="font-display text-2xl text-[#1a1714] mb-2">You&apos;re booked!</h2>
-          <p className="text-[#8a7e78] mb-6 text-sm">
-            Your appointment request has been submitted. Keri will confirm it shortly.
+          <h2 className="font-display text-2xl text-[#1a1714] mb-3">Request Sent</h2>
+          <p className="text-[#8a7e78] mb-6 text-sm leading-relaxed max-w-xs mx-auto">
+            Your appointment request has been sent to Keri. You&apos;ll hear back shortly.
           </p>
 
-          <div className="bg-[#faf9f7] rounded-xl p-5 text-left space-y-3 mb-7 border border-[#e8e2dc]">
+          <div className="bg-[#faf8f5] rounded-xl p-5 text-left space-y-3 mb-7 border border-[#e8e2dc]">
             <div className="flex justify-between text-sm">
               <span className="text-[#8a7e78]">Service</span>
               <span className="font-medium text-[#1a1714]">{selectedService?.name}</span>
@@ -294,32 +268,22 @@ export default function StylistBookingPage() {
               <span className="text-[#8a7e78]">Time</span>
               <span className="font-medium text-[#1a1714]">{selectedSlot ? formatTime(selectedSlot.start_at) : ""}</span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-[#8a7e78]">Stylist</span>
-              <span className="font-medium text-[#1a1714]">{stylist.name}</span>
-            </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <button
-              onClick={() => router.push("/appointments")}
-              className="px-6 py-2.5 bg-[#9b6f6f] text-white text-sm font-medium rounded-full hover:bg-[#8a5f5f] transition-colors"
-            >
-              View my appointments
-            </button>
-            <button
-              onClick={() => {
-                setStep("service");
-                setSelectedService(null);
-                setSelectedDate(null);
-                setSelectedSlot(null);
-                setSlots([]);
-              }}
-              className="px-6 py-2.5 border border-[#e8e2dc] text-[#5c4a42] text-sm font-medium rounded-full hover:bg-[#f5ede8] transition-colors"
-            >
-              Book another
-            </button>
-          </div>
+          <p className="text-xs text-[#8a7e78] mb-5">Need to cancel? Contact Keri directly.</p>
+
+          <button
+            onClick={() => {
+              setStep("service");
+              setSelectedService(null);
+              setSelectedDate(null);
+              setSelectedSlot(null);
+              setSlots([]);
+            }}
+            className="px-6 py-2.5 border border-[#e8e2dc] text-[#5c4a42] text-sm font-medium rounded-full hover:bg-[#f5ede8] transition-colors"
+          >
+            Book another
+          </button>
         </div>
       )}
 
@@ -330,51 +294,37 @@ export default function StylistBookingPage() {
           {stylist.services.length === 0 ? (
             <p className="text-sm text-[#8a7e78]">No services available at this time.</p>
           ) : (
-            <div className="space-y-6">
-              {(["Hair Services", "Color Services", "Treatments", "Styling", "Other"] as const).map((category) => {
-                const catServices = stylist.services.filter(
-                  (svc) => categorizeService(svc.name) === category
-                );
-                if (catServices.length === 0) return null;
-                return (
-                  <div key={category}>
-                    <h3 className="text-xs font-semibold text-[#c9a96e] uppercase tracking-widest mb-3">
-                      {category}
-                    </h3>
-                    <div className="space-y-2">
-                      {catServices.map((svc) => (
-                        <button
-                          key={svc.id}
-                          onClick={() => {
-                            setSelectedService(svc);
-                            setStep("date");
-                          }}
-                          className="w-full text-left bg-white border border-[#e8e2dc] rounded-xl px-5 py-4 hover:border-[#9b6f6f] hover:shadow-sm transition-all group"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <span className="font-medium text-[#1a1714] text-sm group-hover:text-[#9b6f6f] transition-colors">
-                                {svc.name}
-                              </span>
-                              <span className="block text-xs text-[#8a7e78] mt-0.5">
-                                {formatDuration(svc.duration_minutes)}
-                              </span>
-                            </div>
-                            <svg
-                              className="w-4 h-4 text-[#c9a96e] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-3"
-                              fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                            >
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                          </div>
-                        </button>
-                      ))}
+            <div className="space-y-2">
+              {stylist.services.map((svc) => (
+                <button
+                  key={svc.id}
+                  onClick={() => {
+                    setSelectedService(svc);
+                    setStep("date");
+                  }}
+                  className="w-full text-left bg-white border border-[#e8e2dc] rounded-2xl px-5 py-4 hover:border-[#9b6f6f] hover:shadow-sm transition-all group"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="font-medium text-[#1a1714] text-sm group-hover:text-[#9b6f6f] transition-colors">
+                        {svc.name}
+                      </span>
+                      <span className="block text-xs text-[#8a7e78] mt-0.5">
+                        {formatDuration(svc.duration_minutes)}
+                      </span>
                     </div>
+                    <svg
+                      className="w-4 h-4 text-[#c9a96e] flex-shrink-0 ml-3"
+                      fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </div>
-                );
-              })}
+                </button>
+              ))}
             </div>
           )}
+          <p className="text-xs text-[#8a7e78] text-center mt-5">Need to cancel? Contact Keri directly.</p>
         </div>
       )}
 
@@ -391,7 +341,6 @@ export default function StylistBookingPage() {
             Back to services
           </button>
 
-          {/* Selected service summary */}
           <div className="bg-[#f5ede8] rounded-xl px-4 py-3 mb-6 flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-[#5c3a3a]">{selectedService.name}</p>
@@ -415,7 +364,6 @@ export default function StylistBookingPage() {
               const weekday = DAY_NAMES[dayOfWeek]!;
               const monthDay = dateObj.toLocaleDateString([], { month: "short", day: "numeric", timeZone: "UTC" });
               const isToday = d === getUpcomingDays(1)[0];
-              // Tue-Sat = 2-6
               const isClosed = dayOfWeek === 0 || dayOfWeek === 1;
 
               return (
@@ -448,7 +396,7 @@ export default function StylistBookingPage() {
 
           <p className="text-xs text-[#8a7e78] mt-3 flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-[#e8e2dc] inline-block" />
-            Closed Sunday & Monday
+            Closed Sunday &amp; Monday
           </p>
         </div>
       )}
@@ -466,7 +414,6 @@ export default function StylistBookingPage() {
             Change date
           </button>
 
-          {/* Summary bar */}
           <div className="bg-[#f5ede8] rounded-xl px-4 py-3 mb-6 flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-[#9b6f6f] flex items-center justify-center flex-shrink-0">
               <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -532,24 +479,12 @@ export default function StylistBookingPage() {
           <h2 className="font-display text-2xl text-[#1a1714] mb-6">Confirm your appointment</h2>
 
           <div className="bg-white rounded-2xl border border-[#e8e2dc] overflow-hidden mb-5">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-[#f5ede8] to-[#faf9f7] px-6 py-4 border-b border-[#e8e2dc]">
+            <div className="bg-gradient-to-r from-[#f5ede8] to-[#faf8f5] px-6 py-4 border-b border-[#e8e2dc]">
               <p className="text-xs text-[#c9a96e] uppercase tracking-widest font-medium mb-1">Appointment Details</p>
               <p className="font-display text-xl text-[#1a1714]">{selectedService.name}</p>
             </div>
-            {/* Details */}
             <div className="px-6 py-5 space-y-4">
               {[
-                {
-                  icon: (
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                  ),
-                  label: "Stylist",
-                  value: stylist.name,
-                },
                 {
                   icon: (
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -580,6 +515,16 @@ export default function StylistBookingPage() {
                   label: "Duration",
                   value: formatDuration(selectedService.duration_minutes),
                 },
+                {
+                  icon: (
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  ),
+                  label: "Stylist",
+                  value: stylist.name,
+                },
               ].map((row) => (
                 <div key={row.label} className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-[#f5ede8] flex items-center justify-center text-[#9b6f6f] flex-shrink-0">
@@ -601,7 +546,7 @@ export default function StylistBookingPage() {
           )}
 
           <p className="text-xs text-[#8a7e78] mb-4 text-center">
-            You&apos;ll receive a confirmation once your appointment is approved.
+            Keri will review and confirm your request.
           </p>
 
           <button
@@ -612,12 +557,16 @@ export default function StylistBookingPage() {
             {booking ? (
               <span className="flex items-center justify-center gap-2">
                 <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Booking…
+                Sending request…
               </span>
             ) : (
-              "Confirm Appointment"
+              "Send Appointment Request"
             )}
           </button>
+
+          <p className="text-xs text-[#8a7e78] text-center mt-3">
+            Need to cancel? Contact Keri directly.
+          </p>
         </div>
       )}
     </div>

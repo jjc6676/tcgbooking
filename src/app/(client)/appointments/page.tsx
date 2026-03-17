@@ -73,8 +73,6 @@ export default function AppointmentsPage() {
   const [appointments, setAppointments] = useState<AppointmentWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [cancelling, setCancelling] = useState<string | null>(null);
-
   useEffect(() => {
     loadAppointments();
   }, []);
@@ -90,26 +88,6 @@ export default function AppointmentsPage() {
       setError("Failed to load appointments");
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function handleCancel(id: string) {
-    if (!confirm("Cancel this appointment?")) return;
-    setCancelling(id);
-    try {
-      const res = await fetch(`/api/appointments/${id}`, { method: "PATCH" });
-      if (res.ok) {
-        setAppointments((prev) =>
-          prev.map((a) => (a.id === id ? { ...a, status: "cancelled" } : a))
-        );
-      } else {
-        const data = await res.json();
-        alert(data.error ?? "Failed to cancel");
-      }
-    } catch {
-      alert("Network error");
-    } finally {
-      setCancelling(null);
     }
   }
 
@@ -229,21 +207,17 @@ export default function AppointmentsPage() {
                         </div>
                       </div>
 
-                      {appt.status !== "cancelled" && (
-                        <button
-                          onClick={() => handleCancel(appt.id)}
-                          disabled={cancelling === appt.id}
-                          className="text-xs text-[#8a7e78] hover:text-red-600 disabled:opacity-50 flex-shrink-0 transition-colors"
-                        >
-                          {cancelling === appt.id ? "…" : "Cancel"}
-                        </button>
-                      )}
+
                     </div>
                   );
                 })}
               </div>
             </div>
           )}
+
+          <p className="text-xs text-[#8a7e78] text-center mt-2">
+            Need to cancel? Contact Keri directly.
+          </p>
 
           {past.length > 0 && (
             <div>
