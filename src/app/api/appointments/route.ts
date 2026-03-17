@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { sendBookingConfirmation } from "@/lib/email";
 import { z } from "zod";
+import { bookingRateLimit, checkRateLimit } from "@/lib/ratelimit";
+import { headers } from "next/headers";
 
 const RATE_LIMIT_MAX = 3; // max bookings per day per client
 
