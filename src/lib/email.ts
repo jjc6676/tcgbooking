@@ -29,7 +29,7 @@ async function sendEmail(to: string, subject: string, html: string): Promise<voi
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) return; // silently skip if not configured
 
-  const fromEmail = process.env.RESEND_FROM_EMAIL ?? "noreply@tcgbooking.com";
+  const fromEmail = process.env.RESEND_FROM_EMAIL ?? "onboarding@resend.dev";
 
   await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -56,38 +56,74 @@ export async function sendBookingConfirmation(data: BookingConfirmationData): Pr
 
   // Email to client
   const clientHtml = `
-    <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
-      <h2 style="margin:0 0 4px">Booking Confirmed</h2>
-      <p style="color:#6b7280;margin:0 0 20px">Hi ${displayName}, your appointment is confirmed.</p>
-      <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin-bottom:20px">
-        <table style="width:100%;font-size:14px">
-          <tr><td style="color:#6b7280;padding:4px 0">Stylist</td><td style="font-weight:600;text-align:right">${stylistName}</td></tr>
-          <tr><td style="color:#6b7280;padding:4px 0">Service</td><td style="font-weight:600;text-align:right">${serviceName}</td></tr>
-          <tr><td style="color:#6b7280;padding:4px 0">Date &amp; Time</td><td style="font-weight:600;text-align:right">${dateTime} UTC</td></tr>
+    <div style="font-family:Georgia,serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#faf8f5">
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#f5ede8,#e8d8d0);display:inline-flex;align-items:center;justify-content:center;border:2px solid #e8e2dc;margin-bottom:12px">
+          <span style="font-size:24px;color:#9b6f6f;font-weight:600">K</span>
+        </div>
+        <h2 style="margin:0;font-size:22px;color:#1a1714;font-family:Georgia,serif">Request Received ✨</h2>
+        <p style="margin:4px 0 0;font-size:13px;color:#8a7e78;font-family:sans-serif">Hi ${displayName}, your request has been sent to Keri!</p>
+      </div>
+      <div style="background:#ffffff;border:1px solid #e8e2dc;border-radius:16px;padding:20px;margin-bottom:20px">
+        <table style="width:100%;font-size:14px;font-family:sans-serif;border-collapse:collapse">
+          <tr>
+            <td style="color:#8a7e78;padding:8px 0;border-bottom:1px solid #f5f0eb">Stylist</td>
+            <td style="font-weight:600;text-align:right;color:#1a1714;padding:8px 0;border-bottom:1px solid #f5f0eb">${stylistName}</td>
+          </tr>
+          <tr>
+            <td style="color:#8a7e78;padding:8px 0;border-bottom:1px solid #f5f0eb">Service</td>
+            <td style="font-weight:600;text-align:right;color:#1a1714;padding:8px 0;border-bottom:1px solid #f5f0eb">${serviceName}</td>
+          </tr>
+          <tr>
+            <td style="color:#8a7e78;padding:8px 0">Date &amp; Time</td>
+            <td style="font-weight:600;text-align:right;color:#1a1714;padding:8px 0">${dateTime}</td>
+          </tr>
         </table>
       </div>
-      <p style="color:#6b7280;font-size:13px">Your appointment is pending confirmation from your stylist. You&apos;ll hear from them shortly.</p>
+      <p style="text-align:center;font-size:13px;color:#8a7e78;font-family:sans-serif;margin:0 0 8px">
+        Keri will review and confirm your appointment shortly. Need to cancel? Contact Keri directly.
+      </p>
+      <p style="text-align:center;margin-top:20px;font-size:12px;color:#8a7e78;font-family:sans-serif">Keri Choplin Hair Studio · Lafayette, Louisiana</p>
     </div>
   `;
 
-  // Email to stylist
+  // Email to stylist — styled, actionable
   const stylistHtml = `
-    <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
-      <h2 style="margin:0 0 4px">New Booking Request</h2>
-      <p style="color:#6b7280;margin:0 0 20px">You have a new appointment request.</p>
-      <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin-bottom:20px">
-        <table style="width:100%;font-size:14px">
-          <tr><td style="color:#6b7280;padding:4px 0">Client</td><td style="font-weight:600;text-align:right">${displayName}</td></tr>
-          <tr><td style="color:#6b7280;padding:4px 0">Service</td><td style="font-weight:600;text-align:right">${serviceName}</td></tr>
-          <tr><td style="color:#6b7280;padding:4px 0">Date &amp; Time</td><td style="font-weight:600;text-align:right">${dateTime} UTC</td></tr>
+    <div style="font-family:Georgia,serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#faf8f5">
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#f5ede8,#e8d8d0);display:inline-flex;align-items:center;justify-content:center;border:2px solid #e8e2dc;margin-bottom:12px">
+          <span style="font-size:24px;color:#9b6f6f;font-weight:600">K</span>
+        </div>
+        <h2 style="margin:0;font-size:22px;color:#1a1714;font-family:Georgia,serif">New Booking Request</h2>
+        <p style="margin:4px 0 0;font-size:13px;color:#8a7e78;font-family:sans-serif">You have a new appointment request, Keri!</p>
+      </div>
+      <div style="background:#ffffff;border:1px solid #e8e2dc;border-radius:16px;padding:20px;margin-bottom:20px">
+        <table style="width:100%;font-size:14px;font-family:sans-serif;border-collapse:collapse">
+          <tr>
+            <td style="color:#8a7e78;padding:8px 0;border-bottom:1px solid #f5f0eb">Client</td>
+            <td style="font-weight:600;text-align:right;color:#1a1714;padding:8px 0;border-bottom:1px solid #f5f0eb">${displayName}</td>
+          </tr>
+          <tr>
+            <td style="color:#8a7e78;padding:8px 0;border-bottom:1px solid #f5f0eb">Service</td>
+            <td style="font-weight:600;text-align:right;color:#1a1714;padding:8px 0;border-bottom:1px solid #f5f0eb">${serviceName}</td>
+          </tr>
+          <tr>
+            <td style="color:#8a7e78;padding:8px 0">Date &amp; Time</td>
+            <td style="font-weight:600;text-align:right;color:#1a1714;padding:8px 0">${dateTime}</td>
+          </tr>
         </table>
       </div>
-      <p style="color:#6b7280;font-size:13px">Log in to your admin dashboard to confirm or manage this appointment.</p>
+      <div style="text-align:center">
+        <a href="https://tcgbooking.vercel.app/admin" style="display:inline-block;background:#9b6f6f;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:50px;font-family:sans-serif;font-size:14px;font-weight:600">
+          Log in to approve →
+        </a>
+      </div>
+      <p style="text-align:center;margin-top:20px;font-size:12px;color:#8a7e78;font-family:sans-serif">Keri Choplin Hair Studio · Lafayette, Louisiana</p>
     </div>
   `;
 
   await Promise.allSettled([
     sendEmail(clientEmail, `Your booking with ${stylistName} is confirmed`, clientHtml),
-    sendEmail(stylistEmail, `New booking request from ${displayName}`, stylistHtml),
+    sendEmail(stylistEmail, `New booking request from ${displayName} — ${serviceName}`, stylistHtml),
   ]);
 }

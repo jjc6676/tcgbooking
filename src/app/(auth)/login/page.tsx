@@ -8,7 +8,8 @@ import { createClient } from "@/lib/supabase/client";
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") ?? "/book";
+  // Only use redirectTo if it doesn't point to /book (stylist might land there)
+  const rawRedirect = searchParams.get("redirectTo");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,15 +22,34 @@ function LoginForm() {
     setError(null);
 
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (error) {
-      setError(error.message);
+    if (signInError) {
+      setError(signInError.message);
       setLoading(false);
-    } else {
-      router.push(redirectTo);
-      router.refresh();
+      return;
     }
+
+    // Fetch profile to determine role-based redirect
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      if (profile?.role === "stylist") {
+        router.push("/admin");
+        router.refresh();
+        return;
+      }
+    }
+
+    // Client: use redirectTo if set and not pointing to /book (avoid loop), otherwise /book
+    const destination = rawRedirect && rawRedirect !== "/book" ? rawRedirect : "/book";
+    router.push(destination);
+    router.refresh();
   }
 
   return (
@@ -93,10 +113,10 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Brand */}
         <div className="text-center mb-8">
-          <div className="w-12 h-12 rounded-full bg-[#9b6f6f] flex items-center justify-center mx-auto mb-4">
-            <span className="text-white text-lg font-bold">K</span>
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#f5ede8] to-[#e8d8d0] flex items-center justify-center mx-auto mb-4 border-2 border-[#e8e2dc] shadow-sm">
+            <span className="font-display text-white text-2xl font-bold" style={{ color: "#9b6f6f" }}>K</span>
           </div>
-          <h1 className="font-display text-2xl text-[#1a1714]">Welcome back</h1>
+          <h1 className="font-display text-3xl text-[#1a1714]">Keri Choplin</h1>
           <p className="text-sm text-[#8a7e78] mt-1">Sign in to your account</p>
         </div>
 
