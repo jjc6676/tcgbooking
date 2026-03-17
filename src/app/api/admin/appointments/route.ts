@@ -43,7 +43,7 @@ export async function GET(request: Request) {
     query = query.eq("status", "cancelled");
   } else {
     query = query
-      .in("status", ["pending", "confirmed"])
+      .in("status", ["pending", "confirmed", "reschedule_requested"])
       .gte("start_at", new Date().toISOString());
   }
 

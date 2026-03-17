@@ -170,7 +170,7 @@ function SwipeableCard({ appt, onAction, error, confirmingDecline, onRequestDecl
             </button>
             <button
               onClick={() => onRequestDecline(appt.id)}
-              className="flex items-center justify-center gap-1.5 px-5 py-3 border-2 border-[#e8e2dc] text-[#8a7e78] text-sm font-semibold rounded-xl active:border-red-300 active:text-red-600 active:bg-red-50 transition-all min-h-[48px]"
+              className="flex items-center justify-center gap-1.5 px-5 py-3 bg-red-50 border-2 border-red-200 text-red-600 text-sm font-semibold rounded-xl active:bg-red-100 active:border-red-300 active:scale-[0.98] transition-all min-h-[48px]"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

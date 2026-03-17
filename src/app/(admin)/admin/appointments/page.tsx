@@ -40,6 +40,16 @@ function groupByDate(appointments: AppointmentRow[]): Record<string, Appointment
     if (!groups[key]) groups[key] = [];
     groups[key]!.push(appt);
   }
+  // Sort pending/reschedule_requested first within each date group
+  const pendingStatuses = new Set(["pending", "reschedule_requested"]);
+  for (const key of Object.keys(groups)) {
+    groups[key]!.sort((a, b) => {
+      const aP = pendingStatuses.has(a.status) ? 0 : 1;
+      const bP = pendingStatuses.has(b.status) ? 0 : 1;
+      if (aP !== bP) return aP - bP;
+      return new Date(a.start_at).getTime() - new Date(b.start_at).getTime();
+    });
+  }
   return groups;
 }
 

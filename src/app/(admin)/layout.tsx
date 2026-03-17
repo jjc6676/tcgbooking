@@ -5,6 +5,7 @@ import AdminBottomNav from "@/components/AdminBottomNav";
 import { ToastProvider } from "@/components/Toast";
 import ClientAuthGuard from "@/components/ClientAuthGuard";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import PendingBanner from "@/components/PendingBanner";
 
 const NAV_MAIN = [
   {
@@ -227,9 +228,12 @@ export default async function AdminLayout({
         </aside>
 
         {/* Main content — with bottom padding for mobile nav */}
-        <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 overflow-auto pb-24 lg:pb-8">
-          <ErrorBoundary>{children}</ErrorBoundary>
-        </main>
+        <div className="flex-1 min-w-0 flex flex-col">
+          <PendingBanner />
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto pb-24 lg:pb-8">
+            <ErrorBoundary>{children}</ErrorBoundary>
+          </main>
+        </div>
       </div>
 
       {/* Mobile bottom tab nav */}
