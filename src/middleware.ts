@@ -1,7 +1,54 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+function getIP(request: NextRequest): string {
+  return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+}
+
+async function handleRateLimit(request: NextRequest): Promise<NextResponse | null> {
+  // Skip rate limiting if Upstash env vars are missing
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    return null;
+  }
+
+  const pathname = request.nextUrl.pathname;
+  if (!pathname.startsWith("/api/")) return null;
+
+  try {
+    const { bookingRateLimit, apiRateLimit, checkRateLimit } = await import("@/lib/ratelimit");
+    const ip = getIP(request);
+
+    // Stricter limit for booking endpoint
+    if (pathname === "/api/appointments") {
+      const result = await checkRateLimit(bookingRateLimit, ip);
+      if (!result.success) {
+        return NextResponse.json(
+          { error: "Too many requests. Please try again later." },
+          { status: 429 }
+        );
+      }
+    }
+
+    // General API rate limit
+    const result = await checkRateLimit(apiRateLimit, ip);
+    if (!result.success) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429 }
+      );
+    }
+  } catch {
+    // Fail open if rate limiting errors
+  }
+
+  return null;
+}
+
 export async function middleware(request: NextRequest) {
+  // Rate limit API routes first
+  const rateLimitResponse = await handleRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -90,5 +137,6 @@ export const config = {
     "/account",
     "/login",
     "/",
+    "/api/:path*",
   ],
 };
