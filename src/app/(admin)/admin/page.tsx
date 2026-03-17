@@ -118,7 +118,7 @@ export default async function AdminDashboardPage() {
   ] = await Promise.all([
     supabase
       .from("appointments")
-      .select(`*, client:profiles!client_id(id, full_name), service:services!service_id(id, name, duration_minutes, internal_price_cents)`)
+      .select(`*, client:profiles!client_id(id, full_name), service:services!service_id(id, name, duration_minutes, internal_price_cents), appointment_services(service_id, service:services(id, name, duration_minutes))`)
       .eq("stylist_id", stylist.id)
       .eq("status", "confirmed")
       .gte("start_at", today.start)
@@ -139,7 +139,7 @@ export default async function AdminDashboardPage() {
       .gte("start_at", new Date().toISOString()),
     supabase
       .from("appointments")
-      .select(`*, client:profiles!client_id(id, full_name), service:services!service_id(id, name, duration_minutes)`)
+      .select(`*, client:profiles!client_id(id, full_name), service:services!service_id(id, name, duration_minutes), appointment_services(service_id, service:services(id, name, duration_minutes))`)
       .eq("stylist_id", stylist.id)
       .eq("status", "pending")
       .gte("start_at", new Date().toISOString())
@@ -220,6 +220,7 @@ export default async function AdminDashboardPage() {
             start_at: appt.start_at as string,
             client: appt.client as { id: string; full_name: string | null } | null,
             service: appt.service as { id: string; name: string; duration_minutes: number } | null,
+            appointment_services: (appt as { appointment_services?: Array<{ service_id: string; service: { id: string; name: string; duration_minutes: number } | null }> }).appointment_services ?? null,
             client_notes: (appt as { client_notes?: string | null }).client_notes ?? null,
           }))}
         />
@@ -249,13 +250,21 @@ export default async function AdminDashboardPage() {
           <div className="divide-y divide-[#f5f0eb]">
             {todayList.map((appt) => {
               const service = appt.service as { id: string; name: string; duration_minutes: number } | null;
+              const apptServices = (appt as { appointment_services?: Array<{ service_id: string; service: { id: string; name: string; duration_minutes: number } | null }> }).appointment_services;
               const client = appt.client as { id: string; full_name: string | null } | null;
+
+              // Prefer appointment_services, fall back to primary service
+              const allSvcs = apptServices && apptServices.length > 0
+                ? apptServices.map((as_row) => as_row.service).filter((s): s is { id: string; name: string; duration_minutes: number } => s !== null)
+                : service ? [service] : [];
+              const svcNames = allSvcs.map((s) => s.name).join(", ") || "Service";
+              const svcDuration = allSvcs.reduce((sum, s) => sum + s.duration_minutes, 0);
 
               return (
                 <div key={appt.id} className="px-4 py-3.5 flex items-center gap-3">
                   <div className="flex-shrink-0 text-center min-w-[56px]">
                     <p className="text-sm font-bold text-[#1a1714]">{formatTime(appt.start_at as string)}</p>
-                    <p className="text-[10px] text-[#8a7e78]">{service ? formatDuration(service.duration_minutes) : ""}</p>
+                    <p className="text-[10px] text-[#8a7e78]">{svcDuration > 0 ? formatDuration(svcDuration) : ""}</p>
                   </div>
                   <div className="flex-shrink-0 flex flex-col items-center self-stretch py-1">
                     <div className="w-2 h-2 rounded-full bg-[#9b6f6f] flex-shrink-0 mt-0.5" />
@@ -265,7 +274,7 @@ export default async function AdminDashboardPage() {
                     <p className="text-sm font-semibold text-[#1a1714] truncate">
                       {client?.full_name ?? "Guest"}
                     </p>
-                    <p className="text-xs text-[#8a7e78] mt-0.5 truncate">{service?.name}</p>
+                    <p className="text-xs text-[#8a7e78] mt-0.5 truncate">{svcNames}</p>
                   </div>
                   <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-emerald-50 text-emerald-700 flex-shrink-0">
                     Confirmed

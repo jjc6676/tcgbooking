@@ -3,6 +3,13 @@
 import { useEffect, useState } from "react";
 import { useToast } from "@/components/Toast";
 
+interface ServiceInfo {
+  id: string;
+  name: string;
+  duration_minutes: number;
+  internal_price_cents?: number;
+}
+
 interface AppointmentRow {
   id: string;
   start_at: string;
@@ -13,7 +20,31 @@ interface AppointmentRow {
   reschedule_preferred_time?: string | null;
   reschedule_note?: string | null;
   client: { id: string; full_name: string | null } | null;
-  service: { id: string; name: string; duration_minutes: number; internal_price_cents?: number } | null;
+  service: ServiceInfo | null;
+  appointment_services?: Array<{ service_id: string; service: ServiceInfo | null }> | null;
+}
+
+/** Get all services for an appointment: prefer appointment_services, fall back to service */
+function getAllServices(appt: AppointmentRow): ServiceInfo[] {
+  if (appt.appointment_services && appt.appointment_services.length > 0) {
+    return appt.appointment_services.map((as) => as.service).filter((s): s is ServiceInfo => s !== null);
+  }
+  return appt.service ? [appt.service] : [];
+}
+
+function serviceNames(appt: AppointmentRow): string {
+  const svcs = getAllServices(appt);
+  return svcs.length > 0 ? svcs.map((s) => s.name).join(", ") : "Service";
+}
+
+function totalDuration(appt: AppointmentRow): number {
+  const svcs = getAllServices(appt);
+  return svcs.reduce((sum, s) => sum + s.duration_minutes, 0);
+}
+
+function totalPriceCents(appt: AppointmentRow): number {
+  const svcs = getAllServices(appt);
+  return svcs.reduce((sum, s) => sum + (s.internal_price_cents ?? 0), 0);
 }
 
 function formatTime(iso: string): string {
@@ -224,19 +255,19 @@ export default function AppointmentsPage() {
                         <div className="flex items-start gap-3 sm:gap-4">
                           <div className="flex-shrink-0 text-center min-w-[56px]">
                             <p className="text-sm font-bold text-[#1a1714]">{formatTime(appt.start_at)}</p>
-                            <p className="text-[10px] text-[#8a7e78] mt-0.5">{appt.service ? formatDuration(appt.service.duration_minutes) : ""}</p>
+                            <p className="text-[10px] text-[#8a7e78] mt-0.5">{totalDuration(appt) > 0 ? formatDuration(totalDuration(appt)) : ""}</p>
                           </div>
 
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
                               <div>
                                 <p className="font-semibold text-[#1a1714] text-sm">{appt.client?.full_name ?? "Guest"}</p>
-                                <p className="text-xs text-[#8a7e78] mt-0.5">{appt.service?.name ?? "Service"}</p>
+                                <p className="text-xs text-[#8a7e78] mt-0.5">{serviceNames(appt)}</p>
                               </div>
                               <div className="flex items-center gap-2 flex-shrink-0">
-                                {appt.service?.internal_price_cents != null && appt.service.internal_price_cents > 0 && (
+                                {totalPriceCents(appt) > 0 && (
                                   <span className="text-xs font-semibold text-[#4a7c59]">
-                                    {centsToDisplay(appt.service.internal_price_cents)}
+                                    {centsToDisplay(totalPriceCents(appt))}
                                   </span>
                                 )}
                                 <span className={`flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-medium ${status.bg} ${status.text}`}>
@@ -276,8 +307,8 @@ export default function AppointmentsPage() {
                             )}
                             <div className="grid grid-cols-2 gap-3">
                               {[
-                                { label: "Service", value: appt.service?.name ?? "—" },
-                                { label: "Duration", value: appt.service ? formatDuration(appt.service.duration_minutes) : "—" },
+                                { label: getAllServices(appt).length > 1 ? "Services" : "Service", value: serviceNames(appt) },
+                                { label: "Duration", value: totalDuration(appt) > 0 ? formatDuration(totalDuration(appt)) : "—" },
                                 { label: "Time", value: formatTime(appt.start_at) },
                                 { label: "Status", value: status.label },
                               ].map((row) => (

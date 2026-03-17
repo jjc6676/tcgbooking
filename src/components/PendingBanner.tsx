@@ -27,7 +27,7 @@ export default function PendingBanner() {
           .from("appointments")
           .select("id", { count: "exact", head: true })
           .eq("stylist_id", stylist.id)
-          .in("status", ["pending", "reschedule_requested"])
+          .in("status", ["pending"])
           .gte("start_at", new Date().toISOString());
 
         if (!cancelled) setCount(c ?? 0);

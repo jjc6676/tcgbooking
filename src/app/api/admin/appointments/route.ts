@@ -31,7 +31,8 @@ export async function GET(request: Request) {
       `
       *,
       client:profiles!client_id(id, full_name),
-      service:services!service_id(id, name, duration_minutes, internal_price_cents)
+      service:services!service_id(id, name, duration_minutes, internal_price_cents),
+      appointment_services(service_id, service:services(id, name, duration_minutes, internal_price_cents))
     `
     )
     .eq("stylist_id", stylist.id)
@@ -43,7 +44,7 @@ export async function GET(request: Request) {
     query = query.eq("status", "cancelled");
   } else {
     query = query
-      .in("status", ["pending", "confirmed", "reschedule_requested"])
+      .in("status", ["pending", "confirmed"])
       .gte("start_at", new Date().toISOString());
   }
 

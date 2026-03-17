@@ -10,7 +10,12 @@ interface PublicService {
   id: string;
   name: string;
   duration_minutes: number;
+  internal_price_cents?: number;
   notes?: string | null;
+}
+
+function formatPrice(cents: number): string {
+  return `$${(cents / 100).toFixed(0)}`;
 }
 
 interface PublicStylist {
@@ -114,7 +119,7 @@ export default function StylistBookingPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [step, setStep] = useState<Step>("service");
-  const [selectedService, setSelectedService] = useState<PublicService | null>(null);
+  const [selectedServices, setSelectedServices] = useState<PublicService[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [slots, setSlots] = useState<Slot[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
@@ -135,7 +140,7 @@ export default function StylistBookingPage() {
           setStylist(data.stylist);
           if (preselectedServiceId && data.stylist?.services) {
             const svc = data.stylist.services.find((s: PublicService) => s.id === preselectedServiceId);
-            if (svc) { setSelectedService(svc); setStep("date"); }
+            if (svc) { setSelectedServices([svc]); setStep("date"); }
           }
         }
       })
@@ -144,9 +149,14 @@ export default function StylistBookingPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stylistId]);
 
-  // Find next available date when service is selected
+  // Computed totals for selected services
+  const totalDuration = selectedServices.reduce((sum, s) => sum + s.duration_minutes, 0);
+  const totalPrice = selectedServices.reduce((sum, s) => sum + (s.internal_price_cents ?? 0), 0);
+  const serviceIdsParam = selectedServices.map((s) => s.id).join(",");
+
+  // Find next available date when services are selected
   useEffect(() => {
-    if (!selectedService || step !== "date") return;
+    if (selectedServices.length === 0 || step !== "date") return;
     setNextAvailable(null);
     let cancelled = false;
 
@@ -155,7 +165,7 @@ export default function StylistBookingPage() {
         if (cancelled) return;
         try {
           const res = await fetch(
-            `/api/stylists/${stylistId}/availability?date=${day}&serviceId=${selectedService!.id}`
+            `/api/stylists/${stylistId}/availability?date=${day}&serviceIds=${serviceIdsParam}`
           );
           const data = await res.json();
           if (data.slots && data.slots.length > 0) {
@@ -175,15 +185,15 @@ export default function StylistBookingPage() {
     findNext();
     return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedService, step]);
+  }, [serviceIdsParam, step]);
 
   async function handleSelectDate(date: string) {
-    if (!selectedService) return;
+    if (selectedServices.length === 0) return;
     setSelectedDate(date);
     setSelectedSlot(null);
     setSlotsLoading(true);
     try {
-      const res = await fetch(`/api/stylists/${stylistId}/availability?date=${date}&serviceId=${selectedService.id}`);
+      const res = await fetch(`/api/stylists/${stylistId}/availability?date=${date}&serviceIds=${serviceIdsParam}`);
       const data = await res.json();
       setSlots(data.slots ?? []);
     } catch { setSlots([]); }
@@ -191,7 +201,7 @@ export default function StylistBookingPage() {
   }
 
   async function handleConfirm() {
-    if (!selectedService || !selectedSlot) return;
+    if (selectedServices.length === 0 || !selectedSlot) return;
     setBooking(true);
     setBookingError(null);
     try {
@@ -200,7 +210,7 @@ export default function StylistBookingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           stylist_id: stylistId,
-          service_id: selectedService.id,
+          service_ids: selectedServices.map((s) => s.id),
           start_at: selectedSlot.start_at,
           end_at: selectedSlot.end_at,
           client_notes: clientNotes.trim() || undefined,
@@ -239,8 +249,8 @@ export default function StylistBookingPage() {
   const stepLabels: Record<Step, string> = { service: "Service", date: "Date", slots: "Time", confirm: "Confirm", done: "Done" };
   const currentStepIndex = steps.indexOf(step);
 
-  const calUrl = selectedService && selectedSlot
-    ? googleCalendarUrl(`${selectedService.name} with ${stylist.name}`, selectedSlot.start_at, selectedSlot.end_at)
+  const calUrl = selectedServices.length > 0 && selectedSlot
+    ? googleCalendarUrl(`${selectedServices.map((s) => s.name).join(", ")} with ${stylist.name}`, selectedSlot.start_at, selectedSlot.end_at)
     : null;
 
   return (
@@ -291,7 +301,7 @@ export default function StylistBookingPage() {
       )}
 
       {/* ===== DONE ===== */}
-      {step === "done" && selectedService && selectedDate && selectedSlot && (
+      {step === "done" && selectedServices.length > 0 && selectedDate && selectedSlot && (
         <div className="bg-white rounded-2xl border border-[#e8e2dc] p-8 sm:p-10 text-center">
           <div className="w-16 h-16 rounded-full bg-[#f5ede8] border border-[#e8d8d0] flex items-center justify-center mx-auto mb-5">
             <svg className="w-8 h-8 text-[#9b6f6f]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -305,8 +315,8 @@ export default function StylistBookingPage() {
 
           <div className="bg-[#faf8f5] rounded-xl p-5 text-left space-y-3 mb-6 border border-[#e8e2dc]">
             {[
-              { label: "Service", value: selectedService.name },
-              { label: "Duration", value: formatDuration(selectedService.duration_minutes) },
+              { label: selectedServices.length === 1 ? "Service" : "Services", value: selectedServices.map((s) => s.name).join(", ") },
+              { label: "Duration", value: formatDuration(totalDuration) },
               { label: "Date", value: formatDate(selectedDate) },
               { label: "Time", value: formatTime(selectedSlot.start_at) },
               ...(clientNotes ? [{ label: "Your note", value: clientNotes }] : []),
@@ -348,7 +358,7 @@ export default function StylistBookingPage() {
           </p>
 
           <button
-            onClick={() => { setStep("service"); setSelectedService(null); setSelectedDate(null); setSelectedSlot(null); setSlots([]); setClientNotes(""); }}
+            onClick={() => { setStep("service"); setSelectedServices([]); setSelectedDate(null); setSelectedSlot(null); setSlots([]); setClientNotes(""); }}
             className="px-6 py-2.5 border border-[#e8e2dc] text-[#5c4a42] text-sm font-medium rounded-full hover:bg-[#f5ede8] transition-all active:scale-[0.98] min-h-[44px]"
           >
             Book another
@@ -359,7 +369,8 @@ export default function StylistBookingPage() {
       {/* ===== SERVICE ===== */}
       {step === "service" && (
         <div>
-          <h2 className="font-display text-xl text-[#1a1714] mb-5">Choose a service</h2>
+          <h2 className="font-display text-xl text-[#1a1714] mb-1">Choose your services</h2>
+          <p className="text-sm text-[#8a7e78] mb-5">Select one or more services for your appointment.</p>
           {stylist.services.length === 0 ? (
             <div className="text-center py-12 bg-white rounded-2xl border border-[#e8e2dc]">
               <p className="text-sm text-[#8a7e78]">No services available at this time.</p>
@@ -368,30 +379,77 @@ export default function StylistBookingPage() {
               </a>
             </div>
           ) : (
-            <div className="space-y-2">
-              {stylist.services.map((svc) => (
-                <button
-                  key={svc.id}
-                  onClick={() => { setSelectedService(svc); setStep("date"); }}
-                  className="w-full text-left bg-white border border-[#e8e2dc] rounded-2xl px-5 py-4 hover:border-[#9b6f6f] hover:shadow-sm transition-all group min-h-[60px]"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="font-medium text-[#1a1714] text-sm group-hover:text-[#9b6f6f] transition-colors">
-                        {svc.name}
-                      </span>
-                      <span className="block text-xs text-[#8a7e78] mt-0.5">
-                        {formatDuration(svc.duration_minutes)}
-                        {svc.notes && ` · ${svc.notes}`}
-                      </span>
+            <>
+              <div className="space-y-2">
+                {stylist.services.map((svc) => {
+                  const isSelected = selectedServices.some((s) => s.id === svc.id);
+                  return (
+                    <button
+                      key={svc.id}
+                      onClick={() => {
+                        setSelectedServices((prev) =>
+                          isSelected ? prev.filter((s) => s.id !== svc.id) : [...prev, svc]
+                        );
+                      }}
+                      className={`w-full text-left border rounded-2xl px-5 py-4 transition-all group min-h-[60px] ${
+                        isSelected
+                          ? "bg-[#fdf8f6] border-[#9b6f6f] shadow-sm"
+                          : "bg-white border-[#e8e2dc] hover:border-[#9b6f6f] hover:shadow-sm"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                          isSelected ? "bg-[#9b6f6f] border-[#9b6f6f]" : "border-[#d4cdc7] group-hover:border-[#9b6f6f]"
+                        }`}>
+                          {isSelected && (
+                            <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className={`font-medium text-sm transition-colors ${isSelected ? "text-[#9b6f6f]" : "text-[#1a1714] group-hover:text-[#9b6f6f]"}`}>
+                            {svc.name}
+                          </span>
+                          <span className="block text-xs text-[#8a7e78] mt-0.5">
+                            {formatDuration(svc.duration_minutes)}
+                            {svc.internal_price_cents ? ` · ${formatPrice(svc.internal_price_cents)}` : ""}
+                            {svc.notes && ` · ${svc.notes}`}
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Running total + continue */}
+              {selectedServices.length > 0 && (
+                <div className="sticky bottom-4 mt-5">
+                  <div className="bg-white border border-[#e8e2dc] rounded-2xl shadow-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-sm text-[#5c4a42]">
+                        <span className="font-semibold">{selectedServices.length} {selectedServices.length === 1 ? "service" : "services"}</span>
+                        <span className="mx-1.5 text-[#d4cdc7]">·</span>
+                        <span>{formatDuration(totalDuration)}</span>
+                        {totalPrice > 0 && (
+                          <>
+                            <span className="mx-1.5 text-[#d4cdc7]">·</span>
+                            <span className="font-semibold text-[#4a7c59]">{formatPrice(totalPrice)}</span>
+                          </>
+                        )}
+                      </p>
                     </div>
-                    <svg className="w-4 h-4 text-[#c9a96e] flex-shrink-0 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
+                    <button
+                      onClick={() => setStep("date")}
+                      className="w-full py-3 bg-[#9b6f6f] text-white font-semibold rounded-full hover:bg-[#8a5f5f] active:scale-[0.99] transition-all text-sm tracking-wide min-h-[48px]"
+                    >
+                      Continue
+                    </button>
                   </div>
-                </button>
-              ))}
-            </div>
+                </div>
+              )}
+            </>
           )}
           <p className="text-xs text-[#8a7e78] text-center mt-5">
             Questions?{" "}
@@ -401,7 +459,7 @@ export default function StylistBookingPage() {
       )}
 
       {/* ===== DATE ===== */}
-      {step === "date" && selectedService && (
+      {step === "date" && selectedServices.length > 0 && (
         <div>
           <button onClick={() => { setStep("service"); setSelectedDate(null); }}
             className="flex items-center gap-1.5 text-sm text-[#8a7e78] hover:text-[#9b6f6f] mb-5 transition-all active:opacity-70 min-h-[44px]">
@@ -413,8 +471,8 @@ export default function StylistBookingPage() {
 
           <div className="bg-[#f5ede8] rounded-xl px-4 py-3 mb-5 flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-[#5c3a3a]">{selectedService.name}</p>
-              <p className="text-xs text-[#9b6f6f]">{formatDuration(selectedService.duration_minutes)}</p>
+              <p className="text-sm font-medium text-[#5c3a3a]">{selectedServices.map((s) => s.name).join(", ")}</p>
+              <p className="text-xs text-[#9b6f6f]">{selectedServices.length} {selectedServices.length === 1 ? "service" : "services"} · {formatDuration(totalDuration)}</p>
             </div>
             <button onClick={() => { setStep("service"); setSelectedDate(null); }} className="text-xs text-[#9b6f6f] hover:text-[#8a5f5f] font-medium">
               Change
@@ -484,7 +542,7 @@ export default function StylistBookingPage() {
       )}
 
       {/* ===== SLOTS ===== */}
-      {step === "slots" && selectedService && selectedDate && (
+      {step === "slots" && selectedServices.length > 0 && selectedDate && (
         <div>
           <button onClick={() => { setStep("date"); setSelectedDate(null); setSlots([]); }}
             className="flex items-center gap-1.5 text-sm text-[#8a7e78] hover:text-[#9b6f6f] mb-5 transition-all active:opacity-70 min-h-[44px]">
@@ -503,7 +561,7 @@ export default function StylistBookingPage() {
             </div>
             <div>
               <p className="text-sm font-medium text-[#5c3a3a]">{formatDateShort(selectedDate)}</p>
-              <p className="text-xs text-[#9b6f6f]">{selectedService.name}</p>
+              <p className="text-xs text-[#9b6f6f]">{selectedServices.map((s) => s.name).join(", ")} · {formatDuration(totalDuration)}</p>
             </div>
           </div>
 
@@ -535,7 +593,7 @@ export default function StylistBookingPage() {
       )}
 
       {/* ===== CONFIRM ===== */}
-      {step === "confirm" && selectedService && selectedDate && selectedSlot && (
+      {step === "confirm" && selectedServices.length > 0 && selectedDate && selectedSlot && (
         <div>
           <button onClick={() => { setStep("slots"); setSelectedSlot(null); }}
             className="flex items-center gap-1.5 text-sm text-[#8a7e78] hover:text-[#9b6f6f] mb-5 transition-all active:opacity-70 min-h-[44px]">
@@ -550,14 +608,28 @@ export default function StylistBookingPage() {
           <div className="bg-white rounded-2xl border border-[#e8e2dc] overflow-hidden mb-5">
             <div className="bg-gradient-to-r from-[#f5ede8] to-[#faf8f5] px-6 py-4 border-b border-[#e8e2dc]">
               <p className="text-xs text-[#c9a96e] uppercase tracking-widest font-medium mb-1">Appointment Details</p>
-              <p className="font-display text-xl text-[#1a1714]">{selectedService.name}</p>
+              <p className="font-display text-xl text-[#1a1714]">{selectedServices.map((s) => s.name).join(", ")}</p>
             </div>
             <div className="px-6 py-5 space-y-4">
+              {selectedServices.length > 1 && (
+                <div className="space-y-1.5 pb-3 border-b border-[#f0ebe6]">
+                  {selectedServices.map((svc) => (
+                    <div key={svc.id} className="flex items-center justify-between text-sm">
+                      <span className="text-[#5c4a42]">{svc.name}</span>
+                      <span className="text-xs text-[#8a7e78]">
+                        {formatDuration(svc.duration_minutes)}
+                        {svc.internal_price_cents ? ` · ${formatPrice(svc.internal_price_cents)}` : ""}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
               {[
                 { label: "Date", value: formatDate(selectedDate), icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" },
                 { label: "Time", value: formatTime(selectedSlot.start_at), icon: "M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" },
-                { label: "Duration", value: formatDuration(selectedService.duration_minutes), icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" },
+                { label: "Total Duration", value: formatDuration(totalDuration), icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" },
                 { label: "Stylist", value: stylist.name, icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" },
+                ...(totalPrice > 0 ? [{ label: "Total", value: formatPrice(totalPrice), icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" }] : []),
               ].map((row) => (
                 <div key={row.label} className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-[#f5ede8] flex items-center justify-center text-[#9b6f6f] flex-shrink-0">

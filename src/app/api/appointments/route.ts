@@ -10,10 +10,13 @@ const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
 
 const PostAppointmentSchema = z.object({
   stylist_id: z.string().regex(uuidRegex, "stylist_id must be a valid UUID"),
-  service_id: z.string().regex(uuidRegex, "service_id must be a valid UUID"),
+  service_id: z.string().regex(uuidRegex, "service_id must be a valid UUID").optional(),
+  service_ids: z.array(z.string().regex(uuidRegex, "each service_id must be a valid UUID")).min(1).optional(),
   start_at: z.string().datetime({ message: "start_at must be a valid ISO date" }),
   end_at: z.string().datetime({ message: "end_at must be a valid ISO date" }),
   client_notes: z.string().max(500, "client_notes max 500 characters").optional(),
+}).refine((d) => d.service_id || d.service_ids, {
+  message: "service_id or service_ids is required",
 });
 
 export async function GET() {
@@ -74,20 +77,24 @@ export async function POST(request: Request) {
     );
   }
 
-  const { stylist_id, service_id, start_at, end_at, client_notes } = parsed.data;
+  const { stylist_id, service_id, service_ids, start_at, end_at, client_notes } = parsed.data;
 
+  // Resolve the list of service IDs (support both single and multi)
+  const resolvedServiceIds = service_ids ?? [service_id!];
+  const primaryServiceId = resolvedServiceIds[0]!;
 
-
-  // Verify service belongs to stylist and is active
-  const { data: service } = await supabase
+  // Verify all services belong to stylist and are active
+  const { data: services } = await supabase
     .from("services")
     .select("id, name, is_active")
-    .eq("id", service_id)
-    .eq("stylist_id", stylist_id)
-    .single();
+    .in("id", resolvedServiceIds)
+    .eq("stylist_id", stylist_id);
 
-  if (!service || !service.is_active) {
-    return NextResponse.json({ error: "Invalid service" }, { status: 400 });
+  if (!services || services.length !== resolvedServiceIds.length) {
+    return NextResponse.json({ error: "One or more services not found" }, { status: 400 });
+  }
+  if (services.some((s) => !s.is_active)) {
+    return NextResponse.json({ error: "One or more services are inactive" }, { status: 400 });
   }
 
   // Check for conflicts
@@ -111,7 +118,7 @@ export async function POST(request: Request) {
     .insert({
       client_id: user.id,
       stylist_id,
-      service_id,
+      service_id: primaryServiceId,
       start_at,
       end_at,
       status: "pending",
@@ -121,12 +128,35 @@ export async function POST(request: Request) {
     .single();
 
   if (error) {
-    console.error("[api/appointments POST]", { error: error.message, userId: user.id, stylist_id, service_id });
+    console.error("[api/appointments POST]", { error: error.message, userId: user.id, stylist_id, service_ids: resolvedServiceIds });
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  // Insert into appointment_services junction table (if table exists)
+  // TODO: Run migration to create appointment_services table:
+  //   CREATE TABLE IF NOT EXISTS appointment_services (
+  //     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  //     appointment_id uuid REFERENCES appointments(id) ON DELETE CASCADE,
+  //     service_id uuid REFERENCES services(id),
+  //     created_at timestamptz DEFAULT now()
+  //   );
+  if (appointment) {
+    try {
+      const rows = resolvedServiceIds.map((sid) => ({
+        appointment_id: appointment.id,
+        service_id: sid,
+      }));
+      await supabase.from("appointment_services").insert(rows);
+    } catch {
+      // Table may not exist yet — gracefully ignore
+      console.warn("[api/appointments POST] appointment_services insert skipped (table may not exist)");
+    }
   }
 
   // Send emails non-blocking
   if (appointment) {
+    const serviceNames = services.map((s) => s.name).join(", ");
+
     const [stylistResult, clientResult] = await Promise.allSettled([
       supabase.from("stylists").select("name, cancellation_policy").eq("id", stylist_id).single(),
       supabase.from("profiles").select("full_name").eq("id", user.id).single(),
@@ -141,7 +171,7 @@ export async function POST(request: Request) {
         clientName: clientData?.full_name ?? null,
         stylistName: stylistData.name,
         stylistEmail: process.env.STYLIST_NOTIFICATION_EMAIL ?? "kerichoplin@gmail.com",
-        serviceName: (service as { id: string; name: string; is_active: boolean }).name,
+        serviceName: serviceNames,
         startAt: appointment.start_at,
         endAt: appointment.end_at,
         clientNotes: client_notes?.trim() || null,

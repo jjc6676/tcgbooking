@@ -19,7 +19,7 @@ export async function GET(
 
   const { data: services, error: svcError } = await supabase
     .from("services")
-    .select("id, stylist_id, name, duration_minutes, is_active")
+    .select("id, stylist_id, name, duration_minutes, internal_price_cents, is_active")
     .eq("stylist_id", params.id)
     .eq("is_active", true)
     .order("name");

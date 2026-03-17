@@ -23,10 +23,11 @@ export async function GET(
   const { searchParams } = new URL(request.url);
   const dateStr = searchParams.get("date"); // YYYY-MM-DD
   const serviceId = searchParams.get("serviceId");
+  const serviceIds = searchParams.get("serviceIds"); // comma-separated
 
-  if (!dateStr || !serviceId) {
+  if (!dateStr || (!serviceId && !serviceIds)) {
     return NextResponse.json(
-      { error: "date and serviceId are required" },
+      { error: "date and serviceId (or serviceIds) are required" },
       { status: 400 }
     );
   }
@@ -38,19 +39,40 @@ export async function GET(
 
   const supabase = await createClient();
 
-  // Get service duration (no price exposed)
-  const { data: service, error: svcErr } = await supabase
-    .from("services")
-    .select("id, duration_minutes, is_active")
-    .eq("id", serviceId)
-    .eq("stylist_id", params.id)
-    .single();
+  // Get service duration(s)
+  let duration: number;
 
-  if (svcErr || !service || !service.is_active) {
-    return NextResponse.json({ error: "Service not found" }, { status: 404 });
+  if (serviceIds) {
+    const ids = serviceIds.split(",").map((s) => s.trim()).filter(Boolean);
+    if (ids.length === 0) {
+      return NextResponse.json({ error: "serviceIds must not be empty" }, { status: 400 });
+    }
+    const { data: services, error: svcErr } = await supabase
+      .from("services")
+      .select("id, duration_minutes, is_active")
+      .in("id", ids)
+      .eq("stylist_id", params.id);
+
+    if (svcErr || !services || services.length !== ids.length) {
+      return NextResponse.json({ error: "One or more services not found" }, { status: 404 });
+    }
+    if (services.some((s) => !s.is_active)) {
+      return NextResponse.json({ error: "One or more services are inactive" }, { status: 400 });
+    }
+    duration = services.reduce((sum, s) => sum + (s.duration_minutes as number), 0);
+  } else {
+    const { data: service, error: svcErr } = await supabase
+      .from("services")
+      .select("id, duration_minutes, is_active")
+      .eq("id", serviceId!)
+      .eq("stylist_id", params.id)
+      .single();
+
+    if (svcErr || !service || !service.is_active) {
+      return NextResponse.json({ error: "Service not found" }, { status: 404 });
+    }
+    duration = service.duration_minutes as number;
   }
-
-  const duration = service.duration_minutes as number;
 
   // Day of week: 0 = Sunday
   const dateParts = dateStr.split("-").map(Number);

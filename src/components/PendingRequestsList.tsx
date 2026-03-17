@@ -4,12 +4,35 @@ import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/Toast";
 
+interface ServiceInfo {
+  id: string;
+  name: string;
+  duration_minutes: number;
+}
+
 interface PendingAppt {
   id: string;
   start_at: string;
   client: { id: string; full_name: string | null } | null;
-  service: { id: string; name: string; duration_minutes: number } | null;
+  service: ServiceInfo | null;
+  appointment_services?: Array<{ service_id: string; service: ServiceInfo | null }> | null;
   client_notes?: string | null;
+}
+
+function getAllServices(appt: PendingAppt): ServiceInfo[] {
+  if (appt.appointment_services && appt.appointment_services.length > 0) {
+    return appt.appointment_services.map((as) => as.service).filter((s): s is ServiceInfo => s !== null);
+  }
+  return appt.service ? [appt.service] : [];
+}
+
+function allServiceNames(appt: PendingAppt): string {
+  const svcs = getAllServices(appt);
+  return svcs.length > 0 ? svcs.map((s) => s.name).join(", ") : "Service";
+}
+
+function allServiceDuration(appt: PendingAppt): number {
+  return getAllServices(appt).reduce((sum, s) => sum + s.duration_minutes, 0);
 }
 
 interface Props {
@@ -133,13 +156,13 @@ function SwipeableCard({ appt, onAction, error, confirmingDecline, onRequestDecl
             <p className="font-bold text-[#1a1714] text-base leading-tight truncate">
               {appt.client?.full_name ?? "Guest"}
             </p>
-            <p className="text-sm text-[#5c4a42] mt-0.5">{appt.service?.name}</p>
+            <p className="text-sm text-[#5c4a42] mt-0.5">{allServiceNames(appt)}</p>
           </div>
           <div className="flex-shrink-0 text-right">
             <p className="text-sm font-semibold text-[#c9a96e]">{formatDate(appt.start_at)}</p>
             <p className="text-xs text-[#8a7e78] mt-0.5">
               {formatTime(appt.start_at)}
-              {appt.service ? ` · ${formatDuration(appt.service.duration_minutes)}` : ""}
+              {allServiceDuration(appt) > 0 ? ` · ${formatDuration(allServiceDuration(appt))}` : ""}
             </p>
           </div>
         </div>
