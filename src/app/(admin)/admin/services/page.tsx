@@ -275,7 +275,7 @@ export default function ServicesPage() {
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
                             placeholder="Service name"
-                            className="w-full border border-[#e8e2dc] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-white"
+                            className="w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-white"
                           />
                         </div>
                         <input
@@ -284,7 +284,7 @@ export default function ServicesPage() {
                           onChange={(e) => setEditDuration(e.target.value)}
                           placeholder="Min"
                           min={1}
-                          className="border border-[#e8e2dc] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-white"
+                          className="border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-white"
                         />
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#8a7e78]">$</span>
@@ -294,7 +294,7 @@ export default function ServicesPage() {
                             onChange={(e) => setEditPrice(e.target.value)}
                             placeholder="Price"
                             step="1" min={0}
-                            className="w-full border border-[#e8e2dc] rounded-xl pl-6 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-white"
+                            className="w-full border border-[#e8e2dc] rounded-xl pl-6 pr-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-white"
                           />
                         </div>
                       </div>
@@ -302,13 +302,13 @@ export default function ServicesPage() {
                         <button
                           onClick={() => handleEdit(s.id)}
                           disabled={submitting}
-                          className="px-4 py-1.5 bg-[#9b6f6f] text-white text-xs font-semibold rounded-full hover:bg-[#8a5f5f] disabled:opacity-50"
+                          className="px-4 py-2 bg-[#9b6f6f] text-white text-xs font-semibold rounded-full hover:bg-[#8a5f5f] disabled:opacity-50 active:scale-95 transition-all min-h-[44px]"
                         >
                           Save
                         </button>
                         <button
                           onClick={() => setEditId(null)}
-                          className="px-4 py-1.5 border border-[#e8e2dc] text-xs text-[#8a7e78] rounded-full hover:bg-white"
+                          className="px-4 py-2 border border-[#e8e2dc] text-xs text-[#8a7e78] rounded-full hover:bg-white active:scale-95 transition-all min-h-[44px]"
                         >
                           Cancel
                         </button>
@@ -333,22 +333,22 @@ export default function ServicesPage() {
                       <span className="text-sm font-semibold text-[#4a7c59] flex-shrink-0">
                         ${centsToDisplay(s.internal_price_cents)}
                       </span>
-                      <div className="flex items-center gap-3 ml-2 flex-shrink-0">
+                      <div className="flex items-center gap-1 ml-2 flex-shrink-0">
                         <button
                           onClick={() => startEdit(s)}
-                          className="text-xs text-[#9b6f6f] hover:text-[#8a5f5f] font-medium"
+                          className="text-xs text-[#9b6f6f] hover:text-[#8a5f5f] font-medium min-h-[44px] min-w-[44px] flex items-center justify-center active:opacity-70 transition-all"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => handleToggleActive(s)}
-                          className="text-xs text-[#8a7e78] hover:text-[#5c4a42]"
+                          className="text-xs text-[#8a7e78] hover:text-[#5c4a42] min-h-[44px] min-w-[44px] flex items-center justify-center active:opacity-70 transition-all"
                         >
                           {s.is_active ? "Hide" : "Show"}
                         </button>
                         <button
                           onClick={() => handleDelete(s.id, s.name)}
-                          className="text-xs text-[#8a7e78] hover:text-red-600"
+                          className="text-xs text-[#8a7e78] hover:text-red-600 min-h-[44px] min-w-[44px] flex items-center justify-center active:opacity-70 transition-all"
                         >
                           Delete
                         </button>

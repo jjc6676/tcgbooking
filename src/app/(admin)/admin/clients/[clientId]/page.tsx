@@ -156,7 +156,7 @@ export default function ClientDetailPage({ params }: { params: { clientId: strin
     return (
       <div className="text-center py-12">
         <p className="text-[#8a7e78]">Client not found.</p>
-        <Link href="/admin/clients" className="text-sm text-[#9b6f6f] mt-2 inline-block hover:underline">
+        <Link href="/admin/clients" className="text-sm text-[#9b6f6f] mt-2 inline-flex items-center hover:underline min-h-[44px]">
           ← Back to clients
         </Link>
       </div>
@@ -225,13 +225,13 @@ export default function ClientDetailPage({ params }: { params: { clientId: strin
                 <button
                   onClick={sendRebook}
                   disabled={rebookSending || !rebookMessage}
-                  className="flex-1 py-2.5 bg-[#9b6f6f] text-white text-sm font-semibold rounded-full hover:bg-[#8a5f5f] disabled:opacity-50 transition-all"
+                  className="flex-1 py-2.5 bg-[#9b6f6f] text-white text-sm font-semibold rounded-full hover:bg-[#8a5f5f] disabled:opacity-50 transition-all active:scale-95 min-h-[44px]"
                 >
                   {rebookSending ? "Sending…" : "Send Reminder"}
                 </button>
                 <button
                   onClick={() => setShowRebook(false)}
-                  className="px-5 py-2.5 border border-[#e8e2dc] text-sm text-[#8a7e78] font-medium rounded-full hover:bg-[#f5f0eb] transition-colors"
+                  className="px-5 py-2.5 border border-[#e8e2dc] text-sm text-[#8a7e78] font-medium rounded-full hover:bg-[#f5f0eb] transition-all active:scale-95 min-h-[44px]"
                 >
                   Cancel
                 </button>
@@ -243,7 +243,7 @@ export default function ClientDetailPage({ params }: { params: { clientId: strin
 
       <div className="max-w-2xl">
         <div className="mb-5">
-          <Link href="/admin/clients" className="text-xs text-[#8a7e78] hover:text-[#9b6f6f] inline-flex items-center gap-1 mb-3 transition-colors">
+          <Link href="/admin/clients" className="text-xs text-[#8a7e78] hover:text-[#9b6f6f] inline-flex items-center gap-1 mb-3 transition-all min-h-[44px]">
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
@@ -266,7 +266,7 @@ export default function ClientDetailPage({ params }: { params: { clientId: strin
             </div>
             <button
               onClick={() => setShowRebook(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#9b6f6f] text-white text-sm font-medium rounded-full hover:bg-[#8a5f5f] transition-colors flex-shrink-0"
+              className="flex items-center gap-2 px-4 py-2.5 bg-[#9b6f6f] text-white text-sm font-medium rounded-full hover:bg-[#8a5f5f] transition-all active:scale-95 flex-shrink-0 min-h-[44px]"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -310,7 +310,7 @@ export default function ClientDetailPage({ params }: { params: { clientId: strin
               <button
                 onClick={saveNotes}
                 disabled={notesSaving}
-                className="text-xs px-3 py-1.5 bg-[#9b6f6f] text-white rounded-full hover:bg-[#8a5f5f] disabled:opacity-50 transition-colors"
+                className="text-xs px-4 py-2 bg-[#9b6f6f] text-white rounded-full hover:bg-[#8a5f5f] disabled:opacity-50 transition-all active:scale-95 min-h-[44px]"
               >
                 {notesSaving ? "Saving…" : "Save"}
               </button>

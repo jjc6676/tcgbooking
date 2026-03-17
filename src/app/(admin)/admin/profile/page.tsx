@@ -130,7 +130,7 @@ export default function ProfilePage() {
           <p className="text-xs text-[#8a7e78] flex-1 truncate font-mono">{bookingUrl}</p>
           <button
             onClick={copyBookingUrl}
-            className="flex items-center gap-1.5 text-xs font-semibold text-[#9b6f6f] hover:text-[#8a5f5f] transition-colors flex-shrink-0"
+            className="flex items-center gap-1.5 text-xs font-semibold text-[#9b6f6f] hover:text-[#8a5f5f] transition-all active:scale-95 flex-shrink-0 min-h-[44px]"
           >
             {copied ? (
               <>
@@ -163,7 +163,7 @@ export default function ProfilePage() {
             onChange={(e) => setName(e.target.value)}
             required
             placeholder="e.g. Keri Choplin"
-            className="w-full border border-[#e8e2dc] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7] min-h-[44px]"
+            className="w-full border border-[#e8e2dc] rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7] min-h-[44px]"
           />
         </div>
 
@@ -181,6 +181,7 @@ export default function ProfilePage() {
             rows={4}
             placeholder="Tell clients about your style, specialties, and experience…"
             className="w-full border border-[#e8e2dc] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7] resize-none leading-relaxed"
+            style={{ fontSize: 16 }}
           />
           {bio && (
             <div className="mt-2 p-3 bg-[#faf8f5] rounded-xl border border-[#e8e2dc]">
@@ -198,7 +199,7 @@ export default function ProfilePage() {
             value={avatarUrl}
             onChange={(e) => setAvatarUrl(e.target.value)}
             placeholder="https://example.com/your-photo.jpg"
-            className="w-full border border-[#e8e2dc] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7] min-h-[44px]"
+            className="w-full border border-[#e8e2dc] rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7] min-h-[44px]"
           />
           <p className="text-xs text-[#8a7e78] mt-1.5">Paste a link to a professional photo. Shown as a circle.</p>
         </div>
@@ -211,7 +212,7 @@ export default function ProfilePage() {
             value={cancellationPolicy}
             onChange={(e) => setCancellationPolicy(e.target.value)}
             placeholder="e.g. 24-hour cancellation notice required"
-            className="w-full border border-[#e8e2dc] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7] min-h-[44px]"
+            className="w-full border border-[#e8e2dc] rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7] min-h-[44px]"
           />
           <p className="text-xs text-[#8a7e78] mt-1.5">Shown to clients on the booking confirmation screen.</p>
         </div>

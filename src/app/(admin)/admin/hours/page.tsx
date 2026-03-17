@@ -247,7 +247,7 @@ function InlineDayEditor({
           )}
           <button
             onClick={onClose}
-            className="p-1.5 text-[#8a7e78] hover:text-[#1a1714] rounded-full hover:bg-[#f5f0eb] transition-colors"
+            className="p-2.5 text-[#8a7e78] hover:text-[#1a1714] rounded-full hover:bg-[#f5f0eb] transition-all active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center"
             aria-label="Close editor"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -261,7 +261,7 @@ function InlineDayEditor({
       <div className="flex gap-2 mb-4">
         <button
           onClick={() => setIsOpen(true)}
-          className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
+          className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-all active:scale-95 min-h-[44px] ${
             isOpen ? "bg-[#9b6f6f] text-white border-[#9b6f6f]" : "bg-white text-[#8a7e78] border-[#e8e2dc] hover:bg-[#f5f0eb]"
           }`}
         >
@@ -269,7 +269,7 @@ function InlineDayEditor({
         </button>
         <button
           onClick={() => setIsOpen(false)}
-          className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
+          className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-all active:scale-95 min-h-[44px] ${
             !isOpen ? "bg-[#1a1714] text-white border-[#1a1714]" : "bg-white text-[#8a7e78] border-[#e8e2dc] hover:bg-[#f5f0eb]"
           }`}
         >
@@ -307,7 +307,7 @@ function InlineDayEditor({
       <button
         onClick={handleSave}
         disabled={saving}
-        className="w-full py-3 bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold rounded-full disabled:opacity-50 transition-all"
+        className="w-full py-3 bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold rounded-full disabled:opacity-50 transition-all active:scale-[0.98] min-h-[48px]"
       >
         {saving ? "Saving…" : "Save"}
       </button>
@@ -318,7 +318,7 @@ function InlineDayEditor({
           <button
             onClick={handleDelete}
             disabled={deleting}
-            className="text-xs text-[#8a7e78] hover:text-red-500 underline transition-colors disabled:opacity-50"
+            className="text-xs text-[#8a7e78] hover:text-red-500 underline transition-all disabled:opacity-50 min-h-[44px] inline-flex items-center"
           >
             {deleting ? "Clearing…" : "Clear override"}
           </button>
@@ -607,7 +607,7 @@ export default function HoursPage() {
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={prevMonth}
-            className="p-2 rounded-full hover:bg-[#f5f0eb] transition-colors text-[#8a7e78]"
+            className="p-2.5 rounded-full hover:bg-[#f5f0eb] transition-all active:scale-95 text-[#8a7e78] min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -618,7 +618,7 @@ export default function HoursPage() {
           </p>
           <button
             onClick={nextMonth}
-            className="p-2 rounded-full hover:bg-[#f5f0eb] transition-colors text-[#8a7e78]"
+            className="p-2.5 rounded-full hover:bg-[#f5f0eb] transition-all active:scale-95 text-[#8a7e78] min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

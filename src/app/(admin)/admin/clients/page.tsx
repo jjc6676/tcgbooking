@@ -161,7 +161,7 @@ export default function ClientsPage() {
               <button
                 onClick={loadMore}
                 disabled={loadingMore}
-                className="px-6 py-2.5 border border-[#e8e2dc] bg-white text-sm font-medium text-[#1a1714] rounded-full hover:bg-[#f5f0eb] disabled:opacity-50 transition-colors"
+                className="px-6 py-2.5 border border-[#e8e2dc] bg-white text-sm font-medium text-[#1a1714] rounded-full hover:bg-[#f5f0eb] disabled:opacity-50 transition-all active:scale-95 min-h-[44px]"
               >
                 {loadingMore ? (
                   <span className="flex items-center gap-2">

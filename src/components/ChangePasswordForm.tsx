@@ -82,7 +82,7 @@ export function ChangePasswordForm({ email }: ChangePasswordFormProps) {
             onChange={(e) => setCurrentPassword(e.target.value)}
             placeholder="Your current password"
             autoComplete="current-password"
-            className="w-full border border-[#e8e2dc] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7] min-h-[44px]"
+            className="w-full border border-[#e8e2dc] rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7] min-h-[44px]"
           />
         </div>
         <div>
@@ -94,7 +94,7 @@ export function ChangePasswordForm({ email }: ChangePasswordFormProps) {
             placeholder="Min 8 characters"
             autoComplete="new-password"
             minLength={8}
-            className="w-full border border-[#e8e2dc] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7] min-h-[44px]"
+            className="w-full border border-[#e8e2dc] rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7] min-h-[44px]"
           />
         </div>
         <div>
@@ -105,7 +105,7 @@ export function ChangePasswordForm({ email }: ChangePasswordFormProps) {
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="Repeat new password"
             autoComplete="new-password"
-            className="w-full border border-[#e8e2dc] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7] min-h-[44px]"
+            className="w-full border border-[#e8e2dc] rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7] min-h-[44px]"
           />
         </div>
 
