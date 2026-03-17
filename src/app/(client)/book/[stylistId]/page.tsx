@@ -112,6 +112,7 @@ export default function StylistBookingPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const stylistId = params.stylistId as string;
+  // serviceId param kept for rebooking emails but no longer auto-skips step 1
   const preselectedServiceId = searchParams.get("serviceId");
 
   const [stylist, setStylist] = useState<PublicStylist | null>(null);
@@ -138,9 +139,10 @@ export default function StylistBookingPage() {
         if (data.error) setError(data.error);
         else {
           setStylist(data.stylist);
+          // serviceId param pre-selects but stays on step 1 for multi-select
           if (preselectedServiceId && data.stylist?.services) {
             const svc = data.stylist.services.find((s: PublicService) => s.id === preselectedServiceId);
-            if (svc) { setSelectedServices([svc]); setStep("date"); }
+            if (svc) { setSelectedServices([svc]); }
           }
         }
       })

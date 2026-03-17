@@ -133,7 +133,7 @@ function BookContent() {
           {stylist.services.map((svc) => (
             <Link
               key={svc.id}
-              href={`/book/${stylist.id}?serviceId=${svc.id}`}
+              href={`/book/${stylist.id}`}
               className="group flex items-center justify-between bg-white rounded-2xl border border-[#e8e2dc] px-5 py-4 hover:border-[#9b6f6f] hover:shadow-sm active:scale-[0.99] transition-all min-h-[64px]"
             >
               <div className="min-w-0 pr-3">
@@ -192,7 +192,7 @@ function BookContent() {
             {stylist.services.map((svc) => (
               <Link
                 key={svc.id}
-                href={`/book/${stylist.id}?serviceId=${svc.id}`}
+                href={`/book/${stylist.id}`}
                 className="group flex items-center justify-between bg-white rounded-2xl border border-[#e8e2dc] px-5 py-4 hover:border-[#9b6f6f] hover:shadow-sm active:scale-[0.99] transition-all min-h-[64px]"
               >
                 <div className="min-w-0 pr-3">
