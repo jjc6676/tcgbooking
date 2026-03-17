@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { OperationalHour } from "@/lib/supabase/types";
+import { useToast } from "@/components/Toast";
 
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const DAY_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -24,6 +25,7 @@ export default function HoursPage() {
   const [closeTime, setCloseTime] = useState("18:00");
   const [showForm, setShowForm] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => { loadHours(); }, []);
 
@@ -48,8 +50,10 @@ export default function HoursPage() {
       const data = await res.json();
       if (!res.ok) {
         setMessage({ type: "error", text: data.error ?? "Failed to save" });
+        toast(data.error ?? "Failed to save", "error");
       } else {
         setMessage({ type: "success", text: `${DAYS[day]} hours saved.` });
+        toast(`${DAYS[day]} hours saved ✓`, "success");
         setShowForm(false);
         await loadHours();
       }

@@ -57,20 +57,59 @@ export async function GET(
   const dateObj = new Date(Date.UTC(dateParts[0]!, dateParts[1]! - 1, dateParts[2]!));
   const dayOfWeek = dateObj.getUTCDay();
 
-  // Operational hours for that day
-  const { data: hours } = await supabase
+  // ── 1. Default operational hours for the day ──────────────────────────────
+  const { data: defaultHours } = await supabase
     .from("operational_hours")
     .select("open_time, close_time")
     .eq("stylist_id", params.id)
     .eq("day_of_week", dayOfWeek)
     .single();
 
-  if (!hours) {
-    return NextResponse.json({ slots: [] });
+  // ── 2. Fetch overrides covering this date + day_of_week ───────────────────
+  // An override applies if:
+  //   effective_from <= dateStr <= effective_until
+  //   AND (day_of_week = requested day OR day_of_week IS NULL)
+  const { data: overrideRows } = await supabase
+    .from("operational_hours_overrides")
+    .select("*")
+    .eq("stylist_id", params.id)
+    .lte("effective_from", dateStr)
+    .gte("effective_until", dateStr)
+    .or(`day_of_week.eq.${dayOfWeek},day_of_week.is.null`);
+
+  // Pick the most specific override (day_of_week match wins over null/all-days)
+  let activeOverride: {
+    is_closed: boolean;
+    open_time: string | null;
+    close_time: string | null;
+  } | null = null;
+
+  if (overrideRows && overrideRows.length > 0) {
+    // Prefer a day-specific override; fall back to all-day override
+    const specific = overrideRows.find(
+      (r) => r.day_of_week === dayOfWeek
+    );
+    activeOverride = specific ?? overrideRows[0]!;
   }
 
-  const openMin = parseTime(hours.open_time as string);
-  const closeMin = parseTime(hours.close_time as string);
+  // ── 3. Resolve effective hours ────────────────────────────────────────────
+  let openMin: number;
+  let closeMin: number;
+
+  if (activeOverride) {
+    if (activeOverride.is_closed || !activeOverride.open_time || !activeOverride.close_time) {
+      // Closed by override
+      return NextResponse.json({ slots: [] });
+    }
+    openMin = parseTime(activeOverride.open_time);
+    closeMin = parseTime(activeOverride.close_time);
+  } else if (defaultHours) {
+    openMin = parseTime(defaultHours.open_time as string);
+    closeMin = parseTime(defaultHours.close_time as string);
+  } else {
+    // No hours defined at all
+    return NextResponse.json({ slots: [] });
+  }
 
   // Generate candidate slots (every 30 min)
   const slotInterval = 30;

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import AdminSignOutButton from "@/components/AdminSignOutButton";
 import AdminBottomNav from "@/components/AdminBottomNav";
+import { ToastProvider } from "@/components/Toast";
 
 const NAV_ITEMS = [
   {
@@ -85,6 +86,7 @@ export default async function AdminLayout({
   const pendingCount = await getPendingCount();
 
   return (
+    <ToastProvider>
     <div className="min-h-screen bg-[#faf8f5]">
       {/* Mobile top bar */}
       <div className="lg:hidden flex items-center justify-between px-4 py-3.5 bg-white border-b border-[#e8e2dc] sticky top-0 z-40">
@@ -174,5 +176,6 @@ export default async function AdminLayout({
       {/* Mobile bottom tab nav */}
       <AdminBottomNav pendingCount={pendingCount} />
     </div>
+    </ToastProvider>
   );
 }

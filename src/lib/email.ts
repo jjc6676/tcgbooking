@@ -9,8 +9,20 @@ interface BookingConfirmationData {
   stylistName: string;
   stylistEmail: string;
   serviceName: string;
-  startAt: string; // ISO string
+  startAt: string;
   endAt: string;
+  clientNotes?: string | null;
+  cancellationPolicy?: string | null;
+}
+
+interface StatusUpdateData {
+  clientEmail: string;
+  clientName: string | null;
+  stylistName: string;
+  serviceName: string;
+  startAt: string;
+  status: "confirmed" | "cancelled";
+  bookingUrl: string;
 }
 
 function formatDateTime(iso: string): string {
@@ -21,15 +33,28 @@ function formatDateTime(iso: string): string {
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-    timeZone: "UTC",
+    timeZone: "America/Chicago",
+  }) + " CDT";
+}
+
+function googleCalendarUrl(title: string, startAt: string, endAt: string, description: string): string {
+  const fmt = (iso: string) =>
+    new Date(iso).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: title,
+    dates: `${fmt(startAt)}/${fmt(endAt)}`,
+    details: description,
+    location: "Keri Choplin Hair Studio, Lafayette, Louisiana",
   });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 
 async function sendEmail(to: string, subject: string, html: string): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return; // silently skip if not configured
+  if (!apiKey) return;
 
-  const fromEmail = process.env.RESEND_FROM_EMAIL ?? "onboarding@resend.dev";
+  const fromEmail = process.env.RESEND_FROM_EMAIL ?? "hello@kerichoplinhair.com";
 
   await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -37,80 +62,81 @@ async function sendEmail(to: string, subject: string, html: string): Promise<voi
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ from: fromEmail, to, subject, html }),
+    body: JSON.stringify({ from: `Keri Choplin Hair <${fromEmail}>`, to, subject, html }),
   });
 }
 
-export async function sendBookingConfirmation(data: BookingConfirmationData): Promise<void> {
-  const {
-    clientEmail,
-    clientName,
-    stylistName,
-    stylistEmail,
-    serviceName,
-    startAt,
-  } = data;
+const baseStyle = `font-family:Georgia,serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#faf8f5`;
+const cardStyle = `background:#ffffff;border:1px solid #e8e2dc;border-radius:16px;padding:20px;margin-bottom:20px`;
+const rowStyle = `width:100%;font-size:14px;font-family:sans-serif;border-collapse:collapse`;
+const tdLabelStyle = `color:#8a7e78;padding:8px 0;border-bottom:1px solid #f5f0eb`;
+const tdValueStyle = `font-weight:600;text-align:right;color:#1a1714;padding:8px 0;border-bottom:1px solid #f5f0eb`;
+const tdLabelLastStyle = `color:#8a7e78;padding:8px 0`;
+const tdValueLastStyle = `font-weight:600;text-align:right;color:#1a1714;padding:8px 0`;
 
+function monogram() {
+  return `<div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#f5ede8,#e8d8d0);display:inline-flex;align-items:center;justify-content:center;border:2px solid #e8e2dc;margin-bottom:12px"><span style="font-size:24px;color:#9b6f6f;font-weight:600;font-family:Georgia,serif">K</span></div>`;
+}
+
+export async function sendBookingConfirmation(data: BookingConfirmationData): Promise<void> {
+  const { clientEmail, clientName, stylistName, stylistEmail, serviceName, startAt, endAt, clientNotes, cancellationPolicy } = data;
   const dateTime = formatDateTime(startAt);
   const displayName = clientName ?? clientEmail;
+  const calUrl = googleCalendarUrl(
+    `${serviceName} with ${stylistName}`,
+    startAt,
+    endAt,
+    `Your appointment with ${stylistName} at Keri Choplin Hair Studio.`
+  );
 
-  // Email to client
+  const policyRow = cancellationPolicy
+    ? `<tr><td style="${tdLabelStyle}">Policy</td><td style="${tdValueStyle}">${cancellationPolicy}</td></tr>`
+    : "";
+  const notesRow = clientNotes
+    ? `<tr><td style="${tdLabelLastStyle}">Your note</td><td style="${tdValueLastStyle}">${clientNotes}</td></tr>`
+    : "";
+
   const clientHtml = `
-    <div style="font-family:Georgia,serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#faf8f5">
+    <div style="${baseStyle}">
       <div style="text-align:center;margin-bottom:24px">
-        <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#f5ede8,#e8d8d0);display:inline-flex;align-items:center;justify-content:center;border:2px solid #e8e2dc;margin-bottom:12px">
-          <span style="font-size:24px;color:#9b6f6f;font-weight:600">K</span>
-        </div>
-        <h2 style="margin:0;font-size:22px;color:#1a1714;font-family:Georgia,serif">Request Received ✨</h2>
-        <p style="margin:4px 0 0;font-size:13px;color:#8a7e78;font-family:sans-serif">Hi ${displayName}, your request has been sent to Keri!</p>
+        ${monogram()}
+        <h2 style="margin:0;font-size:22px;color:#1a1714;font-family:Georgia,serif">Request Sent ✨</h2>
+        <p style="margin:4px 0 0;font-size:13px;color:#8a7e78;font-family:sans-serif">Hi ${displayName}, Keri got your request!</p>
       </div>
-      <div style="background:#ffffff;border:1px solid #e8e2dc;border-radius:16px;padding:20px;margin-bottom:20px">
-        <table style="width:100%;font-size:14px;font-family:sans-serif;border-collapse:collapse">
-          <tr>
-            <td style="color:#8a7e78;padding:8px 0;border-bottom:1px solid #f5f0eb">Stylist</td>
-            <td style="font-weight:600;text-align:right;color:#1a1714;padding:8px 0;border-bottom:1px solid #f5f0eb">${stylistName}</td>
-          </tr>
-          <tr>
-            <td style="color:#8a7e78;padding:8px 0;border-bottom:1px solid #f5f0eb">Service</td>
-            <td style="font-weight:600;text-align:right;color:#1a1714;padding:8px 0;border-bottom:1px solid #f5f0eb">${serviceName}</td>
-          </tr>
-          <tr>
-            <td style="color:#8a7e78;padding:8px 0">Date &amp; Time</td>
-            <td style="font-weight:600;text-align:right;color:#1a1714;padding:8px 0">${dateTime}</td>
-          </tr>
+      <div style="${cardStyle}">
+        <table style="${rowStyle}">
+          <tr><td style="${tdLabelStyle}">Stylist</td><td style="${tdValueStyle}">${stylistName}</td></tr>
+          <tr><td style="${tdLabelStyle}">Service</td><td style="${tdValueStyle}">${serviceName}</td></tr>
+          <tr><td style="${tdLabelStyle}">Date &amp; Time</td><td style="${tdValueStyle}">${dateTime}</td></tr>
+          ${policyRow}
+          ${notesRow}
         </table>
       </div>
+      <div style="text-align:center;margin-bottom:16px">
+        <a href="${calUrl}" style="display:inline-block;background:#f5ede8;color:#9b6f6f;text-decoration:none;padding:10px 22px;border-radius:50px;font-family:sans-serif;font-size:13px;font-weight:600;border:1px solid #e8d8d0">
+          📅 Add to Google Calendar
+        </a>
+      </div>
       <p style="text-align:center;font-size:13px;color:#8a7e78;font-family:sans-serif;margin:0 0 8px">
-        Keri will review and confirm your appointment shortly. Need to cancel? Contact Keri directly.
+        Keri will review and confirm shortly. Need to change plans? <a href="mailto:kerichoplin@gmail.com" style="color:#9b6f6f">Contact Keri</a>
       </p>
       <p style="text-align:center;margin-top:20px;font-size:12px;color:#8a7e78;font-family:sans-serif">Keri Choplin Hair Studio · Lafayette, Louisiana</p>
-    </div>
-  `;
+    </div>`;
 
-  // Email to stylist — styled, actionable
   const stylistHtml = `
-    <div style="font-family:Georgia,serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#faf8f5">
+    <div style="${baseStyle}">
       <div style="text-align:center;margin-bottom:24px">
-        <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#f5ede8,#e8d8d0);display:inline-flex;align-items:center;justify-content:center;border:2px solid #e8e2dc;margin-bottom:12px">
-          <span style="font-size:24px;color:#9b6f6f;font-weight:600">K</span>
-        </div>
+        ${monogram()}
         <h2 style="margin:0;font-size:22px;color:#1a1714;font-family:Georgia,serif">New Booking Request</h2>
-        <p style="margin:4px 0 0;font-size:13px;color:#8a7e78;font-family:sans-serif">You have a new appointment request, Keri!</p>
+        <p style="margin:4px 0 0;font-size:13px;color:#8a7e78;font-family:sans-serif">You have a new request, Keri!</p>
       </div>
-      <div style="background:#ffffff;border:1px solid #e8e2dc;border-radius:16px;padding:20px;margin-bottom:20px">
-        <table style="width:100%;font-size:14px;font-family:sans-serif;border-collapse:collapse">
-          <tr>
-            <td style="color:#8a7e78;padding:8px 0;border-bottom:1px solid #f5f0eb">Client</td>
-            <td style="font-weight:600;text-align:right;color:#1a1714;padding:8px 0;border-bottom:1px solid #f5f0eb">${displayName}</td>
-          </tr>
-          <tr>
-            <td style="color:#8a7e78;padding:8px 0;border-bottom:1px solid #f5f0eb">Service</td>
-            <td style="font-weight:600;text-align:right;color:#1a1714;padding:8px 0;border-bottom:1px solid #f5f0eb">${serviceName}</td>
-          </tr>
-          <tr>
-            <td style="color:#8a7e78;padding:8px 0">Date &amp; Time</td>
-            <td style="font-weight:600;text-align:right;color:#1a1714;padding:8px 0">${dateTime}</td>
-          </tr>
+      <div style="${cardStyle}">
+        <table style="${rowStyle}">
+          <tr><td style="${tdLabelStyle}">Client</td><td style="${tdValueStyle}">${displayName}</td></tr>
+          <tr><td style="${tdLabelStyle}">Email</td><td style="${tdValueStyle}">${clientEmail}</td></tr>
+          <tr><td style="${tdLabelStyle}">Service</td><td style="${tdValueStyle}">${serviceName}</td></tr>
+          <tr><td style="${tdLabelStyle}">Date &amp; Time</td><td style="${tdValueLastStyle}">${dateTime}</td></tr>
+          ${clientNotes ? `<tr><td style="${tdLabelLastStyle}">Client note</td><td style="${tdValueLastStyle}">${clientNotes}</td></tr>` : ""}
         </table>
       </div>
       <div style="text-align:center">
@@ -119,11 +145,77 @@ export async function sendBookingConfirmation(data: BookingConfirmationData): Pr
         </a>
       </div>
       <p style="text-align:center;margin-top:20px;font-size:12px;color:#8a7e78;font-family:sans-serif">Keri Choplin Hair Studio · Lafayette, Louisiana</p>
-    </div>
-  `;
+    </div>`;
 
   await Promise.allSettled([
-    sendEmail(clientEmail, `Your booking with ${stylistName} is confirmed`, clientHtml),
-    sendEmail(stylistEmail, `New booking request from ${displayName} — ${serviceName}`, stylistHtml),
+    sendEmail(clientEmail, `Your booking request with ${stylistName} — pending confirmation`, clientHtml),
+    sendEmail(stylistEmail, `New booking request from ${displayName} — ${serviceName} at ${dateTime}`, stylistHtml),
   ]);
+}
+
+export async function sendStatusUpdateEmail(data: StatusUpdateData): Promise<void> {
+  const { clientEmail, clientName, stylistName, serviceName, startAt, status, bookingUrl } = data;
+  const dateTime = formatDateTime(startAt);
+  const displayName = clientName ?? clientEmail;
+
+  if (status === "confirmed") {
+    const calUrl = googleCalendarUrl(
+      `${serviceName} with ${stylistName}`,
+      startAt,
+      new Date(new Date(startAt).getTime() + 60 * 60 * 1000).toISOString(),
+      `Confirmed appointment with ${stylistName} at Keri Choplin Hair Studio.`
+    );
+
+    const html = `
+      <div style="${baseStyle}">
+        <div style="text-align:center;margin-bottom:24px">
+          ${monogram()}
+          <h2 style="margin:0;font-size:24px;color:#1a1714;font-family:Georgia,serif">You&rsquo;re confirmed! 🎉</h2>
+          <p style="margin:8px 0 0;font-size:14px;color:#8a7e78;font-family:sans-serif">Keri confirmed your appointment, ${displayName}!</p>
+        </div>
+        <div style="${cardStyle}">
+          <table style="${rowStyle}">
+            <tr><td style="${tdLabelStyle}">Service</td><td style="${tdValueStyle}">${serviceName}</td></tr>
+            <tr><td style="${tdLabelStyle}">Date &amp; Time</td><td style="${tdValueLastStyle}">${dateTime}</td></tr>
+          </table>
+        </div>
+        <div style="text-align:center;margin-bottom:16px">
+          <a href="${calUrl}" style="display:inline-block;background:#f5ede8;color:#9b6f6f;text-decoration:none;padding:10px 22px;border-radius:50px;font-family:sans-serif;font-size:13px;font-weight:600;border:1px solid #e8d8d0">
+            📅 Add to Google Calendar
+          </a>
+        </div>
+        <p style="text-align:center;font-size:13px;color:#8a7e78;font-family:sans-serif">
+          See you there! Need to cancel? <a href="mailto:kerichoplin@gmail.com" style="color:#9b6f6f">Contact Keri</a>
+        </p>
+        <p style="text-align:center;margin-top:20px;font-size:12px;color:#8a7e78;font-family:sans-serif">Keri Choplin Hair Studio · Lafayette, Louisiana</p>
+      </div>`;
+
+    await sendEmail(clientEmail, `Keri confirmed your appointment! — ${serviceName}`, html);
+  } else if (status === "cancelled") {
+    const html = `
+      <div style="${baseStyle}">
+        <div style="text-align:center;margin-bottom:24px">
+          ${monogram()}
+          <h2 style="margin:0;font-size:22px;color:#1a1714;font-family:Georgia,serif">Appointment Declined</h2>
+          <p style="margin:8px 0 0;font-size:14px;color:#8a7e78;font-family:sans-serif">Hi ${displayName}, unfortunately Keri can&rsquo;t take this appointment.</p>
+        </div>
+        <div style="${cardStyle}">
+          <table style="${rowStyle}">
+            <tr><td style="${tdLabelStyle}">Service</td><td style="${tdValueStyle}">${serviceName}</td></tr>
+            <tr><td style="${tdLabelLastStyle}">Date &amp; Time</td><td style="${tdValueLastStyle}">${dateTime}</td></tr>
+          </table>
+        </div>
+        <div style="text-align:center;margin-bottom:16px">
+          <a href="${bookingUrl}" style="display:inline-block;background:#9b6f6f;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:50px;font-family:sans-serif;font-size:14px;font-weight:600">
+            Find another time →
+          </a>
+        </div>
+        <p style="text-align:center;font-size:13px;color:#8a7e78;font-family:sans-serif">
+          Questions? <a href="mailto:kerichoplin@gmail.com" style="color:#9b6f6f">Email Keri directly</a>
+        </p>
+        <p style="text-align:center;margin-top:20px;font-size:12px;color:#8a7e78;font-family:sans-serif">Keri Choplin Hair Studio · Lafayette, Louisiana</p>
+      </div>`;
+
+    await sendEmail(clientEmail, `About your booking — ${serviceName}`, html);
+  }
 }

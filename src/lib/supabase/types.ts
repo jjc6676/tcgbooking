@@ -55,6 +55,20 @@ export interface Appointment {
   created_at: string;
 }
 
+export interface OperationalHoursOverride {
+  id: string;
+  stylist_id: string;
+  label: string | null;
+  effective_from: string; // YYYY-MM-DD
+  effective_until: string; // YYYY-MM-DD
+  day_of_week: number | null; // 0-6, null = all days
+  open_time: string | null; // HH:MM:SS
+  close_time: string | null; // HH:MM:SS
+  is_closed: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface AppointmentWithDetails extends Appointment {
   client?: Pick<Profile, "id" | "full_name"> | null;
   service?: Pick<Service, "id" | "name" | "duration_minutes"> | null;

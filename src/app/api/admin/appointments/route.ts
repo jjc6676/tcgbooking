@@ -38,12 +38,10 @@ export async function GET(request: Request) {
     .order("start_at");
 
   if (status === "all") {
-    // All appointments, no filter
     query = query.gte("start_at", new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString());
   } else if (status === "cancelled") {
     query = query.eq("status", "cancelled");
   } else {
-    // Default: upcoming only (confirmed + pending)
     query = query
       .in("status", ["pending", "confirmed"])
       .gte("start_at", new Date().toISOString());

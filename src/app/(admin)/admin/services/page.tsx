@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Service } from "@/lib/supabase/types";
+import { useToast } from "@/components/Toast";
 
 function centsToDisplay(cents: number) {
   return (cents / 100).toFixed(0);
@@ -45,6 +46,7 @@ export default function ServicesPage() {
   const [price, setPrice] = useState("0");
 
   const [editId, setEditId] = useState<string | null>(null);
+  const { toast } = useToast();
   const [editName, setEditName] = useState("");
   const [editDuration, setEditDuration] = useState("");
   const [editPrice, setEditPrice] = useState("");
@@ -76,11 +78,13 @@ export default function ServicesPage() {
       const data = await res.json();
       if (!res.ok) {
         setMessage({ type: "error", text: data.error ?? "Failed to add" });
+        toast(data.error ?? "Failed to add", "error");
       } else {
         setServices((prev) => [...prev, data.service]);
         setName(""); setDuration("60"); setPrice("0");
         setShowAddForm(false);
         setMessage({ type: "success", text: `"${data.service.name}" added.` });
+        toast(`"${data.service.name}" added ✓`, "success");
       }
     } catch {
       setMessage({ type: "error", text: "Network error" });
@@ -111,10 +115,12 @@ export default function ServicesPage() {
       const data = await res.json();
       if (!res.ok) {
         setMessage({ type: "error", text: data.error ?? "Failed to update" });
+        toast(data.error ?? "Failed to update", "error");
       } else {
         setServices((prev) => prev.map((s) => (s.id === id ? data.service : s)));
         setEditId(null);
         setMessage({ type: "success", text: "Service updated." });
+        toast("Service updated ✓", "success");
       }
     } catch {
       setMessage({ type: "error", text: "Network error" });

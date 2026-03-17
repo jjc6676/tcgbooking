@@ -31,6 +31,11 @@ export async function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
+  // Always allow signout and auth routes
+  if (pathname.startsWith("/api/signout") || pathname.startsWith("/auth/")) {
+    return supabaseResponse;
+  }
+
   // Unauthenticated — redirect to login
   if (!user) {
     if (
@@ -38,7 +43,9 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith("/book") ||
       pathname.startsWith("/appointments")
     ) {
-      return NextResponse.redirect(new URL("/login", request.url));
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("redirectTo", pathname);
+      return NextResponse.redirect(loginUrl);
     }
     return supabaseResponse;
   }
@@ -52,8 +59,11 @@ export async function middleware(request: NextRequest) {
 
   const role = profile?.role;
 
-  // Stylists should always go to /admin — redirect away from client pages
+  // Stylists → always go to /admin, redirect away from client pages
   if (role === "stylist") {
+    if (pathname === "/login" || pathname === "/") {
+      return NextResponse.redirect(new URL("/admin", request.url));
+    }
     if (pathname.startsWith("/book") || pathname.startsWith("/appointments")) {
       return NextResponse.redirect(new URL("/admin", request.url));
     }
@@ -68,5 +78,11 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/book/:path*", "/appointments/:path*"],
+  matcher: [
+    "/admin/:path*",
+    "/book/:path*",
+    "/appointments/:path*",
+    "/login",
+    "/",
+  ],
 };

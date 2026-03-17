@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import AdminAppointmentActions from "@/components/AdminAppointmentActions";
+import PendingRequestsList from "@/components/PendingRequestsList";
 
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString([], {
@@ -149,6 +149,37 @@ export default async function AdminDashboardPage() {
         </h1>
       </div>
 
+      {/* Quick actions */}
+      <div className="flex gap-2 mb-5">
+        <Link
+          href="/admin/blocked-times"
+          className="flex items-center gap-1.5 px-4 py-2.5 bg-white border border-[#e8e2dc] text-[#5c4a42] text-xs font-semibold rounded-full hover:bg-[#f5ede8] hover:border-[#c9a96e] transition-all min-h-[44px]"
+        >
+          <svg className="w-3.5 h-3.5 text-[#9b6f6f]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+          </svg>
+          Block Time
+        </Link>
+        <Link
+          href="/admin/hours"
+          className="flex items-center gap-1.5 px-4 py-2.5 bg-white border border-[#e8e2dc] text-[#5c4a42] text-xs font-semibold rounded-full hover:bg-[#f5ede8] hover:border-[#c9a96e] transition-all min-h-[44px]"
+        >
+          <svg className="w-3.5 h-3.5 text-[#9b6f6f]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" />
+          </svg>
+          Hours
+        </Link>
+        <Link
+          href="/admin/services"
+          className="flex items-center gap-1.5 px-4 py-2.5 bg-white border border-[#e8e2dc] text-[#5c4a42] text-xs font-semibold rounded-full hover:bg-[#f5ede8] hover:border-[#c9a96e] transition-all min-h-[44px]"
+        >
+          <svg className="w-3.5 h-3.5 text-[#9b6f6f]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          Services
+        </Link>
+      </div>
+
       {/* Quick stats row */}
       <div className="grid grid-cols-3 gap-3 mb-6">
         <div className="bg-white rounded-2xl border border-[#e8e2dc] p-4 text-center">
@@ -191,39 +222,14 @@ export default async function AdminDashboardPage() {
           )}
         </div>
 
-        {pendingList.length === 0 ? (
-          <div className="px-5 py-8 text-center">
-            <p className="text-sm text-[#8a7e78]">No pending requests right now.</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-[#fef3c7]">
-            {pendingList.map((appt) => {
-              const service = appt.service as { id: string; name: string; duration_minutes: number } | null;
-              const client = appt.client as { id: string; full_name: string | null } | null;
-              const apptDate = new Date(appt.start_at);
-
-              return (
-                <div key={appt.id} className="px-5 py-4">
-                  <div className="flex items-start justify-between gap-3 mb-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-[#1a1714] text-sm truncate">
-                        {client?.full_name ?? "Guest"}
-                      </p>
-                      <p className="text-xs text-[#8a7e78] mt-0.5">{service?.name}</p>
-                      <p className="text-xs text-[#c9a96e] mt-0.5">
-                        {apptDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" })}
-                        {" · "}
-                        {formatTime(appt.start_at)}
-                        {service && ` · ${formatDuration(service.duration_minutes)}`}
-                      </p>
-                    </div>
-                  </div>
-                  <AdminAppointmentActions appointmentId={appt.id} inline />
-                </div>
-              );
-            })}
-          </div>
-        )}
+        <PendingRequestsList
+          initialAppts={(pendingList ?? []).map((appt) => ({
+            id: appt.id as string,
+            start_at: appt.start_at as string,
+            client: appt.client as { id: string; full_name: string | null } | null,
+            service: appt.service as { id: string; name: string; duration_minutes: number } | null,
+          }))}
+        />
       </div>
 
       {/* TODAY'S SCHEDULE */}

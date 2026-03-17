@@ -9,7 +9,7 @@ export async function GET(
 
   const { data: stylist, error } = await supabase
     .from("stylists")
-    .select("id, name, bio, avatar_url")
+    .select("id, name, bio, avatar_url, cancellation_policy")
     .eq("id", params.id)
     .single();
 

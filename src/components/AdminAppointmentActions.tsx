@@ -6,24 +6,56 @@ import { useRouter } from "next/navigation";
 interface Props {
   appointmentId: string;
   inline?: boolean;
+  /** Optional: parent can pass a callback for optimistic removal */
+  onOptimisticRemove?: (id: string) => void;
 }
 
-export default function AdminAppointmentActions({ appointmentId, inline }: Props) {
-  const [loading, setLoading] = useState<"confirm" | "cancel" | null>(null);
+export default function AdminAppointmentActions({
+  appointmentId,
+  inline,
+  onOptimisticRemove,
+}: Props) {
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   async function updateStatus(status: "confirmed" | "cancelled") {
-    setLoading(status === "confirmed" ? "confirm" : "cancel");
+    // Optimistic — hide immediately
+    if (onOptimisticRemove) {
+      onOptimisticRemove(appointmentId);
+    } else {
+      setDone(true);
+    }
+
     try {
-      await fetch(`/api/admin/appointments/${appointmentId}`, {
+      const res = await fetch(`/api/admin/appointments/${appointmentId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
+      if (!res.ok) throw new Error("Server error");
       router.refresh();
-    } finally {
-      setLoading(null);
+    } catch {
+      // Revert
+      setDone(false);
+      setError("Action failed. Try again.");
     }
+  }
+
+  if (done) return null;
+
+  if (error) {
+    return (
+      <div className="flex items-center gap-2 mt-2">
+        <span className="text-xs text-red-600">{error}</span>
+        <button
+          onClick={() => setError(null)}
+          className="text-xs text-[#8a7e78] underline"
+        >
+          Dismiss
+        </button>
+      </div>
+    );
   }
 
   if (inline) {
@@ -31,30 +63,20 @@ export default function AdminAppointmentActions({ appointmentId, inline }: Props
       <div className="flex items-center gap-2 mt-2">
         <button
           onClick={() => updateStatus("confirmed")}
-          disabled={loading !== null}
-          className="flex items-center gap-1 px-3 py-1 bg-emerald-600 text-white text-xs font-medium rounded-full hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+          className="flex items-center gap-1 px-3 py-1 bg-emerald-600 text-white text-xs font-medium rounded-full hover:bg-emerald-700 active:scale-95 transition-all"
         >
-          {loading === "confirm" ? (
-            <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          ) : (
-            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-            </svg>
-          )}
+          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+          </svg>
           Confirm
         </button>
         <button
           onClick={() => updateStatus("cancelled")}
-          disabled={loading !== null}
-          className="flex items-center gap-1 px-3 py-1 border border-red-200 text-red-600 text-xs font-medium rounded-full hover:bg-red-50 disabled:opacity-50 transition-colors"
+          className="flex items-center gap-1 px-3 py-1 border border-red-200 text-red-600 text-xs font-medium rounded-full hover:bg-red-50 active:scale-95 transition-all"
         >
-          {loading === "cancel" ? (
-            <span className="w-3 h-3 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
-          ) : (
-            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          )}
+          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
           Decline
         </button>
       </div>
@@ -65,17 +87,15 @@ export default function AdminAppointmentActions({ appointmentId, inline }: Props
     <div className="flex items-center gap-2">
       <button
         onClick={() => updateStatus("confirmed")}
-        disabled={loading !== null}
-        className="px-4 py-1.5 bg-emerald-600 text-white text-xs font-semibold rounded-full hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+        className="px-4 py-1.5 bg-emerald-600 text-white text-xs font-semibold rounded-full hover:bg-emerald-700 active:scale-95 transition-all"
       >
-        {loading === "confirm" ? "…" : "Confirm"}
+        Confirm
       </button>
       <button
         onClick={() => updateStatus("cancelled")}
-        disabled={loading !== null}
-        className="px-4 py-1.5 border border-red-200 text-red-600 text-xs font-semibold rounded-full hover:bg-red-50 disabled:opacity-50 transition-colors"
+        className="px-4 py-1.5 border border-red-200 text-red-600 text-xs font-semibold rounded-full hover:bg-red-50 active:scale-95 transition-all"
       >
-        {loading === "cancel" ? "…" : "Cancel"}
+        Cancel
       </button>
     </div>
   );

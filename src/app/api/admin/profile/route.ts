@@ -37,10 +37,11 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { name, bio, avatar_url } = body as {
+  const { name, bio, avatar_url, cancellation_policy } = body as {
     name: string;
     bio?: string;
     avatar_url?: string;
+    cancellation_policy?: string | null;
   };
 
   if (!name?.trim()) {
@@ -57,14 +58,14 @@ export async function POST(request: Request) {
   if (existing) {
     result = await supabase
       .from("stylists")
-      .update({ name: name.trim(), bio: bio ?? null, avatar_url: avatar_url ?? null })
+      .update({ name: name.trim(), bio: bio ?? null, avatar_url: avatar_url ?? null, cancellation_policy: cancellation_policy ?? null })
       .eq("user_id", user.id)
       .select()
       .single();
   } else {
     result = await supabase
       .from("stylists")
-      .insert({ user_id: user.id, name: name.trim(), bio: bio ?? null, avatar_url: avatar_url ?? null })
+      .insert({ user_id: user.id, name: name.trim(), bio: bio ?? null, avatar_url: avatar_url ?? null, cancellation_policy: cancellation_policy ?? null })
       .select()
       .single();
   }

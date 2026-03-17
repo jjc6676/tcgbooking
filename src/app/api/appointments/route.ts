@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { sendBookingConfirmation } from "@/lib/email";
 
+const RATE_LIMIT_MAX = 3; // max bookings per day per client
+
 export async function GET() {
   const supabase = await createClient();
   const {
@@ -17,14 +19,12 @@ export async function GET() {
     .from("appointments")
     .select(
       `
-      id, start_at, end_at, status, created_at,
+      id, start_at, end_at, status, created_at, client_notes,
       stylist:stylists!stylist_id(id, name),
       service:services!service_id(id, name, duration_minutes)
     `
     )
     .eq("client_id", user.id)
-    .in("status", ["pending", "confirmed"])
-    .gte("start_at", new Date().toISOString())
     .order("start_at");
 
   if (error) {
@@ -46,11 +46,12 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { stylist_id, service_id, start_at, end_at } = body as {
+  const { stylist_id, service_id, start_at, end_at, client_notes } = body as {
     stylist_id: string;
     service_id: string;
     start_at: string;
     end_at: string;
+    client_notes?: string;
   };
 
   if (!stylist_id || !service_id || !start_at || !end_at) {
@@ -60,7 +61,27 @@ export async function POST(request: Request) {
     );
   }
 
-  // Verify the service belongs to the stylist and is active
+  // Rate limit: max 3 bookings per day per client
+  const todayStart = new Date();
+  todayStart.setUTCHours(0, 0, 0, 0);
+  const todayEnd = new Date();
+  todayEnd.setUTCHours(23, 59, 59, 999);
+
+  const { count: todayCount } = await supabase
+    .from("appointments")
+    .select("id", { count: "exact", head: true })
+    .eq("client_id", user.id)
+    .gte("created_at", todayStart.toISOString())
+    .lte("created_at", todayEnd.toISOString());
+
+  if ((todayCount ?? 0) >= RATE_LIMIT_MAX) {
+    return NextResponse.json(
+      { error: "Too many booking requests today. Please try again tomorrow." },
+      { status: 429 }
+    );
+  }
+
+  // Verify service belongs to stylist and is active
   const { data: service } = await supabase
     .from("services")
     .select("id, name, is_active")
@@ -72,7 +93,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid service" }, { status: 400 });
   }
 
-  // Check for conflicts (double-booking same stylist)
+  // Check for conflicts
   const { data: conflicts } = await supabase
     .from("appointments")
     .select("id")
@@ -97,35 +118,26 @@ export async function POST(request: Request) {
       start_at,
       end_at,
       status: "pending",
+      client_notes: client_notes?.trim() || null,
     })
-    .select("id, start_at, end_at, status")
+    .select("id, start_at, end_at, status, client_notes")
     .single();
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // Send confirmation emails (non-blocking — failure doesn't affect response)
+  // Send emails non-blocking
   if (appointment) {
-    // Fetch stylist user email and client profile for notification
     const [stylistResult, clientResult] = await Promise.allSettled([
-      supabase
-        .from("stylists")
-        .select("name, user_id")
-        .eq("id", stylist_id)
-        .single(),
-      supabase
-        .from("profiles")
-        .select("full_name")
-        .eq("id", user.id)
-        .single(),
+      supabase.from("stylists").select("name, cancellation_policy").eq("id", stylist_id).single(),
+      supabase.from("profiles").select("full_name").eq("id", user.id).single(),
     ]);
 
     const stylistData = stylistResult.status === "fulfilled" ? stylistResult.value.data : null;
     const clientData = clientResult.status === "fulfilled" ? clientResult.value.data : null;
 
     if (stylistData && user.email) {
-      // Get stylist email from auth (requires service role normally — skip gracefully)
       sendBookingConfirmation({
         clientEmail: user.email,
         clientName: clientData?.full_name ?? null,
@@ -134,7 +146,9 @@ export async function POST(request: Request) {
         serviceName: (service as { id: string; name: string; is_active: boolean }).name,
         startAt: appointment.start_at,
         endAt: appointment.end_at,
-      }).catch(() => {/* ignore email errors */});
+        clientNotes: client_notes?.trim() || null,
+        cancellationPolicy: (stylistData as { name: string; cancellation_policy?: string }).cancellation_policy ?? null,
+      }).catch(() => {});
     }
   }
 
