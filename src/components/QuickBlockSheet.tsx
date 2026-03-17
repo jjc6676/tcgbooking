@@ -68,7 +68,7 @@ export default function QuickBlockSheet({ onBlocked }: Props) {
       {/* Trigger button */}
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 bg-white border border-[#e8e2dc] rounded-xl px-3 py-3 text-sm font-medium text-[#5c4a42] hover:border-[#9b6f6f] hover:bg-[#fdf8f6] active:scale-[0.98] transition-all min-h-[48px] w-full"
+        className="flex items-center gap-2 bg-white border border-[#d4c8c8] rounded-xl px-3 py-3 text-sm font-medium text-[#5c4a42] hover:border-[#513b3c] hover:bg-[#1e1a17] active:scale-[0.98] transition-all min-h-[48px] w-full"
       >
         <div className="w-7 h-7 rounded-lg bg-[#fce8e8] flex items-center justify-center flex-shrink-0">
           <svg className="w-3.5 h-3.5 text-[#9b5050]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -87,12 +87,12 @@ export default function QuickBlockSheet({ onBlocked }: Props) {
           <div className="relative w-full sm:max-w-sm bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl p-5">
             {/* Handle */}
             <div className="flex justify-center mb-4 sm:hidden">
-              <div className="w-10 h-1 bg-[#e8e2dc] rounded-full" />
+              <div className="w-10 h-1 bg-[#d4c8c8] rounded-full" />
             </div>
 
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-display text-lg text-[#1a1714]">Block Time</h3>
-              <button onClick={() => setOpen(false)} className="p-2 text-[#8a7e78] hover:text-[#1a1714]">
+              <h3 className="font-display text-lg text-[#28231c]">Block Time</h3>
+              <button onClick={() => setOpen(false)} className="p-2 text-[#655356] hover:text-[#28231c]">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -107,8 +107,8 @@ export default function QuickBlockSheet({ onBlocked }: Props) {
                   onClick={() => setDate(d)}
                   className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
                     date === d
-                      ? "bg-[#9b6f6f] text-white border-[#9b6f6f]"
-                      : "bg-white text-[#5c4a42] border-[#e8e2dc] hover:bg-[#f5f0eb]"
+                      ? "bg-[#513b3c] text-white border-[#513b3c]"
+                      : "bg-white text-[#5c4a42] border-[#d4c8c8] hover:bg-[#f0eaea]"
                   }`}
                 >
                   {d.charAt(0).toUpperCase() + d.slice(1)}
@@ -124,7 +124,7 @@ export default function QuickBlockSheet({ onBlocked }: Props) {
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7]"
+                  className="w-full border border-[#d4c8c8] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#513b3c] bg-[#faf9f7]"
                   style={{ fontSize: 16 }}
                 />
               </div>
@@ -134,7 +134,7 @@ export default function QuickBlockSheet({ onBlocked }: Props) {
                   type="time"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  className="w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7]"
+                  className="w-full border border-[#d4c8c8] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#513b3c] bg-[#faf9f7]"
                   style={{ fontSize: 16 }}
                 />
               </div>
@@ -143,14 +143,14 @@ export default function QuickBlockSheet({ onBlocked }: Props) {
             {/* Note */}
             <div className="mb-5">
               <label className="block text-xs font-medium text-[#5c4a42] mb-1.5">
-                Note <span className="font-normal text-[#8a7e78]">(optional)</span>
+                Note <span className="font-normal text-[#655356]">(optional)</span>
               </label>
               <input
                 type="text"
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder='e.g. "lunch", "school pickup", "dentist"'
-                className="w-full border border-[#e8e2dc] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7]"
+                className="w-full border border-[#d4c8c8] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#513b3c] bg-[#faf9f7]"
                 style={{ fontSize: 16 }}
               />
             </div>
@@ -158,7 +158,7 @@ export default function QuickBlockSheet({ onBlocked }: Props) {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="w-full py-3 bg-[#9b6f6f] text-white font-semibold rounded-full hover:bg-[#8a5f5f] disabled:opacity-50 transition-all text-sm min-h-[48px]"
+              className="w-full py-3 bg-[#513b3c] text-white font-semibold rounded-full hover:bg-[#3d2c2d] disabled:opacity-50 transition-all text-sm min-h-[48px]"
             >
               {saving ? (
                 <span className="flex items-center justify-center gap-2">
@@ -168,7 +168,7 @@ export default function QuickBlockSheet({ onBlocked }: Props) {
               ) : "Block This Time"}
             </button>
 
-            <p className="text-xs text-[#8a7e78] text-center mt-3">
+            <p className="text-xs text-[#655356] text-center mt-3">
               This will hide those slots from clients immediately.
             </p>
           </div>

@@ -75,8 +75,8 @@ export default async function AdminDashboardPage() {
   if (!user) {
     return (
       <div className="text-center py-16">
-        <p className="text-[#8a7e78]">Please sign in to view your dashboard.</p>
-        <Link href="/login" className="text-[#9b6f6f] text-sm mt-2 block hover:underline">
+        <p className="text-[#655356]">Please sign in to view your dashboard.</p>
+        <Link href="/login" className="text-[#513b3c] text-sm mt-2 block hover:underline">
           Sign in →
         </Link>
       </div>
@@ -89,17 +89,17 @@ export default async function AdminDashboardPage() {
   if (!stylist) {
     return (
       <div className="max-w-md mx-auto text-center py-16">
-        <div className="w-16 h-16 rounded-full bg-[#f5ede8] flex items-center justify-center mx-auto mb-5">
-          <svg className="w-8 h-8 text-[#9b6f6f]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="w-16 h-16 rounded-full bg-[#2e2326] flex items-center justify-center mx-auto mb-5">
+          <svg className="w-8 h-8 text-[#513b3c]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
               d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
         </div>
-        <h1 className="font-display text-2xl text-[#1a1714] mb-2">Welcome, Keri!</h1>
-        <p className="text-[#8a7e78] text-sm mb-6">Let&apos;s set up your profile to start accepting bookings.</p>
+        <h1 className="font-display text-2xl text-[#28231c] mb-2">Welcome, Keri!</h1>
+        <p className="text-[#655356] text-sm mb-6">Let&apos;s set up your profile to start accepting bookings.</p>
         <Link
           href="/admin/profile"
-          className="inline-flex items-center px-6 py-3 bg-[#9b6f6f] text-white text-sm font-semibold rounded-full hover:bg-[#8a5f5f] transition-colors min-h-[48px]"
+          className="inline-flex items-center px-6 py-3 bg-[#513b3c] text-white text-sm font-semibold rounded-full hover:bg-[#3d2c2d] transition-colors min-h-[48px]"
         >
           Create Profile
         </Link>
@@ -164,25 +164,25 @@ export default async function AdminDashboardPage() {
     <div className="max-w-lg mx-auto">
       {/* Greeting */}
       <div className="mb-6">
-        <p className="text-xs text-[#c9a96e] uppercase tracking-widest font-medium mb-1">{todayDate}</p>
-        <h1 className="font-display text-3xl text-[#1a1714]">{greeting}, Keri</h1>
+        <p className="text-xs text-[#c1eeff] uppercase tracking-widest font-medium mb-1">{todayDate}</p>
+        <h1 className="font-display text-3xl text-[#28231c]">{greeting}, Keri</h1>
       </div>
 
       {/* Quick stats */}
       <div className="grid grid-cols-3 gap-2 mb-5">
-        <div className="bg-white rounded-2xl border border-[#e8e2dc] p-3 sm:p-4 text-center">
-          <p className="text-2xl font-bold text-[#9b6f6f]">{todayList.length}</p>
-          <p className="text-[10px] text-[#8a7e78] mt-0.5 uppercase tracking-wide">Today</p>
+        <div className="bg-white rounded-2xl border border-[#d4c8c8] p-3 sm:p-4 text-center">
+          <p className="text-2xl font-bold text-[#513b3c]">{todayList.length}</p>
+          <p className="text-[10px] text-[#655356] mt-0.5 uppercase tracking-wide">Today</p>
         </div>
-        <div className="bg-white rounded-2xl border border-[#e8e2dc] p-3 sm:p-4 text-center">
-          <p className="text-2xl font-bold text-[#c9a96e]">{weekCount ?? 0}</p>
-          <p className="text-[10px] text-[#8a7e78] mt-0.5 uppercase tracking-wide">This Week</p>
+        <div className="bg-white rounded-2xl border border-[#d4c8c8] p-3 sm:p-4 text-center">
+          <p className="text-2xl font-bold text-[#c1eeff]">{weekCount ?? 0}</p>
+          <p className="text-[10px] text-[#655356] mt-0.5 uppercase tracking-wide">This Week</p>
         </div>
-        <div className={`rounded-2xl border p-3 sm:p-4 text-center ${(pendingCount ?? 0) > 0 ? "bg-[#fffbeb] border-[#fcd34d]" : "bg-white border-[#e8e2dc]"}`}>
-          <p className={`text-2xl font-bold ${(pendingCount ?? 0) > 0 ? "text-[#d97706]" : "text-[#8a7e78]"}`}>
+        <div className={`rounded-2xl border p-3 sm:p-4 text-center ${(pendingCount ?? 0) > 0 ? "bg-[#fffbeb] border-[#fcd34d]" : "bg-white border-[#d4c8c8]"}`}>
+          <p className={`text-2xl font-bold ${(pendingCount ?? 0) > 0 ? "text-[#d97706]" : "text-[#655356]"}`}>
             {pendingCount ?? 0}
           </p>
-          <p className="text-[10px] text-[#8a7e78] mt-0.5 uppercase tracking-wide">Pending</p>
+          <p className="text-[10px] text-[#655356] mt-0.5 uppercase tracking-wide">Pending</p>
         </div>
       </div>
 
@@ -190,10 +190,10 @@ export default async function AdminDashboardPage() {
       <DashboardQuickActions />
 
       {/* PENDING REQUESTS */}
-      <div className={`rounded-2xl border mb-5 overflow-hidden ${(pendingCount ?? 0) > 0 ? "border-[#fcd34d] bg-[#fffbeb]" : "border-[#e8e2dc] bg-white"}`}>
+      <div className={`rounded-2xl border mb-5 overflow-hidden ${(pendingCount ?? 0) > 0 ? "border-[#fcd34d] bg-[#fffbeb]" : "border-[#d4c8c8] bg-white"}`}>
         <div className="flex items-center justify-between px-4 py-3.5 border-b border-[#f3e8c8]">
           <div className="flex items-center gap-2.5">
-            <div className={`flex items-center justify-center w-7 h-7 rounded-full font-bold text-xs ${(pendingCount ?? 0) > 0 ? "bg-[#d97706] text-white" : "bg-[#e8e2dc] text-[#8a7e78]"}`}>
+            <div className={`flex items-center justify-center w-7 h-7 rounded-full font-bold text-xs ${(pendingCount ?? 0) > 0 ? "bg-[#d97706] text-white" : "bg-[#d4c8c8] text-[#655356]"}`}>
               {(pendingCount ?? 0) > 0 ? (
                 <span className="flex items-center">
                   {pendingCount}
@@ -201,7 +201,7 @@ export default async function AdminDashboardPage() {
               ) : "0"}
             </div>
             <div>
-              <h2 className="font-display text-lg text-[#1a1714] leading-none">Pending Requests</h2>
+              <h2 className="font-display text-lg text-[#28231c] leading-none">Pending Requests</h2>
               {(pendingCount ?? 0) > 0 && (
                 <p className="text-xs text-[#d97706] mt-0.5">Clients waiting for confirmation</p>
               )}
@@ -227,27 +227,27 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* TODAY'S SCHEDULE */}
-      <div className="bg-white rounded-2xl border border-[#e8e2dc] overflow-hidden mb-5">
-        <div className="flex items-center justify-between px-4 py-3.5 border-b border-[#e8e2dc]">
-          <h2 className="font-display text-lg text-[#1a1714]">Today&apos;s Schedule</h2>
-          <Link href="/admin/appointments" className="text-xs text-[#9b6f6f] font-medium min-h-[44px] flex items-center">
+      <div className="bg-white rounded-2xl border border-[#d4c8c8] overflow-hidden mb-5">
+        <div className="flex items-center justify-between px-4 py-3.5 border-b border-[#d4c8c8]">
+          <h2 className="font-display text-lg text-[#28231c]">Today&apos;s Schedule</h2>
+          <Link href="/admin/appointments" className="text-xs text-[#513b3c] font-medium min-h-[44px] flex items-center">
             View all →
           </Link>
         </div>
 
         {todayList.length === 0 ? (
           <div className="px-4 py-10 text-center">
-            <div className="w-10 h-10 rounded-full bg-[#f5ede8] flex items-center justify-center mx-auto mb-3">
-              <svg className="w-5 h-5 text-[#c9a96e]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-10 h-10 rounded-full bg-[#2e2326] flex items-center justify-center mx-auto mb-3">
+              <svg className="w-5 h-5 text-[#c1eeff]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                   d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
               </svg>
             </div>
-            <p className="text-sm text-[#1a1714] font-medium">No confirmed appointments today</p>
-            <p className="text-xs text-[#8a7e78] mt-1">Enjoy your day ✨</p>
+            <p className="text-sm text-[#28231c] font-medium">No confirmed appointments today</p>
+            <p className="text-xs text-[#655356] mt-1">Enjoy your day ✨</p>
           </div>
         ) : (
-          <div className="divide-y divide-[#f5f0eb]">
+          <div className="divide-y divide-[#f0eaea]">
             {todayList.map((appt) => {
               const service = appt.service as { id: string; name: string; duration_minutes: number } | null;
               const apptServices = (appt as { appointment_services?: Array<{ service_id: string; service: { id: string; name: string; duration_minutes: number } | null }> }).appointment_services;
@@ -263,18 +263,18 @@ export default async function AdminDashboardPage() {
               return (
                 <div key={appt.id} className="px-4 py-3.5 flex items-center gap-3">
                   <div className="flex-shrink-0 text-center min-w-[56px]">
-                    <p className="text-sm font-bold text-[#1a1714]">{formatTime(appt.start_at as string)}</p>
-                    <p className="text-[10px] text-[#8a7e78]">{svcDuration > 0 ? formatDuration(svcDuration) : ""}</p>
+                    <p className="text-sm font-bold text-[#28231c]">{formatTime(appt.start_at as string)}</p>
+                    <p className="text-[10px] text-[#655356]">{svcDuration > 0 ? formatDuration(svcDuration) : ""}</p>
                   </div>
                   <div className="flex-shrink-0 flex flex-col items-center self-stretch py-1">
-                    <div className="w-2 h-2 rounded-full bg-[#9b6f6f] flex-shrink-0 mt-0.5" />
-                    <div className="w-px flex-1 bg-[#e8e2dc] mt-1" />
+                    <div className="w-2 h-2 rounded-full bg-[#513b3c] flex-shrink-0 mt-0.5" />
+                    <div className="w-px flex-1 bg-[#d4c8c8] mt-1" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[#1a1714] truncate">
+                    <p className="text-sm font-semibold text-[#28231c] truncate">
                       {client?.full_name ?? "Guest"}
                     </p>
-                    <p className="text-xs text-[#8a7e78] mt-0.5 truncate">{svcNames}</p>
+                    <p className="text-xs text-[#655356] mt-0.5 truncate">{svcNames}</p>
                   </div>
                   <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-emerald-50 text-emerald-700 flex-shrink-0">
                     Confirmed

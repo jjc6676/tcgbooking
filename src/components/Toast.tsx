@@ -60,9 +60,9 @@ function ToastBubble({ item }: { item: ToastItem }) {
   }, []);
 
   const styles: Record<ToastType, string> = {
-    success: "bg-[#1a1714] text-white",
+    success: "bg-[#28231c] text-white",
     error: "bg-red-600 text-white",
-    info: "bg-[#1a1714] text-white",
+    info: "bg-[#28231c] text-white",
     warning: "bg-amber-600 text-white",
   };
 

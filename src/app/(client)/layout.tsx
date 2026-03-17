@@ -8,7 +8,7 @@ export default async function ClientLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-[#faf8f5]">
+    <div className="min-h-screen bg-[#f5f0f0]">
       <ClientAuthGuard />
       <ClientNav />
       <main className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
@@ -16,12 +16,12 @@ export default async function ClientLayout({
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-[#e8e2dc] bg-white mt-16">
+      <footer className="border-t border-[#d4c8c8] bg-white mt-16">
         <div className="max-w-2xl mx-auto px-6 py-8 text-center space-y-3">
-          <p className="font-display text-[#1a1714] text-lg">Keri Choplin</p>
-          <p className="text-sm text-[#8a7e78]">Tue – Fri &nbsp;·&nbsp; Lafayette, Louisiana</p>
-          <div className="flex items-center justify-center gap-4 text-xs text-[#8a7e78]">
-            <a href="mailto:kerichoplin@gmail.com" className="hover:text-[#9b6f6f] transition-colors">
+          <p className="font-display text-[#28231c] text-lg">Keri Choplin</p>
+          <p className="text-sm text-[#655356]">Tue – Fri &nbsp;·&nbsp; Lafayette, Louisiana</p>
+          <div className="flex items-center justify-center gap-4 text-xs text-[#655356]">
+            <a href="mailto:kerichoplin@gmail.com" className="hover:text-[#513b3c] transition-colors">
               kerichoplin@gmail.com
             </a>
           </div>

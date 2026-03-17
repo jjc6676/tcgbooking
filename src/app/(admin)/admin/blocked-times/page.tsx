@@ -203,7 +203,7 @@ export default function BlockedTimesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="w-6 h-6 border-2 border-[#9b6f6f] border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-[#513b3c] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -212,14 +212,14 @@ export default function BlockedTimesPage() {
     <div className="max-w-xl">
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="font-display text-3xl text-[#1a1714]">Blocked Times</h1>
-          <p className="text-[#8a7e78] text-sm mt-1">
+          <h1 className="font-display text-3xl text-[#28231c]">Blocked Times</h1>
+          <p className="text-[#655356] text-sm mt-1">
             Tap slots to block/unblock, or add custom ranges below.
           </p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-1.5 px-4 py-2.5 bg-[#9b6f6f] text-white text-sm font-medium rounded-full hover:bg-[#8a5f5f] transition-all active:scale-95 flex-shrink-0 ml-4 min-h-[44px]"
+          className="flex items-center gap-1.5 px-4 py-2.5 bg-[#513b3c] text-white text-sm font-medium rounded-full hover:bg-[#3d2c2d] transition-all active:scale-95 flex-shrink-0 ml-4 min-h-[44px]"
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -236,7 +236,7 @@ export default function BlockedTimesPage() {
             d.setDate(d.getDate() - 1);
             setSelectedDate(toLocalDateString(d));
           }}
-          className="w-11 h-11 flex items-center justify-center rounded-full border border-[#e8e2dc] hover:bg-[#f5ede8] transition-all active:scale-95"
+          className="w-11 h-11 flex items-center justify-center rounded-full border border-[#d4c8c8] hover:bg-[#2e2326] transition-all active:scale-95"
         >
           <svg className="w-4 h-4 text-[#5c4a42]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -246,7 +246,7 @@ export default function BlockedTimesPage() {
           type="date"
           value={selectedDate}
           onChange={(e) => setSelectedDate(e.target.value)}
-          className="border border-[#e8e2dc] rounded-xl px-3 py-2 text-base font-medium text-[#1a1714] bg-white focus:outline-none focus:ring-2 focus:ring-[#9b6f6f]"
+          className="border border-[#d4c8c8] rounded-xl px-3 py-2 text-base font-medium text-[#28231c] bg-white focus:outline-none focus:ring-2 focus:ring-[#513b3c]"
         />
         <button
           onClick={() => {
@@ -254,20 +254,20 @@ export default function BlockedTimesPage() {
             d.setDate(d.getDate() + 1);
             setSelectedDate(toLocalDateString(d));
           }}
-          className="w-11 h-11 flex items-center justify-center rounded-full border border-[#e8e2dc] hover:bg-[#f5ede8] transition-all active:scale-95"
+          className="w-11 h-11 flex items-center justify-center rounded-full border border-[#d4c8c8] hover:bg-[#2e2326] transition-all active:scale-95"
         >
           <svg className="w-4 h-4 text-[#5c4a42]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </button>
-        <span className="text-xs text-[#8a7e78] ml-1">
+        <span className="text-xs text-[#655356] ml-1">
           {blockedCount}/{SLOTS.length} blocked
         </span>
       </div>
 
       {/* Visual time grid */}
-      <div className="bg-white rounded-2xl border border-[#e8e2dc] overflow-hidden mb-6">
-        <div className="grid grid-cols-2 gap-px bg-[#e8e2dc]">
+      <div className="bg-white rounded-2xl border border-[#d4c8c8] overflow-hidden mb-6">
+        <div className="grid grid-cols-2 gap-px bg-[#d4c8c8]">
           {SLOTS.map((slot) => {
             const blocked = isSlotBlocked(selectedDate, slot.hour, slot.minute, dayBlocks);
             const slotKey = `${slot.hour}:${slot.minute}`;
@@ -282,7 +282,7 @@ export default function BlockedTimesPage() {
                   flex items-center justify-between px-4 min-h-[44px] text-sm font-medium transition-all
                   ${blocked
                     ? "bg-red-50 text-red-700 hover:bg-red-100"
-                    : "bg-white text-[#5c4a42] hover:bg-[#f5ede8]"
+                    : "bg-white text-[#5c4a42] hover:bg-[#2e2326]"
                   }
                   ${isToggling ? "opacity-50" : ""}
                   active:scale-[0.98]
@@ -308,8 +308,8 @@ export default function BlockedTimesPage() {
 
       {/* Add form (custom range) */}
       {showForm && (
-        <form onSubmit={handleAdd} className="bg-white rounded-2xl border border-[#e8e2dc] p-5 mb-6">
-          <h2 className="font-display text-lg text-[#1a1714] mb-4">Block Custom Range</h2>
+        <form onSubmit={handleAdd} className="bg-white rounded-2xl border border-[#d4c8c8] p-5 mb-6">
+          <h2 className="font-display text-lg text-[#28231c] mb-4">Block Custom Range</h2>
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div>
               <label className="block text-xs font-medium text-[#5c4a42] mb-1.5">Start</label>
@@ -318,7 +318,7 @@ export default function BlockedTimesPage() {
                 value={startAt}
                 onChange={(e) => setStartAt(e.target.value)}
                 required
-                className="w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7]"
+                className="w-full border border-[#d4c8c8] rounded-xl px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#513b3c] bg-[#faf9f7]"
               />
             </div>
             <div>
@@ -328,34 +328,34 @@ export default function BlockedTimesPage() {
                 value={endAt}
                 onChange={(e) => setEndAt(e.target.value)}
                 required
-                className="w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7]"
+                className="w-full border border-[#d4c8c8] rounded-xl px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#513b3c] bg-[#faf9f7]"
               />
             </div>
           </div>
           <div className="mb-4">
             <label className="block text-xs font-medium text-[#5c4a42] mb-1.5">
-              Reason <span className="text-[#8a7e78] font-normal">(optional)</span>
+              Reason <span className="text-[#655356] font-normal">(optional)</span>
             </label>
             <input
               type="text"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="e.g. Vacation, Personal day, Staff meeting…"
-              className="w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7]"
+              className="w-full border border-[#d4c8c8] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#513b3c] bg-[#faf9f7]"
             />
           </div>
           <div className="flex gap-2">
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2.5 bg-[#9b6f6f] text-white text-sm font-medium rounded-full hover:bg-[#8a5f5f] disabled:opacity-50 transition-all active:scale-95 min-h-[44px]"
+              className="px-5 py-2.5 bg-[#513b3c] text-white text-sm font-medium rounded-full hover:bg-[#3d2c2d] disabled:opacity-50 transition-all active:scale-95 min-h-[44px]"
             >
               {submitting ? "Adding…" : "Block This Time"}
             </button>
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="px-5 py-2.5 border border-[#e8e2dc] text-sm text-[#8a7e78] font-medium rounded-full hover:bg-[#f5ede8] transition-all active:scale-95 min-h-[44px]"
+              className="px-5 py-2.5 border border-[#d4c8c8] text-sm text-[#655356] font-medium rounded-full hover:bg-[#2e2326] transition-all active:scale-95 min-h-[44px]"
             >
               Cancel
             </button>
@@ -365,22 +365,22 @@ export default function BlockedTimesPage() {
 
       {/* Existing block list */}
       <div className="mb-2">
-        <h2 className="font-display text-lg text-[#1a1714]">All Upcoming Blocks</h2>
-        <p className="text-xs text-[#8a7e78] mt-0.5">Custom ranges and grid blocks</p>
+        <h2 className="font-display text-lg text-[#28231c]">All Upcoming Blocks</h2>
+        <p className="text-xs text-[#655356] mt-0.5">Custom ranges and grid blocks</p>
       </div>
       {blockedTimes.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-2xl border border-[#e8e2dc]">
-          <div className="w-12 h-12 rounded-full bg-[#f5ede8] flex items-center justify-center mx-auto mb-3">
-            <svg className="w-6 h-6 text-[#9b6f6f]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="text-center py-12 bg-white rounded-2xl border border-[#d4c8c8]">
+          <div className="w-12 h-12 rounded-full bg-[#2e2326] flex items-center justify-center mx-auto mb-3">
+            <svg className="w-6 h-6 text-[#513b3c]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                 d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
             </svg>
           </div>
-          <p className="font-display text-lg text-[#1a1714] mb-1">All clear</p>
-          <p className="text-sm text-[#8a7e78]">No blocked times scheduled.</p>
+          <p className="font-display text-lg text-[#28231c] mb-1">All clear</p>
+          <p className="text-sm text-[#655356]">No blocked times scheduled.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-[#e8e2dc] divide-y divide-[#f5f0eb] overflow-hidden">
+        <div className="bg-white rounded-2xl border border-[#d4c8c8] divide-y divide-[#f0eaea] overflow-hidden">
           {blockedTimes.map((b) => (
             <div key={b.id} className="flex items-start justify-between px-5 py-4">
               <div className="flex items-start gap-3">
@@ -391,17 +391,17 @@ export default function BlockedTimesPage() {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-[#1a1714]">
+                  <p className="text-sm font-medium text-[#28231c]">
                     {formatRange(b.start_at, b.end_at)}
                   </p>
                   {b.reason && (
-                    <p className="text-xs text-[#8a7e78] mt-0.5">{b.reason}</p>
+                    <p className="text-xs text-[#655356] mt-0.5">{b.reason}</p>
                   )}
                 </div>
               </div>
               <button
                 onClick={() => handleDelete(b.id)}
-                className="text-xs text-[#8a7e78] hover:text-red-600 transition-colors ml-4 flex-shrink-0 min-h-[44px] flex items-center"
+                className="text-xs text-[#655356] hover:text-red-600 transition-colors ml-4 flex-shrink-0 min-h-[44px] flex items-center"
               >
                 Remove
               </button>

@@ -93,48 +93,48 @@ function DayRow({ dayIndex, hour, onSaved, onClosed }: DayRowProps) {
   return (
     <div className={`flex items-center gap-3 px-4 py-3 transition-colors ${isOpen ? "bg-white" : "bg-[#faf9f7] opacity-60"}`}>
       <div className="w-10 flex-shrink-0">
-        <span className={`text-sm font-semibold ${isOpen ? "text-[#1a1714]" : "text-[#a09890]"}`}>
+        <span className={`text-sm font-semibold ${isOpen ? "text-[#28231c]" : "text-[#a09890]"}`}>
           {DAY_SHORT[dayIndex]}
         </span>
       </div>
       <button
         onClick={toggleOpen}
         aria-label={isOpen ? "Close day" : "Open day"}
-        className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] focus:ring-offset-1 ${isOpen ? "bg-[#9b6f6f]" : "bg-[#d8d0c8]"}`}
+        className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#513b3c] focus:ring-offset-1 ${isOpen ? "bg-[#513b3c]" : "bg-[#d8d0c8]"}`}
       >
         <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 mt-0.5 ${isOpen ? "translate-x-5 ml-0.5" : "translate-x-0.5"}`} />
       </button>
-      <span className={`text-xs w-10 flex-shrink-0 ${isOpen ? "text-[#9b6f6f] font-medium" : "text-[#a09890]"}`}>
+      <span className={`text-xs w-10 flex-shrink-0 ${isOpen ? "text-[#513b3c] font-medium" : "text-[#a09890]"}`}>
         {isOpen ? "Open" : "Closed"}
       </span>
       {isOpen ? (
         <div className="flex items-center gap-2 flex-1">
           <div className="flex flex-col gap-0.5">
-            <label className="text-[10px] text-[#8a7e78] uppercase tracking-wide">Opens</label>
+            <label className="text-[10px] text-[#655356] uppercase tracking-wide">Opens</label>
             <input
               type="time"
               value={openTime}
               onChange={(e) => { setOpenTime(e.target.value); scheduleSave(e.target.value, closeTime); }}
               onBlur={() => save(openTime, closeTime)}
-              className="border border-[#e8e2dc] rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7] w-[110px]"
+              className="border border-[#d4c8c8] rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#513b3c] bg-[#faf9f7] w-[110px]"
               style={{ fontSize: 16 }}
             />
           </div>
-          <span className="text-[#c9a96e] mt-4 text-sm">–</span>
+          <span className="text-[#c1eeff] mt-4 text-sm">–</span>
           <div className="flex flex-col gap-0.5">
-            <label className="text-[10px] text-[#8a7e78] uppercase tracking-wide">Closes</label>
+            <label className="text-[10px] text-[#655356] uppercase tracking-wide">Closes</label>
             <input
               type="time"
               value={closeTime}
               onChange={(e) => { setCloseTime(e.target.value); scheduleSave(openTime, e.target.value); }}
               onBlur={() => save(openTime, closeTime)}
-              className="border border-[#e8e2dc] rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7] w-[110px]"
+              className="border border-[#d4c8c8] rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#513b3c] bg-[#faf9f7] w-[110px]"
               style={{ fontSize: 16 }}
             />
           </div>
           <div className={`ml-1 text-xs text-emerald-600 font-medium transition-all duration-500 ${savedFlash ? "opacity-100" : "opacity-0"}`}>
             {saving ? (
-              <span className="w-3 h-3 border border-[#9b6f6f] border-t-transparent rounded-full animate-spin inline-block" />
+              <span className="w-3 h-3 border border-[#513b3c] border-t-transparent rounded-full animate-spin inline-block" />
             ) : "saved ✓"}
           </div>
         </div>
@@ -235,10 +235,10 @@ function InlineDayEditor({
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <p className="font-display text-base text-[#1a1714] font-semibold">{dayName}</p>
-          <p className="text-xs text-[#8a7e78]">{displayDate}</p>
+          <p className="font-display text-base text-[#28231c] font-semibold">{dayName}</p>
+          <p className="text-xs text-[#655356]">{displayDate}</p>
           {override && (
-            <span className="text-xs text-[#c9a96e] font-medium">Has override</span>
+            <span className="text-xs text-[#c1eeff] font-medium">Has override</span>
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -247,7 +247,7 @@ function InlineDayEditor({
           )}
           <button
             onClick={onClose}
-            className="p-2.5 text-[#8a7e78] hover:text-[#1a1714] rounded-full hover:bg-[#f5f0eb] transition-all active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="p-2.5 text-[#655356] hover:text-[#28231c] rounded-full hover:bg-[#f0eaea] transition-all active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center"
             aria-label="Close editor"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -262,7 +262,7 @@ function InlineDayEditor({
         <button
           onClick={() => setIsOpen(true)}
           className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-all active:scale-95 min-h-[44px] ${
-            isOpen ? "bg-[#9b6f6f] text-white border-[#9b6f6f]" : "bg-white text-[#8a7e78] border-[#e8e2dc] hover:bg-[#f5f0eb]"
+            isOpen ? "bg-[#513b3c] text-white border-[#513b3c]" : "bg-white text-[#655356] border-[#d4c8c8] hover:bg-[#f0eaea]"
           }`}
         >
           Open
@@ -270,7 +270,7 @@ function InlineDayEditor({
         <button
           onClick={() => setIsOpen(false)}
           className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-all active:scale-95 min-h-[44px] ${
-            !isOpen ? "bg-[#1a1714] text-white border-[#1a1714]" : "bg-white text-[#8a7e78] border-[#e8e2dc] hover:bg-[#f5f0eb]"
+            !isOpen ? "bg-[#28231c] text-white border-[#28231c]" : "bg-white text-[#655356] border-[#d4c8c8] hover:bg-[#f0eaea]"
           }`}
         >
           Closed
@@ -286,7 +286,7 @@ function InlineDayEditor({
               type="time"
               value={openAt}
               onChange={(e) => setOpenAt(e.target.value)}
-              className="w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7]"
+              className="w-full border border-[#d4c8c8] rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#513b3c] bg-[#faf9f7]"
               style={{ fontSize: 16 }}
             />
           </div>
@@ -296,7 +296,7 @@ function InlineDayEditor({
               type="time"
               value={closeAt}
               onChange={(e) => setCloseAt(e.target.value)}
-              className="w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7]"
+              className="w-full border border-[#d4c8c8] rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#513b3c] bg-[#faf9f7]"
               style={{ fontSize: 16 }}
             />
           </div>
@@ -318,7 +318,7 @@ function InlineDayEditor({
           <button
             onClick={handleDelete}
             disabled={deleting}
-            className="text-xs text-[#8a7e78] hover:text-red-500 underline transition-all disabled:opacity-50 min-h-[44px] inline-flex items-center"
+            className="text-xs text-[#655356] hover:text-red-500 underline transition-all disabled:opacity-50 min-h-[44px] inline-flex items-center"
           >
             {deleting ? "Clearing…" : "Clear override"}
           </button>
@@ -400,7 +400,7 @@ function MonthCalendar({
         {weeks.map((week, weekIdx) => (
           <div key={weekIdx}>
             {/* Week row */}
-            <div className={`grid grid-cols-7 gap-px ${weekIdx === 0 ? "rounded-t-xl overflow-hidden" : ""} ${weekIdx === weeks.length - 1 && selectedWeekIdx !== weekIdx ? "rounded-b-xl overflow-hidden" : ""} bg-[#f5f0eb] border-x border-[#e8e2dc] ${weekIdx === 0 ? "border-t" : ""} ${weekIdx === weeks.length - 1 && selectedWeekIdx !== weekIdx ? "border-b" : ""}`}>
+            <div className={`grid grid-cols-7 gap-px ${weekIdx === 0 ? "rounded-t-xl overflow-hidden" : ""} ${weekIdx === weeks.length - 1 && selectedWeekIdx !== weekIdx ? "rounded-b-xl overflow-hidden" : ""} bg-[#f0eaea] border-x border-[#d4c8c8] ${weekIdx === 0 ? "border-t" : ""} ${weekIdx === weeks.length - 1 && selectedWeekIdx !== weekIdx ? "border-b" : ""}`}>
               {week.map((date, dayIdx) => {
                 if (!date) {
                   return <div key={`pad-${weekIdx}-${dayIdx}`} className="bg-[#faf9f7] h-16 sm:h-20" />;
@@ -426,13 +426,13 @@ function MonthCalendar({
                     const ot = override.open_time?.slice(0, 5) ?? "";
                     const ct = override.close_time?.slice(0, 5) ?? "";
                     label = ot && ct ? `${formatTime12(ot).replace(":00", "")} – ${formatTime12(ct).replace(":00", "")}` : "Open";
-                    labelClass = "text-[#9b6f6f]";
+                    labelClass = "text-[#513b3c]";
                   }
                 } else if (defaultHour) {
                   const ot = defaultHour.open_time?.slice(0, 5) ?? "";
                   const ct = defaultHour.close_time?.slice(0, 5) ?? "";
                   label = ot && ct ? `${formatTime12(ot).replace(":00", "")}–${formatTime12(ct).replace(":00", "")}` : "Open";
-                  labelClass = "text-[#8a7e78]";
+                  labelClass = "text-[#655356]";
                 } else {
                   label = "Closed";
                   labelClass = "text-[#c9b5ad]";
@@ -449,7 +449,7 @@ function MonthCalendar({
                   >
                     {/* Day number */}
                     <span className={`text-xs font-semibold mb-0.5 w-6 h-6 flex items-center justify-center rounded-full ${
-                      isToday ? "bg-[#9b6f6f] text-white" : isSelected ? "bg-rose-100 text-rose-700" : "text-[#1a1714]"
+                      isToday ? "bg-[#513b3c] text-white" : isSelected ? "bg-rose-100 text-rose-700" : "text-[#28231c]"
                     }`}>
                       {date.getDate()}
                     </span>
@@ -465,7 +465,7 @@ function MonthCalendar({
 
                     {/* Override dot */}
                     {hasOverride && (
-                      <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-[#c9a96e] rounded-full" />
+                      <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-[#c1eeff] rounded-full" />
                     )}
                   </button>
                 );
@@ -474,7 +474,7 @@ function MonthCalendar({
 
             {/* Inline editor — shown below the week that contains the selected day */}
             {selectedWeekIdx === weekIdx && selectedDay && (
-              <div className={`border-x border-b border-[#e8e2dc] rounded-b-xl bg-[#faf8f5] px-3 pb-3 ${weekIdx === weeks.length - 1 ? "" : "mb-px"}`}>
+              <div className={`border-x border-b border-[#d4c8c8] rounded-b-xl bg-[#f5f0f0] px-3 pb-3 ${weekIdx === weeks.length - 1 ? "" : "mb-px"}`}>
                 <InlineDayEditor
                   dateKey={selectedDay}
                   defaultHour={selectedDefaultHour}
@@ -566,7 +566,7 @@ export default function HoursPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="w-6 h-6 border-2 border-[#9b6f6f] border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-[#513b3c] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -576,19 +576,19 @@ export default function HoursPage() {
   return (
     <div className="max-w-xl">
       <div className="mb-6">
-        <h1 className="font-display text-3xl text-[#1a1714]">Operational Hours</h1>
-        <p className="text-[#8a7e78] text-sm mt-1">
+        <h1 className="font-display text-3xl text-[#28231c]">Operational Hours</h1>
+        <p className="text-[#655356] text-sm mt-1">
           Set your default weekly schedule, then tap any day to customize.
         </p>
       </div>
 
       {/* Default Week */}
-      <div className="bg-white rounded-2xl border border-[#e8e2dc] overflow-hidden mb-6">
-        <div className="px-4 py-3 border-b border-[#f5f0eb]">
-          <p className="text-xs font-semibold text-[#c9a96e] uppercase tracking-widest">Default Week</p>
-          <p className="text-xs text-[#8a7e78] mt-0.5">Changes save automatically.</p>
+      <div className="bg-white rounded-2xl border border-[#d4c8c8] overflow-hidden mb-6">
+        <div className="px-4 py-3 border-b border-[#f0eaea]">
+          <p className="text-xs font-semibold text-[#c1eeff] uppercase tracking-widest">Default Week</p>
+          <p className="text-xs text-[#655356] mt-0.5">Changes save automatically.</p>
         </div>
-        <div className="divide-y divide-[#f5f0eb]">
+        <div className="divide-y divide-[#f0eaea]">
           {Array.from({ length: 7 }, (_, i) => (
             <DayRow
               key={i}
@@ -602,23 +602,23 @@ export default function HoursPage() {
       </div>
 
       {/* Month Calendar */}
-      <div className="bg-white rounded-2xl border border-[#e8e2dc] p-4">
+      <div className="bg-white rounded-2xl border border-[#d4c8c8] p-4">
         {/* Month nav */}
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={prevMonth}
-            className="p-2.5 rounded-full hover:bg-[#f5f0eb] transition-all active:scale-95 text-[#8a7e78] min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="p-2.5 rounded-full hover:bg-[#f0eaea] transition-all active:scale-95 text-[#655356] min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <p className="font-display text-base text-[#1a1714]">
+          <p className="font-display text-base text-[#28231c]">
             {MONTH_NAMES[calMonth]} {calYear}
           </p>
           <button
             onClick={nextMonth}
-            className="p-2.5 rounded-full hover:bg-[#f5f0eb] transition-all active:scale-95 text-[#8a7e78] min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="p-2.5 rounded-full hover:bg-[#f0eaea] transition-all active:scale-95 text-[#655356] min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -641,20 +641,20 @@ export default function HoursPage() {
 
         <div className="flex items-center gap-4 mt-4 px-1">
           <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-[#c9a96e]" />
-            <span className="text-xs text-[#8a7e78]">Has override</span>
+            <span className="w-2 h-2 rounded-full bg-[#c1eeff]" />
+            <span className="text-xs text-[#655356]">Has override</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-5 h-5 rounded-full bg-[#9b6f6f] flex items-center justify-center">
+            <span className="w-5 h-5 rounded-full bg-[#513b3c] flex items-center justify-center">
               <span className="text-[8px] text-white font-bold">1</span>
             </span>
-            <span className="text-xs text-[#8a7e78]">Today</span>
+            <span className="text-xs text-[#655356]">Today</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-5 h-5 rounded-full bg-rose-100 ring-1 ring-rose-200 flex items-center justify-center">
               <span className="text-[8px] text-rose-700 font-bold">5</span>
             </span>
-            <span className="text-xs text-[#8a7e78]">Selected</span>
+            <span className="text-xs text-[#655356]">Selected</span>
           </div>
         </div>
       </div>

@@ -95,7 +95,7 @@ function Skeleton() {
   return (
     <div className="space-y-4">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="bg-white rounded-2xl border border-[#e8e2dc] p-5 animate-pulse">
+        <div key={i} className="bg-white rounded-2xl border border-[#d4c8c8] p-5 animate-pulse">
           <div className="flex gap-4">
             <div className="w-14 text-center">
               <div className="h-5 bg-[#f0ebe6] rounded w-10 mx-auto mb-1" />
@@ -184,8 +184,8 @@ export default function AppointmentsPage() {
   return (
     <div className="max-w-3xl">
       <div className="mb-6">
-        <h1 className="font-display text-3xl text-[#1a1714]">Appointments</h1>
-        <p className="text-[#8a7e78] text-sm mt-1">Confirm or decline client requests.</p>
+        <h1 className="font-display text-3xl text-[#28231c]">Appointments</h1>
+        <p className="text-[#655356] text-sm mt-1">Confirm or decline client requests.</p>
       </div>
 
       {/* Pending banner */}
@@ -202,13 +202,13 @@ export default function AppointmentsPage() {
       )}
 
       {/* Filter tabs */}
-      <div className="flex gap-2 mb-6 bg-[#f5f0eb] p-1 rounded-xl w-fit">
+      <div className="flex gap-2 mb-6 bg-[#f0eaea] p-1 rounded-xl w-fit">
         {(["upcoming", "all", "cancelled"] as const).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
             className={`text-sm px-4 py-2 rounded-lg transition-colors font-medium min-h-[44px] ${
-              filter === f ? "bg-white text-[#1a1714] shadow-sm" : "text-[#8a7e78] hover:text-[#5c4a42]"
+              filter === f ? "bg-white text-[#28231c] shadow-sm" : "text-[#655356] hover:text-[#5c4a42]"
             }`}
           >
             {f === "upcoming" ? "Upcoming" : f === "all" ? "All" : "Cancelled"}
@@ -219,27 +219,27 @@ export default function AppointmentsPage() {
       {loading ? (
         <Skeleton />
       ) : appointments.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-[#e8e2dc] text-center py-16">
-          <div className="w-12 h-12 rounded-full bg-[#f5ede8] flex items-center justify-center mx-auto mb-4">
-            <svg className="w-6 h-6 text-[#9b6f6f]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="bg-white rounded-2xl border border-[#d4c8c8] text-center py-16">
+          <div className="w-12 h-12 rounded-full bg-[#2e2326] flex items-center justify-center mx-auto mb-4">
+            <svg className="w-6 h-6 text-[#513b3c]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </div>
-          <p className="font-display text-lg text-[#1a1714] mb-1">No appointments</p>
-          <p className="text-sm text-[#8a7e78]">{filter === "upcoming" ? "You're all caught up! 🎉" : "Nothing here yet."}</p>
+          <p className="font-display text-lg text-[#28231c] mb-1">No appointments</p>
+          <p className="text-sm text-[#655356]">{filter === "upcoming" ? "You're all caught up! 🎉" : "Nothing here yet."}</p>
         </div>
       ) : (
         <div className="space-y-6">
           {Object.entries(grouped).map(([dateLabel, dayAppts]) => (
             <div key={dateLabel}>
               <div className="flex items-center gap-3 mb-3">
-                <p className="text-xs font-semibold text-[#8a7e78] uppercase tracking-widest">{dateLabel}</p>
-                <div className="flex-1 h-px bg-[#e8e2dc]" />
-                <span className="text-xs text-[#8a7e78]">{dayAppts.length} appt{dayAppts.length > 1 ? "s" : ""}</span>
+                <p className="text-xs font-semibold text-[#655356] uppercase tracking-widest">{dateLabel}</p>
+                <div className="flex-1 h-px bg-[#d4c8c8]" />
+                <span className="text-xs text-[#655356]">{dayAppts.length} appt{dayAppts.length > 1 ? "s" : ""}</span>
               </div>
 
-              <div className="bg-white rounded-2xl border border-[#e8e2dc] overflow-hidden divide-y divide-[#f5f0eb]">
+              <div className="bg-white rounded-2xl border border-[#d4c8c8] overflow-hidden divide-y divide-[#f0eaea]">
                 {dayAppts.map((appt) => {
                   const status = STATUS_CONFIG[appt.status];
                   const isPending = appt.status === "pending" || appt.status === "reschedule_requested";
@@ -254,15 +254,15 @@ export default function AppointmentsPage() {
                       >
                         <div className="flex items-start gap-3 sm:gap-4">
                           <div className="flex-shrink-0 text-center min-w-[56px]">
-                            <p className="text-sm font-bold text-[#1a1714]">{formatTime(appt.start_at)}</p>
-                            <p className="text-[10px] text-[#8a7e78] mt-0.5">{totalDuration(appt) > 0 ? formatDuration(totalDuration(appt)) : ""}</p>
+                            <p className="text-sm font-bold text-[#28231c]">{formatTime(appt.start_at)}</p>
+                            <p className="text-[10px] text-[#655356] mt-0.5">{totalDuration(appt) > 0 ? formatDuration(totalDuration(appt)) : ""}</p>
                           </div>
 
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
                               <div>
-                                <p className="font-semibold text-[#1a1714] text-sm">{appt.client?.full_name ?? "Guest"}</p>
-                                <p className="text-xs text-[#8a7e78] mt-0.5">{serviceNames(appt)}</p>
+                                <p className="font-semibold text-[#28231c] text-sm">{appt.client?.full_name ?? "Guest"}</p>
+                                <p className="text-xs text-[#655356] mt-0.5">{serviceNames(appt)}</p>
                               </div>
                               <div className="flex items-center gap-2 flex-shrink-0">
                                 {totalPriceCents(appt) > 0 && (
@@ -275,7 +275,7 @@ export default function AppointmentsPage() {
                                   {status.label}
                                 </span>
                                 <svg
-                                  className={`w-4 h-4 text-[#8a7e78] transition-transform flex-shrink-0 ${isExpanded ? "rotate-180" : ""}`}
+                                  className={`w-4 h-4 text-[#655356] transition-transform flex-shrink-0 ${isExpanded ? "rotate-180" : ""}`}
                                   fill="none" viewBox="0 0 24 24" stroke="currentColor"
                                 >
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -288,7 +288,7 @@ export default function AppointmentsPage() {
 
                       {/* Expanded detail */}
                       {isExpanded && (
-                        <div className="px-4 sm:px-5 pb-4 sm:pb-5 border-t border-[#f5f0eb] bg-[#faf9f7]">
+                        <div className="px-4 sm:px-5 pb-4 sm:pb-5 border-t border-[#f0eaea] bg-[#faf9f7]">
                           <div className="pt-4 space-y-2 mb-4">
                             {appt.status === "reschedule_requested" && appt.reschedule_preferred_time && (
                               <div className="bg-purple-50 border border-purple-200 rounded-xl px-4 py-3">
@@ -313,8 +313,8 @@ export default function AppointmentsPage() {
                                 { label: "Status", value: status.label },
                               ].map((row) => (
                                 <div key={row.label}>
-                                  <p className="text-[10px] text-[#8a7e78] uppercase tracking-wide">{row.label}</p>
-                                  <p className="text-sm font-medium text-[#1a1714]">{row.value}</p>
+                                  <p className="text-[10px] text-[#655356] uppercase tracking-wide">{row.label}</p>
+                                  <p className="text-sm font-medium text-[#28231c]">{row.value}</p>
                                 </div>
                               ))}
                             </div>
@@ -329,7 +329,7 @@ export default function AppointmentsPage() {
                               {appt.status === "pending" && (
                                 <button
                                   onClick={() => updateStatus(appt.id, "confirmed")}
-                                  className="flex items-center gap-1.5 px-4 py-2.5 bg-[#9b6f6f] text-white text-sm font-semibold rounded-full hover:bg-[#8a5f5f] active:scale-95 transition-all min-h-[44px]"
+                                  className="flex items-center gap-1.5 px-4 py-2.5 bg-[#513b3c] text-white text-sm font-semibold rounded-full hover:bg-[#3d2c2d] active:scale-95 transition-all min-h-[44px]"
                                 >
                                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
@@ -350,7 +350,7 @@ export default function AppointmentsPage() {
                               )}
                               <button
                                 onClick={() => updateStatus(appt.id, "cancelled")}
-                                className="flex items-center gap-1.5 px-4 py-2.5 border border-[#e8e2dc] text-[#8a7e78] text-sm font-semibold rounded-full hover:border-red-200 hover:text-red-600 hover:bg-red-50 active:scale-95 transition-all min-h-[44px]"
+                                className="flex items-center gap-1.5 px-4 py-2.5 border border-[#d4c8c8] text-[#655356] text-sm font-semibold rounded-full hover:border-red-200 hover:text-red-600 hover:bg-red-50 active:scale-95 transition-all min-h-[44px]"
                               >
                                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

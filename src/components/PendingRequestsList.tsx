@@ -153,14 +153,14 @@ function SwipeableCard({ appt, onAction, error, confirmingDecline, onRequestDecl
         {/* Client name + service */}
         <div className="flex items-start justify-between gap-2 mb-1">
           <div className="min-w-0 flex-1">
-            <p className="font-bold text-[#1a1714] text-base leading-tight truncate">
+            <p className="font-bold text-[#28231c] text-base leading-tight truncate">
               {appt.client?.full_name ?? "Guest"}
             </p>
             <p className="text-sm text-[#5c4a42] mt-0.5">{allServiceNames(appt)}</p>
           </div>
           <div className="flex-shrink-0 text-right">
-            <p className="text-sm font-semibold text-[#c9a96e]">{formatDate(appt.start_at)}</p>
-            <p className="text-xs text-[#8a7e78] mt-0.5">
+            <p className="text-sm font-semibold text-[#c1eeff]">{formatDate(appt.start_at)}</p>
+            <p className="text-xs text-[#655356] mt-0.5">
               {formatTime(appt.start_at)}
               {allServiceDuration(appt) > 0 ? ` · ${formatDuration(allServiceDuration(appt))}` : ""}
             </p>
@@ -214,7 +214,7 @@ function SwipeableCard({ appt, onAction, error, confirmingDecline, onRequestDecl
               </button>
               <button
                 onClick={onCancelDecline}
-                className="flex-1 py-2.5 border border-[#e8e2dc] text-[#5c4a42] text-sm font-semibold rounded-lg hover:bg-white active:bg-white transition-colors min-h-[44px]"
+                className="flex-1 py-2.5 border border-[#d4c8c8] text-[#5c4a42] text-sm font-semibold rounded-lg hover:bg-white active:bg-white transition-colors min-h-[44px]"
               >
                 Keep
               </button>
@@ -224,14 +224,14 @@ function SwipeableCard({ appt, onAction, error, confirmingDecline, onRequestDecl
 
         {/* Swipe hint (first card only, subtle) */}
         <div className="flex items-center justify-center gap-3 mt-2 opacity-30 pointer-events-none select-none">
-          <span className="text-[9px] text-[#8a7e78] flex items-center gap-1">
+          <span className="text-[9px] text-[#655356] flex items-center gap-1">
             <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             decline
           </span>
-          <span className="w-px h-3 bg-[#e8e2dc]" />
-          <span className="text-[9px] text-[#8a7e78] flex items-center gap-1">
+          <span className="w-px h-3 bg-[#d4c8c8]" />
+          <span className="text-[9px] text-[#655356] flex items-center gap-1">
             approve
             <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -291,7 +291,7 @@ export default function PendingRequestsList({ initialAppts }: Props) {
   if (appts.length === 0) {
     return (
       <div className="px-5 py-8 text-center">
-        <p className="text-sm text-[#8a7e78]">No pending requests — you&apos;re all caught up ✨</p>
+        <p className="text-sm text-[#655356]">No pending requests — you&apos;re all caught up ✨</p>
       </div>
     );
   }
