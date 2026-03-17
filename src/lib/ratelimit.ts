@@ -1,10 +1,10 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
-// Booking rate limit: 5 requests per hour per IP
+// Booking rate limit: 20 requests per hour per IP
 export const bookingRateLimit = new Ratelimit({
   redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(5, "1 h"),
+  limiter: Ratelimit.slidingWindow(20, "1 h"),
   analytics: true,
   prefix: "ratelimit:booking",
 });

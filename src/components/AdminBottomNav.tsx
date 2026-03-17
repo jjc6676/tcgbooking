@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 interface Props {
   pendingCount: number;
@@ -100,7 +101,15 @@ const MORE_ITEMS = [
 
 export default function AdminBottomNav({ pendingCount }: Props) {
   const pathname = usePathname();
+  const router = useRouter();
   const [showMore, setShowMore] = useState(false);
+
+  async function handleSignOut() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  }
 
   const isMoreActive = MORE_ITEMS.some((item) => pathname.startsWith(item.href));
 
@@ -139,6 +148,18 @@ export default function AdminBottomNav({ pendingCount }: Props) {
                 </Link>
               );
             })}
+          </div>
+          <div className="border-t border-[#e8e2dc] mt-3 pt-3">
+            <button
+              onClick={() => { setShowMore(false); handleSignOut(); }}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all active:scale-[0.98] min-h-[44px] w-full text-[#9b6f6f] hover:bg-[#f5ede8]"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              <span className="text-sm font-medium">Sign out</span>
+            </button>
           </div>
         </div>
       )}
