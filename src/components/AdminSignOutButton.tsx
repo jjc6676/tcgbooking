@@ -24,7 +24,7 @@ export default function AdminSignOutButton() {
     <button
       onClick={handleSignOut}
       disabled={signing}
-      className="text-xs text-[#655356] hover:text-[#a89e96] transition-all active:opacity-70 flex items-center gap-2 disabled:opacity-50 min-h-[44px]"
+      className="text-xs text-[#6b5e56] hover:text-[#a89e96] transition-all active:opacity-70 flex items-center gap-2 disabled:opacity-50 min-h-[44px]"
     >
       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}

@@ -147,7 +147,7 @@ export default function ClientDetailPage({ params }: { params: { clientId: strin
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="w-6 h-6 border-2 border-[#513b3c] border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-[#9b6f6f] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -155,8 +155,8 @@ export default function ClientDetailPage({ params }: { params: { clientId: strin
   if (!client) {
     return (
       <div className="text-center py-12">
-        <p className="text-[#655356]">Client not found.</p>
-        <Link href="/admin/clients" className="text-sm text-[#513b3c] mt-2 inline-flex items-center hover:underline min-h-[44px]">
+        <p className="text-[#8a7e78]">Client not found.</p>
+        <Link href="/admin/clients" className="text-sm text-[#9b6f6f] mt-2 inline-flex items-center hover:underline min-h-[44px]">
           ← Back to clients
         </Link>
       </div>
@@ -179,9 +179,9 @@ export default function ClientDetailPage({ params }: { params: { clientId: strin
       {/* Rebook sheet */}
       {showRebook && (
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl shadow-xl p-5 max-w-2xl mx-auto lg:inset-x-auto lg:w-[600px] lg:left-1/2 lg:-translate-x-1/2" style={{ paddingBottom: "calc(5rem + env(safe-area-inset-bottom))" }}>
-          <div className="w-10 h-1 bg-[#d4c8c8] rounded-full mx-auto mb-4" />
-          <h3 className="font-display text-lg text-[#28231c] mb-1">Send Rebooking Reminder</h3>
-          <p className="text-xs text-[#655356] mb-4">to {client.email}</p>
+          <div className="w-10 h-1 bg-[#e8e2dc] rounded-full mx-auto mb-4" />
+          <h3 className="font-display text-lg text-[#1a1714] mb-1">Send Rebooking Reminder</h3>
+          <p className="text-xs text-[#8a7e78] mb-4">to {client.email}</p>
 
           {rebookSent ? (
             <div className="text-center py-8">
@@ -190,7 +190,7 @@ export default function ClientDetailPage({ params }: { params: { clientId: strin
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <p className="font-display text-base text-[#28231c]">Reminder sent!</p>
+              <p className="font-display text-base text-[#1a1714]">Reminder sent!</p>
             </div>
           ) : (
             <>
@@ -200,19 +200,19 @@ export default function ClientDetailPage({ params }: { params: { clientId: strin
                   value={rebookMessage}
                   onChange={(e) => setRebookMessage(e.target.value)}
                   rows={6}
-                  className="w-full border border-[#d4c8c8] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#513b3c] bg-[#faf9f7] resize-none"
+                  className="w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7] resize-none"
                   style={{ fontSize: 16 }}
                 />
               </div>
               <div className="mb-4">
                 <label className="block text-xs font-medium text-[#5c4a42] mb-1.5">
-                  Suggested date <span className="font-normal text-[#655356]">(optional)</span>
+                  Suggested date <span className="font-normal text-[#8a7e78]">(optional)</span>
                 </label>
                 <input
                   type="date"
                   value={rebookDate}
                   onChange={(e) => setRebookDate(e.target.value)}
-                  className="w-full border border-[#d4c8c8] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#513b3c] bg-[#faf9f7]"
+                  className="w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7]"
                   style={{ fontSize: 16 }}
                 />
               </div>
@@ -225,13 +225,13 @@ export default function ClientDetailPage({ params }: { params: { clientId: strin
                 <button
                   onClick={sendRebook}
                   disabled={rebookSending || !rebookMessage}
-                  className="flex-1 py-2.5 bg-[#513b3c] text-white text-sm font-semibold rounded-full hover:bg-[#3d2c2d] disabled:opacity-50 transition-all active:scale-95 min-h-[44px]"
+                  className="flex-1 py-2.5 bg-[#9b6f6f] text-white text-sm font-semibold rounded-full hover:bg-[#8a5f5f] disabled:opacity-50 transition-all active:scale-95 min-h-[44px]"
                 >
                   {rebookSending ? "Sending…" : "Send Reminder"}
                 </button>
                 <button
                   onClick={() => setShowRebook(false)}
-                  className="px-5 py-2.5 border border-[#d4c8c8] text-sm text-[#655356] font-medium rounded-full hover:bg-[#f0eaea] transition-all active:scale-95 min-h-[44px]"
+                  className="px-5 py-2.5 border border-[#e8e2dc] text-sm text-[#8a7e78] font-medium rounded-full hover:bg-[#f5f0eb] transition-all active:scale-95 min-h-[44px]"
                 >
                   Cancel
                 </button>
@@ -243,7 +243,7 @@ export default function ClientDetailPage({ params }: { params: { clientId: strin
 
       <div className="max-w-2xl">
         <div className="mb-5">
-          <Link href="/admin/clients" className="text-xs text-[#655356] hover:text-[#513b3c] inline-flex items-center gap-1 mb-3 transition-all min-h-[44px]">
+          <Link href="/admin/clients" className="text-xs text-[#8a7e78] hover:text-[#9b6f6f] inline-flex items-center gap-1 mb-3 transition-all min-h-[44px]">
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
@@ -252,21 +252,21 @@ export default function ClientDetailPage({ params }: { params: { clientId: strin
 
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#2e2326] to-[#3a2d2e] flex items-center justify-center flex-shrink-0 border border-[#d4c8c8]">
-                <span className="text-[#513b3c] font-semibold text-lg">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#f5ede8] to-[#e8d8d0] flex items-center justify-center flex-shrink-0 border border-[#e8e2dc]">
+                <span className="text-[#9b6f6f] font-semibold text-lg">
                   {(client.full_name ?? client.email ?? "?").charAt(0).toUpperCase()}
                 </span>
               </div>
               <div>
-                <h1 className="font-display text-2xl text-[#28231c]">
+                <h1 className="font-display text-2xl text-[#1a1714]">
                   {client.full_name ?? "(no name)"}
                 </h1>
-                <p className="text-sm text-[#655356]">{client.email ?? "—"}</p>
+                <p className="text-sm text-[#8a7e78]">{client.email ?? "—"}</p>
               </div>
             </div>
             <button
               onClick={() => setShowRebook(true)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-[#513b3c] text-white text-sm font-medium rounded-full hover:bg-[#3d2c2d] transition-all active:scale-95 flex-shrink-0 min-h-[44px]"
+              className="flex items-center gap-2 px-4 py-2.5 bg-[#9b6f6f] text-white text-sm font-medium rounded-full hover:bg-[#8a5f5f] transition-all active:scale-95 flex-shrink-0 min-h-[44px]"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -280,37 +280,37 @@ export default function ClientDetailPage({ params }: { params: { clientId: strin
         {/* Stats */}
         {stats && (
           <div className="grid grid-cols-3 gap-3 mb-5">
-            <div className="bg-white rounded-2xl border border-[#d4c8c8] px-4 py-3 text-center">
-              <p className="text-2xl font-display text-[#513b3c]">{stats.totalAppointments}</p>
-              <p className="text-xs text-[#655356] mt-0.5">Total visits</p>
+            <div className="bg-white rounded-2xl border border-[#e8e2dc] px-4 py-3 text-center">
+              <p className="text-2xl font-display text-[#9b6f6f]">{stats.totalAppointments}</p>
+              <p className="text-xs text-[#8a7e78] mt-0.5">Total visits</p>
             </div>
-            <div className="bg-white rounded-2xl border border-[#d4c8c8] px-4 py-3 text-center">
-              <p className="text-2xl font-display text-[#513b3c]">{stats.totalConfirmed}</p>
-              <p className="text-xs text-[#655356] mt-0.5">Confirmed</p>
+            <div className="bg-white rounded-2xl border border-[#e8e2dc] px-4 py-3 text-center">
+              <p className="text-2xl font-display text-[#9b6f6f]">{stats.totalConfirmed}</p>
+              <p className="text-xs text-[#8a7e78] mt-0.5">Confirmed</p>
             </div>
-            <div className="bg-white rounded-2xl border border-[#d4c8c8] px-4 py-3 text-center">
-              <p className="text-sm font-semibold text-[#28231c]">
+            <div className="bg-white rounded-2xl border border-[#e8e2dc] px-4 py-3 text-center">
+              <p className="text-sm font-semibold text-[#1a1714]">
                 {stats.firstBooking
                   ? new Date(stats.firstBooking).toLocaleDateString("en-US", { month: "short", year: "numeric" })
                   : "—"}
               </p>
-              <p className="text-xs text-[#655356] mt-0.5">First booking</p>
+              <p className="text-xs text-[#8a7e78] mt-0.5">First booking</p>
             </div>
           </div>
         )}
 
         {/* Private notes */}
-        <div className="bg-white rounded-2xl border border-[#d4c8c8] p-5 mb-5">
+        <div className="bg-white rounded-2xl border border-[#e8e2dc] p-5 mb-5">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-sm font-semibold text-[#28231c]">Private Notes</p>
-              <p className="text-xs text-[#655356]">Only you can see these.</p>
+              <p className="text-sm font-semibold text-[#1a1714]">Private Notes</p>
+              <p className="text-xs text-[#8a7e78]">Only you can see these.</p>
             </div>
             {notes !== notesOriginal && (
               <button
                 onClick={saveNotes}
                 disabled={notesSaving}
-                className="text-xs px-4 py-2 bg-[#513b3c] text-white rounded-full hover:bg-[#3d2c2d] disabled:opacity-50 transition-all active:scale-95 min-h-[44px]"
+                className="text-xs px-4 py-2 bg-[#9b6f6f] text-white rounded-full hover:bg-[#8a5f5f] disabled:opacity-50 transition-all active:scale-95 min-h-[44px]"
               >
                 {notesSaving ? "Saving…" : "Save"}
               </button>
@@ -324,27 +324,27 @@ export default function ClientDetailPage({ params }: { params: { clientId: strin
             onChange={(e) => setNotes(e.target.value)}
             rows={4}
             placeholder="Allergies, preferences, color history, notes from last visit…"
-            className="w-full border border-[#d4c8c8] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#513b3c] bg-[#faf9f7] resize-none"
+            className="w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7] resize-none"
             style={{ fontSize: 16 }}
           />
         </div>
 
         {/* Appointment history */}
         <div>
-          <p className="text-sm font-semibold text-[#28231c] mb-3">Appointment History</p>
+          <p className="text-sm font-semibold text-[#1a1714] mb-3">Appointment History</p>
           {appointments.length === 0 ? (
-            <div className="text-center py-8 bg-white rounded-2xl border border-dashed border-[#d4c8c8]">
-              <p className="text-sm text-[#655356]">No appointments on record.</p>
+            <div className="text-center py-8 bg-white rounded-2xl border border-dashed border-[#e8e2dc]">
+              <p className="text-sm text-[#8a7e78]">No appointments on record.</p>
             </div>
           ) : (
-            <div className="bg-white rounded-2xl border border-[#d4c8c8] divide-y divide-[#f0eaea] overflow-hidden">
+            <div className="bg-white rounded-2xl border border-[#e8e2dc] divide-y divide-[#f5f0eb] overflow-hidden">
               {appointments.map((a) => (
                 <div key={a.id} className="px-5 py-4 flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold text-[#28231c]">
+                    <p className="text-sm font-semibold text-[#1a1714]">
                       {a.service?.name ?? "Service"}
                     </p>
-                    <p className="text-xs text-[#655356] mt-0.5">
+                    <p className="text-xs text-[#8a7e78] mt-0.5">
                       {new Date(a.start_at).toLocaleDateString("en-US", {
                         weekday: "short",
                         month: "short",
@@ -358,7 +358,7 @@ export default function ClientDetailPage({ params }: { params: { clientId: strin
                       })}
                     </p>
                   </div>
-                  <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${statusColors[a.status] ?? "bg-[#f0eaea] text-[#655356]"}`}>
+                  <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${statusColors[a.status] ?? "bg-[#f5f0eb] text-[#8a7e78]"}`}>
                     {a.status.replace("_", " ")}
                   </span>
                 </div>

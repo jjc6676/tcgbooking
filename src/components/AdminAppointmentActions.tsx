@@ -50,7 +50,7 @@ export default function AdminAppointmentActions({
         <span className="text-xs text-red-600">{error}</span>
         <button
           onClick={() => setError(null)}
-          className="text-xs text-[#655356] underline"
+          className="text-xs text-[#8a7e78] underline"
         >
           Dismiss
         </button>

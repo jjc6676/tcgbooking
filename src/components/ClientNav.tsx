@@ -7,16 +7,16 @@ export default function ClientNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="bg-white border-b border-[#d4c8c8] sticky top-0 z-50">
+    <nav className="bg-white border-b border-[#e8e2dc] sticky top-0 z-50">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Brand */}
         <Link href="/book" className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#2e2326] to-[#3a2d2e] flex items-center justify-center border border-[#d4c8c8] flex-shrink-0">
-            <span className="font-display text-[#513b3c] text-sm font-semibold">K</span>
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#f5ede8] to-[#e8d8d0] flex items-center justify-center border border-[#e8e2dc] flex-shrink-0">
+            <span className="font-display text-[#9b6f6f] text-sm font-semibold">K</span>
           </div>
           <div className="leading-tight min-w-0 hidden xs:block">
-            <p className="font-display text-[#28231c] text-base font-semibold leading-none truncate">Keri Choplin</p>
-            <p className="text-[10px] text-[#c1eeff] tracking-widest uppercase leading-tight">Lafayette, LA</p>
+            <p className="font-display text-[#1a1714] text-base font-semibold leading-none truncate">Keri Choplin</p>
+            <p className="text-[10px] text-[#c9a96e] tracking-widest uppercase leading-tight">Lafayette, LA</p>
           </div>
         </Link>
 
@@ -27,8 +27,8 @@ export default function ClientNav() {
             href="/appointments"
             className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors min-h-[44px] ${
               pathname === "/appointments"
-                ? "text-[#513b3c] bg-[#2e2326]"
-                : "text-[#655356] hover:text-[#513b3c] hover:bg-[#faf9f7]"
+                ? "text-[#9b6f6f] bg-[#f5ede8]"
+                : "text-[#8a7e78] hover:text-[#9b6f6f] hover:bg-[#faf9f7]"
             }`}
             aria-label="My appointments"
           >
@@ -44,8 +44,8 @@ export default function ClientNav() {
             href="/account"
             className={`flex items-center justify-center w-11 h-11 rounded-xl transition-all active:scale-95 ${
               pathname === "/account"
-                ? "text-[#513b3c] bg-[#2e2326]"
-                : "text-[#655356] hover:text-[#513b3c] hover:bg-[#faf9f7]"
+                ? "text-[#9b6f6f] bg-[#f5ede8]"
+                : "text-[#8a7e78] hover:text-[#9b6f6f] hover:bg-[#faf9f7]"
             }`}
             aria-label="Account"
           >
@@ -58,7 +58,7 @@ export default function ClientNav() {
           {/* Book CTA */}
           <Link
             href="/book"
-            className="inline-flex items-center px-4 py-2.5 bg-[#513b3c] text-white text-sm font-semibold rounded-full hover:bg-[#3d2c2d] active:bg-[#7a5050] active:scale-[0.98] transition-all min-h-[44px] ml-1"
+            className="inline-flex items-center px-4 py-2.5 bg-[#9b6f6f] text-white text-sm font-semibold rounded-full hover:bg-[#8a5f5f] active:bg-[#7a5050] active:scale-[0.98] transition-all min-h-[44px] ml-1"
           >
             Book
           </Link>

@@ -2,30 +2,30 @@ import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[#f5f0f0] flex flex-col">
+    <div className="min-h-screen bg-[#faf8f5] flex flex-col">
       {/* Hero */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-20 text-center">
         {/* Decorative line */}
         <div className="flex items-center gap-4 mb-8">
-          <div className="h-px w-16 bg-[#c1eeff]" />
-          <span className="text-[#c1eeff] text-xs tracking-[0.3em] uppercase font-medium">
+          <div className="h-px w-16 bg-[#c9a96e]" />
+          <span className="text-[#c9a96e] text-xs tracking-[0.3em] uppercase font-medium">
             Lafayette, Louisiana
           </span>
-          <div className="h-px w-16 bg-[#c1eeff]" />
+          <div className="h-px w-16 bg-[#c9a96e]" />
         </div>
 
-        <h1 className="font-display text-5xl sm:text-6xl md:text-7xl text-[#28231c] mb-4 leading-tight">
+        <h1 className="font-display text-5xl sm:text-6xl md:text-7xl text-[#1a1714] mb-4 leading-tight">
           Keri Choplin
         </h1>
 
-        <p className="text-[#655356] text-lg sm:text-xl max-w-md mx-auto mt-4 mb-10 leading-relaxed font-light">
+        <p className="text-[#8a7e78] text-lg sm:text-xl max-w-md mx-auto mt-4 mb-10 leading-relaxed font-light">
           Expert cuts, color, and treatments — crafted with care, just for you.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4">
           <Link
             href="/book"
-            className="inline-flex items-center justify-center px-8 py-3.5 bg-[#513b3c] text-white font-medium rounded-full hover:bg-[#3d2c2d] transition-all active:scale-[0.98] text-sm tracking-wide min-h-[48px]"
+            className="inline-flex items-center justify-center px-8 py-3.5 bg-[#9b6f6f] text-white font-medium rounded-full hover:bg-[#8a5f5f] transition-all active:scale-[0.98] text-sm tracking-wide min-h-[48px]"
           >
             Book an Appointment
           </Link>
@@ -33,8 +33,8 @@ export default function HomePage() {
         </div>
 
         {/* Hours teaser */}
-        <div className="mt-14 flex items-center gap-2 text-sm text-[#655356]">
-          <svg className="w-4 h-4 text-[#c1eeff]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="mt-14 flex items-center gap-2 text-sm text-[#8a7e78]">
+          <svg className="w-4 h-4 text-[#c9a96e]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
               d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" />
           </svg>
@@ -43,7 +43,7 @@ export default function HomePage() {
       </div>
 
       {/* Services strip */}
-      <div className="border-t border-[#d4c8c8] bg-white">
+      <div className="border-t border-[#e8e2dc] bg-white">
         <div className="max-w-4xl mx-auto px-6 py-8">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
             {[
@@ -85,10 +85,10 @@ export default function HomePage() {
               },
             ].map((s) => (
               <div key={s.label} className="flex flex-col items-center gap-2.5">
-                <div className="w-10 h-10 rounded-full bg-[#2e2326] flex items-center justify-center text-[#513b3c]">
+                <div className="w-10 h-10 rounded-full bg-[#f5ede8] flex items-center justify-center text-[#9b6f6f]">
                   {s.icon}
                 </div>
-                <span className="text-xs text-[#655356] tracking-wide uppercase">{s.label}</span>
+                <span className="text-xs text-[#8a7e78] tracking-wide uppercase">{s.label}</span>
               </div>
             ))}
           </div>

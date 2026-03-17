@@ -131,18 +131,18 @@ export default async function AdminLayout({
   return (
     <ToastProvider>
     <ClientAuthGuard />
-    <div className="min-h-screen bg-[#f5f0f0]">
+    <div className="min-h-screen bg-[#faf8f5]">
       {/* Mobile top bar */}
-      <div className="lg:hidden flex items-center justify-between px-4 py-3.5 bg-white border-b border-[#d4c8c8] sticky top-0 z-40">
+      <div className="lg:hidden flex items-center justify-between px-4 py-3.5 bg-white border-b border-[#e8e2dc] sticky top-0 z-40">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#2e2326] to-[#3a2d2e] flex items-center justify-center border border-[#d4c8c8]">
-            <span className="font-display text-[#513b3c] text-sm font-semibold">K</span>
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#f5ede8] to-[#e8d8d0] flex items-center justify-center border border-[#e8e2dc]">
+            <span className="font-display text-[#9b6f6f] text-sm font-semibold">K</span>
           </div>
           <div className="leading-tight">
-            <p className="font-display text-[#28231c] text-base font-semibold leading-none">
+            <p className="font-display text-[#1a1714] text-base font-semibold leading-none">
               Keri Choplin
             </p>
-            <p className="text-[#c1eeff] text-[9px] tracking-widest uppercase leading-tight">
+            <p className="text-[#c9a96e] text-[9px] tracking-widest uppercase leading-tight">
               Studio Dashboard
             </p>
           </div>
@@ -157,17 +157,17 @@ export default async function AdminLayout({
 
       <div className="flex">
         {/* Desktop sidebar */}
-        <aside className="hidden lg:flex w-64 bg-[#28231c] flex-col min-h-screen sticky top-0">
-          <div className="px-6 py-6 border-b border-[#070707]">
+        <aside className="hidden lg:flex w-64 bg-[#1a1714] flex-col min-h-screen sticky top-0">
+          <div className="px-6 py-6 border-b border-[#2a2320]">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#2e2326] to-[#3a2d2e] flex items-center justify-center">
-                <span className="font-display text-[#513b3c] text-lg font-semibold">K</span>
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#f5ede8] to-[#e8d8d0] flex items-center justify-center">
+                <span className="font-display text-[#9b6f6f] text-lg font-semibold">K</span>
               </div>
               <div>
                 <p className="text-white font-semibold text-base leading-none font-display">
                   Keri Choplin
                 </p>
-                <p className="text-[#c1eeff] text-[10px] tracking-widest uppercase leading-tight mt-0.5">
+                <p className="text-[#c9a96e] text-[10px] tracking-widest uppercase leading-tight mt-0.5">
                   Hair Studio
                 </p>
               </div>
@@ -181,9 +181,9 @@ export default async function AdminLayout({
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#a89e96] hover:text-white hover:bg-[#070707] transition-colors mb-0.5 group"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#a89e96] hover:text-white hover:bg-[#2a2320] transition-colors mb-0.5 group"
                 >
-                  <span className="text-[#655356] group-hover:text-[#c1eeff] transition-colors">
+                  <span className="text-[#6b5e56] group-hover:text-[#c9a96e] transition-colors">
                     {item.icon}
                   </span>
                   <span className="text-sm font-medium">{item.label}</span>
@@ -203,9 +203,9 @@ export default async function AdminLayout({
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#a89e96] hover:text-white hover:bg-[#070707] transition-colors mb-0.5 group"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#a89e96] hover:text-white hover:bg-[#2a2320] transition-colors mb-0.5 group"
               >
-                <span className="text-[#655356] group-hover:text-[#c1eeff] transition-colors">
+                <span className="text-[#6b5e56] group-hover:text-[#c9a96e] transition-colors">
                   {item.icon}
                 </span>
                 <span className="text-sm font-medium">{item.label}</span>
@@ -213,10 +213,10 @@ export default async function AdminLayout({
             ))}
           </nav>
 
-          <div className="px-6 py-5 border-t border-[#070707] space-y-3">
+          <div className="px-6 py-5 border-t border-[#2a2320] space-y-3">
             <Link
               href="/book"
-              className="flex items-center gap-2 text-xs text-[#655356] hover:text-[#c1eeff] transition-colors"
+              className="flex items-center gap-2 text-xs text-[#6b5e56] hover:text-[#c9a96e] transition-colors"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />

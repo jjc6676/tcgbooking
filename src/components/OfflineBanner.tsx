@@ -34,7 +34,7 @@ export default function OfflineBanner() {
     <div
       className={`fixed top-0 left-0 right-0 z-[9999] flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors ${
         offline
-          ? "bg-[#28231c] text-white"
+          ? "bg-[#1a1714] text-white"
           : "bg-emerald-600 text-white"
       }`}
       role="alert"

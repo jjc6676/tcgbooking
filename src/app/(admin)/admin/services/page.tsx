@@ -150,7 +150,7 @@ export default function ServicesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="w-6 h-6 border-2 border-[#513b3c] border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-[#9b6f6f] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -169,14 +169,14 @@ export default function ServicesPage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="font-display text-3xl text-[#28231c]">Services</h1>
-          <p className="text-[#655356] text-sm mt-1">
+          <h1 className="font-display text-3xl text-[#1a1714]">Services</h1>
+          <p className="text-[#8a7e78] text-sm mt-1">
             {services.length} services · Pricing is internal only
           </p>
         </div>
         <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="flex items-center gap-1.5 px-4 py-2.5 bg-[#513b3c] text-white text-sm font-medium rounded-full hover:bg-[#3d2c2d] transition-all active:scale-95 min-h-[44px]"
+          className="flex items-center gap-1.5 px-4 py-2.5 bg-[#9b6f6f] text-white text-sm font-medium rounded-full hover:bg-[#8a5f5f] transition-all active:scale-95 min-h-[44px]"
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -198,8 +198,8 @@ export default function ServicesPage() {
 
       {/* Add form */}
       {showAddForm && (
-        <form onSubmit={handleAdd} className="bg-white border border-[#d4c8c8] rounded-2xl p-5 mb-6">
-          <h2 className="font-display text-lg text-[#28231c] mb-4">New Service</h2>
+        <form onSubmit={handleAdd} className="bg-white border border-[#e8e2dc] rounded-2xl p-5 mb-6">
+          <h2 className="font-display text-lg text-[#1a1714] mb-4">New Service</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
             <div className="sm:col-span-1">
               <label className="block text-xs font-medium text-[#5c4a42] mb-1.5">Service Name</label>
@@ -209,7 +209,7 @@ export default function ServicesPage() {
                 onChange={(e) => setName(e.target.value)}
                 required
                 placeholder="e.g. Balayage"
-                className="w-full border border-[#d4c8c8] rounded-xl px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#513b3c] bg-[#faf9f7]"
+                className="w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7]"
               />
             </div>
             <div>
@@ -219,7 +219,7 @@ export default function ServicesPage() {
                 value={duration}
                 onChange={(e) => setDuration(e.target.value)}
                 required min={1}
-                className="w-full border border-[#d4c8c8] rounded-xl px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#513b3c] bg-[#faf9f7]"
+                className="w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7]"
               />
             </div>
             <div>
@@ -229,7 +229,7 @@ export default function ServicesPage() {
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 required min={0} step="1"
-                className="w-full border border-[#d4c8c8] rounded-xl px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#513b3c] bg-[#faf9f7]"
+                className="w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7]"
               />
             </div>
           </div>
@@ -237,14 +237,14 @@ export default function ServicesPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2.5 bg-[#513b3c] text-white text-sm font-medium rounded-full hover:bg-[#3d2c2d] disabled:opacity-50 transition-all active:scale-95 min-h-[44px]"
+              className="px-5 py-2.5 bg-[#9b6f6f] text-white text-sm font-medium rounded-full hover:bg-[#8a5f5f] disabled:opacity-50 transition-all active:scale-95 min-h-[44px]"
             >
               {submitting ? "Adding…" : "Add Service"}
             </button>
             <button
               type="button"
               onClick={() => setShowAddForm(false)}
-              className="px-5 py-2.5 border border-[#d4c8c8] text-sm text-[#655356] font-medium rounded-full hover:bg-[#2e2326] transition-all active:scale-95 min-h-[44px]"
+              className="px-5 py-2.5 border border-[#e8e2dc] text-sm text-[#8a7e78] font-medium rounded-full hover:bg-[#f5ede8] transition-all active:scale-95 min-h-[44px]"
             >
               Cancel
             </button>
@@ -259,23 +259,23 @@ export default function ServicesPage() {
           if (!catServices || catServices.length === 0) return null;
           return (
             <div key={category}>
-              <h2 className="text-xs font-semibold text-[#c1eeff] uppercase tracking-widest mb-3 flex items-center gap-2">
+              <h2 className="text-xs font-semibold text-[#c9a96e] uppercase tracking-widest mb-3 flex items-center gap-2">
                 {category}
-                <span className="text-[#655356] font-normal normal-case tracking-normal">
+                <span className="text-[#8a7e78] font-normal normal-case tracking-normal">
                   ({catServices.length})
                 </span>
               </h2>
-              <div className="bg-white rounded-2xl border border-[#d4c8c8] overflow-hidden divide-y divide-[#f0eaea]">
+              <div className="bg-white rounded-2xl border border-[#e8e2dc] overflow-hidden divide-y divide-[#f5f0eb]">
                 {catServices.map((s) =>
                   editId === s.id ? (
-                    <div key={s.id} className="px-4 py-4 bg-[#1e1a17]">
+                    <div key={s.id} className="px-4 py-4 bg-[#fdf8f6]">
                       <div className="grid grid-cols-3 gap-2 mb-3">
                         <div className="col-span-3 sm:col-span-1">
                           <input
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
                             placeholder="Service name"
-                            className="w-full border border-[#d4c8c8] rounded-xl px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#513b3c] bg-white"
+                            className="w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-white"
                           />
                         </div>
                         <input
@@ -284,17 +284,17 @@ export default function ServicesPage() {
                           onChange={(e) => setEditDuration(e.target.value)}
                           placeholder="Min"
                           min={1}
-                          className="border border-[#d4c8c8] rounded-xl px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#513b3c] bg-white"
+                          className="border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-white"
                         />
                         <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#655356]">$</span>
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#8a7e78]">$</span>
                           <input
                             type="number"
                             value={editPrice}
                             onChange={(e) => setEditPrice(e.target.value)}
                             placeholder="Price"
                             step="1" min={0}
-                            className="w-full border border-[#d4c8c8] rounded-xl pl-6 pr-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#513b3c] bg-white"
+                            className="w-full border border-[#e8e2dc] rounded-xl pl-6 pr-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-white"
                           />
                         </div>
                       </div>
@@ -302,13 +302,13 @@ export default function ServicesPage() {
                         <button
                           onClick={() => handleEdit(s.id)}
                           disabled={submitting}
-                          className="px-4 py-2 bg-[#513b3c] text-white text-xs font-semibold rounded-full hover:bg-[#3d2c2d] disabled:opacity-50 active:scale-95 transition-all min-h-[44px]"
+                          className="px-4 py-2 bg-[#9b6f6f] text-white text-xs font-semibold rounded-full hover:bg-[#8a5f5f] disabled:opacity-50 active:scale-95 transition-all min-h-[44px]"
                         >
                           Save
                         </button>
                         <button
                           onClick={() => setEditId(null)}
-                          className="px-4 py-2 border border-[#d4c8c8] text-xs text-[#655356] rounded-full hover:bg-white active:scale-95 transition-all min-h-[44px]"
+                          className="px-4 py-2 border border-[#e8e2dc] text-xs text-[#8a7e78] rounded-full hover:bg-white active:scale-95 transition-all min-h-[44px]"
                         >
                           Cancel
                         </button>
@@ -320,13 +320,13 @@ export default function ServicesPage() {
                       className={`px-4 py-3.5 flex items-center gap-3 ${!s.is_active ? "opacity-50" : ""}`}
                     >
                       <div className="flex-1 min-w-0">
-                        <span className="font-medium text-sm text-[#28231c]">{s.name}</span>
+                        <span className="font-medium text-sm text-[#1a1714]">{s.name}</span>
                         {!s.is_active && (
                           <span className="ml-2 text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">
                             Inactive
                           </span>
                         )}
-                        <p className="text-xs text-[#655356] mt-0.5">
+                        <p className="text-xs text-[#8a7e78] mt-0.5">
                           {formatDuration(s.duration_minutes)}
                         </p>
                       </div>
@@ -336,19 +336,19 @@ export default function ServicesPage() {
                       <div className="flex items-center gap-1 ml-2 flex-shrink-0">
                         <button
                           onClick={() => startEdit(s)}
-                          className="text-xs text-[#513b3c] hover:text-[#3d2c2d] font-medium min-h-[44px] min-w-[44px] flex items-center justify-center active:opacity-70 transition-all"
+                          className="text-xs text-[#9b6f6f] hover:text-[#8a5f5f] font-medium min-h-[44px] min-w-[44px] flex items-center justify-center active:opacity-70 transition-all"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => handleToggleActive(s)}
-                          className="text-xs text-[#655356] hover:text-[#5c4a42] min-h-[44px] min-w-[44px] flex items-center justify-center active:opacity-70 transition-all"
+                          className="text-xs text-[#8a7e78] hover:text-[#5c4a42] min-h-[44px] min-w-[44px] flex items-center justify-center active:opacity-70 transition-all"
                         >
                           {s.is_active ? "Hide" : "Show"}
                         </button>
                         <button
                           onClick={() => handleDelete(s.id, s.name)}
-                          className="text-xs text-[#655356] hover:text-red-600 min-h-[44px] min-w-[44px] flex items-center justify-center active:opacity-70 transition-all"
+                          className="text-xs text-[#8a7e78] hover:text-red-600 min-h-[44px] min-w-[44px] flex items-center justify-center active:opacity-70 transition-all"
                         >
                           Delete
                         </button>

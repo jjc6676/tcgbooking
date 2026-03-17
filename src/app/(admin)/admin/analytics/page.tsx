@@ -36,9 +36,9 @@ function HorizontalBar({ label, value, max }: { label: string; value: number; ma
   return (
     <div className="flex items-center gap-3 mb-2">
       <span className="text-xs text-[#5c4a42] w-12 text-right flex-shrink-0">{label}</span>
-      <div className="flex-1 h-7 bg-[#f0eaea] rounded-lg overflow-hidden relative">
+      <div className="flex-1 h-7 bg-[#f5f0eb] rounded-lg overflow-hidden relative">
         <div
-          className="h-full bg-[#513b3c] rounded-lg transition-all duration-500"
+          className="h-full bg-[#9b6f6f] rounded-lg transition-all duration-500"
           style={{ width: `${Math.max(pct, 2)}%` }}
         />
         <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-medium text-[#5c4a42]">
@@ -68,7 +68,7 @@ export default function AnalyticsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="w-6 h-6 border-2 border-[#513b3c] border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-[#9b6f6f] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -88,37 +88,37 @@ export default function AnalyticsPage() {
   return (
     <div className="max-w-2xl">
       <div className="mb-6">
-        <h1 className="font-display text-3xl text-[#28231c]">Analytics</h1>
-        <p className="text-[#655356] text-sm mt-1">This month&apos;s overview and trends.</p>
+        <h1 className="font-display text-3xl text-[#1a1714]">Analytics</h1>
+        <p className="text-[#8a7e78] text-sm mt-1">This month&apos;s overview and trends.</p>
       </div>
 
       {/* Stats cards */}
       <div className="grid grid-cols-2 gap-3 mb-6">
-        <div className="bg-white rounded-2xl border border-[#d4c8c8] p-4">
-          <p className="text-xs text-[#655356] font-medium uppercase tracking-wide">Appointments</p>
-          <p className="font-display text-2xl text-[#28231c] mt-1">{data.totalThisMonth}</p>
-          <p className="text-[10px] text-[#655356] mt-0.5">this month</p>
+        <div className="bg-white rounded-2xl border border-[#e8e2dc] p-4">
+          <p className="text-xs text-[#8a7e78] font-medium uppercase tracking-wide">Appointments</p>
+          <p className="font-display text-2xl text-[#1a1714] mt-1">{data.totalThisMonth}</p>
+          <p className="text-[10px] text-[#8a7e78] mt-0.5">this month</p>
         </div>
-        <div className="bg-white rounded-2xl border border-[#d4c8c8] p-4">
-          <p className="text-xs text-[#655356] font-medium uppercase tracking-wide">Revenue</p>
-          <p className="font-display text-2xl text-[#28231c] mt-1">{formatCents(data.revenueCents)}</p>
-          <p className="text-[10px] text-[#655356] mt-0.5">confirmed this month</p>
+        <div className="bg-white rounded-2xl border border-[#e8e2dc] p-4">
+          <p className="text-xs text-[#8a7e78] font-medium uppercase tracking-wide">Revenue</p>
+          <p className="font-display text-2xl text-[#1a1714] mt-1">{formatCents(data.revenueCents)}</p>
+          <p className="text-[10px] text-[#8a7e78] mt-0.5">confirmed this month</p>
         </div>
-        <div className="bg-white rounded-2xl border border-[#d4c8c8] p-4">
-          <p className="text-xs text-[#655356] font-medium uppercase tracking-wide">New Clients</p>
-          <p className="font-display text-2xl text-[#28231c] mt-1">{data.newClients}</p>
-          <p className="text-[10px] text-[#655356] mt-0.5">first visit this month</p>
+        <div className="bg-white rounded-2xl border border-[#e8e2dc] p-4">
+          <p className="text-xs text-[#8a7e78] font-medium uppercase tracking-wide">New Clients</p>
+          <p className="font-display text-2xl text-[#1a1714] mt-1">{data.newClients}</p>
+          <p className="text-[10px] text-[#8a7e78] mt-0.5">first visit this month</p>
         </div>
-        <div className="bg-white rounded-2xl border border-[#d4c8c8] p-4">
-          <p className="text-xs text-[#655356] font-medium uppercase tracking-wide">Completion Rate</p>
-          <p className="font-display text-2xl text-[#28231c] mt-1">{data.completionRate}%</p>
-          <p className="text-[10px] text-[#655356] mt-0.5">confirmed / non-cancelled</p>
+        <div className="bg-white rounded-2xl border border-[#e8e2dc] p-4">
+          <p className="text-xs text-[#8a7e78] font-medium uppercase tracking-wide">Completion Rate</p>
+          <p className="font-display text-2xl text-[#1a1714] mt-1">{data.completionRate}%</p>
+          <p className="text-[10px] text-[#8a7e78] mt-0.5">confirmed / non-cancelled</p>
         </div>
       </div>
 
       {/* Busiest days */}
-      <div className="bg-white rounded-2xl border border-[#d4c8c8] p-5 mb-4">
-        <h2 className="font-display text-lg text-[#28231c] mb-4">Busiest Days</h2>
+      <div className="bg-white rounded-2xl border border-[#e8e2dc] p-5 mb-4">
+        <h2 className="font-display text-lg text-[#1a1714] mb-4">Busiest Days</h2>
         {DAY_LABELS.map((label, i) => (
           <HorizontalBar key={label} label={label} value={data.dayOfWeekCounts[i]} max={maxDow} />
         ))}
@@ -126,8 +126,8 @@ export default function AnalyticsPage() {
 
       {/* Top services */}
       {data.topServices.length > 0 && (
-        <div className="bg-white rounded-2xl border border-[#d4c8c8] p-5 mb-4">
-          <h2 className="font-display text-lg text-[#28231c] mb-4">Top Services</h2>
+        <div className="bg-white rounded-2xl border border-[#e8e2dc] p-5 mb-4">
+          <h2 className="font-display text-lg text-[#1a1714] mb-4">Top Services</h2>
           {data.topServices.map((s) => (
             <HorizontalBar key={s.name} label={s.name} value={s.count} max={maxService} />
           ))}
@@ -135,21 +135,21 @@ export default function AnalyticsPage() {
       )}
 
       {/* Monthly trend */}
-      <div className="bg-white rounded-2xl border border-[#d4c8c8] p-5 mb-4">
-        <h2 className="font-display text-lg text-[#28231c] mb-4">Monthly Trend</h2>
+      <div className="bg-white rounded-2xl border border-[#e8e2dc] p-5 mb-4">
+        <h2 className="font-display text-lg text-[#1a1714] mb-4">Monthly Trend</h2>
         <div className="flex items-end gap-2 h-32">
           {data.monthlyTrend.map((m) => {
             const pct = maxMonthly > 0 ? (m.count / maxMonthly) * 100 : 0;
             return (
               <div key={m.month} className="flex-1 flex flex-col items-center gap-1">
                 <span className="text-xs font-medium text-[#5c4a42]">{m.count}</span>
-                <div className="w-full bg-[#f0eaea] rounded-t-lg relative" style={{ height: "100px" }}>
+                <div className="w-full bg-[#f5f0eb] rounded-t-lg relative" style={{ height: "100px" }}>
                   <div
-                    className="absolute bottom-0 left-0 right-0 bg-[#513b3c] rounded-t-lg transition-all duration-500"
+                    className="absolute bottom-0 left-0 right-0 bg-[#9b6f6f] rounded-t-lg transition-all duration-500"
                     style={{ height: `${Math.max(pct, 3)}%` }}
                   />
                 </div>
-                <span className="text-[10px] text-[#655356]">{m.month}</span>
+                <span className="text-[10px] text-[#8a7e78]">{m.month}</span>
               </div>
             );
           })}
@@ -157,23 +157,23 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Recent activity */}
-      <div className="bg-white rounded-2xl border border-[#d4c8c8] overflow-hidden">
-        <div className="px-5 py-4 border-b border-[#f0eaea]">
-          <h2 className="font-display text-lg text-[#28231c]">Recent Activity</h2>
+      <div className="bg-white rounded-2xl border border-[#e8e2dc] overflow-hidden">
+        <div className="px-5 py-4 border-b border-[#f5f0eb]">
+          <h2 className="font-display text-lg text-[#1a1714]">Recent Activity</h2>
         </div>
         {data.recentAppointments.length === 0 ? (
-          <div className="px-5 py-8 text-center text-sm text-[#655356]">
+          <div className="px-5 py-8 text-center text-sm text-[#8a7e78]">
             No appointments yet.
           </div>
         ) : (
-          <div className="divide-y divide-[#f0eaea]">
+          <div className="divide-y divide-[#f5f0eb]">
             {data.recentAppointments.map((appt) => (
               <div key={appt.id} className="px-5 py-3 flex items-center justify-between">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-[#28231c] truncate">
+                  <p className="text-sm font-medium text-[#1a1714] truncate">
                     {appt.client?.full_name ?? "Walk-in"}
                   </p>
-                  <p className="text-xs text-[#655356] mt-0.5">
+                  <p className="text-xs text-[#8a7e78] mt-0.5">
                     {appt.service?.name ?? "—"} · {new Date(appt.start_at).toLocaleDateString([], {
                       month: "short", day: "numeric",
                     })}

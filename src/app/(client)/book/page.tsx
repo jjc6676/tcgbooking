@@ -14,7 +14,7 @@ export default async function BookPage() {
   }
 
   return (
-    <div className="text-center py-20 text-[#655356]">
+    <div className="text-center py-20 text-[#8a7e78]">
       No stylists available at this time.
     </div>
   );

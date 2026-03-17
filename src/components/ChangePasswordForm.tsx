@@ -69,9 +69,9 @@ export function ChangePasswordForm({ email }: ChangePasswordFormProps) {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-[#d4c8c8] overflow-hidden mb-4">
-      <div className="px-5 py-4 border-b border-[#f0eaea]">
-        <p className="text-xs font-semibold text-[#c1eeff] uppercase tracking-widest">Change Password</p>
+    <div className="bg-white rounded-2xl border border-[#e8e2dc] overflow-hidden mb-4">
+      <div className="px-5 py-4 border-b border-[#f5f0eb]">
+        <p className="text-xs font-semibold text-[#c9a96e] uppercase tracking-widest">Change Password</p>
       </div>
       <form onSubmit={handleSubmit} className="px-5 py-4 space-y-3">
         <div>
@@ -82,7 +82,7 @@ export function ChangePasswordForm({ email }: ChangePasswordFormProps) {
             onChange={(e) => setCurrentPassword(e.target.value)}
             placeholder="Your current password"
             autoComplete="current-password"
-            className="w-full border border-[#d4c8c8] rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#513b3c] bg-[#faf9f7] min-h-[44px]"
+            className="w-full border border-[#e8e2dc] rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7] min-h-[44px]"
           />
         </div>
         <div>
@@ -94,7 +94,7 @@ export function ChangePasswordForm({ email }: ChangePasswordFormProps) {
             placeholder="Min 8 characters"
             autoComplete="new-password"
             minLength={8}
-            className="w-full border border-[#d4c8c8] rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#513b3c] bg-[#faf9f7] min-h-[44px]"
+            className="w-full border border-[#e8e2dc] rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7] min-h-[44px]"
           />
         </div>
         <div>
@@ -105,7 +105,7 @@ export function ChangePasswordForm({ email }: ChangePasswordFormProps) {
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="Repeat new password"
             autoComplete="new-password"
-            className="w-full border border-[#d4c8c8] rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#513b3c] bg-[#faf9f7] min-h-[44px]"
+            className="w-full border border-[#e8e2dc] rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7] min-h-[44px]"
           />
         </div>
 
@@ -118,7 +118,7 @@ export function ChangePasswordForm({ email }: ChangePasswordFormProps) {
         <button
           type="submit"
           disabled={saving}
-          className="w-full py-2.5 bg-[#513b3c] text-white text-sm font-semibold rounded-full hover:bg-[#3d2c2d] disabled:opacity-50 active:scale-[0.99] transition-all min-h-[44px]"
+          className="w-full py-2.5 bg-[#9b6f6f] text-white text-sm font-semibold rounded-full hover:bg-[#8a5f5f] disabled:opacity-50 active:scale-[0.99] transition-all min-h-[44px]"
         >
           {saving ? (
             <span className="flex items-center justify-center gap-2">

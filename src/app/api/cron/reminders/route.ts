@@ -149,24 +149,24 @@ async function processAppointments(supabase: any, appointments: any[], errors: s
     const clientName = appt.client?.full_name ?? "there";
 
     const html = `
-      <div style="font-family:Georgia,serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#f5f0f0">
+      <div style="font-family:Georgia,serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#faf8f5">
         <div style="text-align:center;margin-bottom:24px">
-          <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#2e2326,#3a2d2e);display:inline-flex;align-items:center;justify-content:center;border:2px solid #d4c8c8;margin-bottom:12px">
-            <span style="font-size:24px;color:#513b3c;font-weight:600;font-family:Georgia,serif">K</span>
+          <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#f5ede8,#e8d8d0);display:inline-flex;align-items:center;justify-content:center;border:2px solid #e8e2dc;margin-bottom:12px">
+            <span style="font-size:24px;color:#9b6f6f;font-weight:600;font-family:Georgia,serif">K</span>
           </div>
-          <h2 style="margin:0;font-size:22px;color:#28231c;font-family:Georgia,serif">See you tomorrow!</h2>
-          <p style="margin:8px 0 0;font-size:14px;color:#655356;font-family:sans-serif">Hi ${clientName}, just a friendly reminder</p>
+          <h2 style="margin:0;font-size:22px;color:#1a1714;font-family:Georgia,serif">See you tomorrow!</h2>
+          <p style="margin:8px 0 0;font-size:14px;color:#8a7e78;font-family:sans-serif">Hi ${clientName}, just a friendly reminder</p>
         </div>
-        <div style="background:#ffffff;border:1px solid #d4c8c8;border-radius:16px;padding:20px;margin-bottom:20px">
+        <div style="background:#ffffff;border:1px solid #e8e2dc;border-radius:16px;padding:20px;margin-bottom:20px">
           <table style="width:100%;font-size:14px;font-family:sans-serif;border-collapse:collapse">
-            <tr><td style="color:#655356;padding:8px 0;border-bottom:1px solid #f0eaea">Service</td><td style="font-weight:600;text-align:right;color:#28231c;padding:8px 0;border-bottom:1px solid #f0eaea">${serviceName}</td></tr>
-            <tr><td style="color:#655356;padding:8px 0">Date & Time</td><td style="font-weight:600;text-align:right;color:#28231c;padding:8px 0">${dateTime}</td></tr>
+            <tr><td style="color:#8a7e78;padding:8px 0;border-bottom:1px solid #f5f0eb">Service</td><td style="font-weight:600;text-align:right;color:#1a1714;padding:8px 0;border-bottom:1px solid #f5f0eb">${serviceName}</td></tr>
+            <tr><td style="color:#8a7e78;padding:8px 0">Date & Time</td><td style="font-weight:600;text-align:right;color:#1a1714;padding:8px 0">${dateTime}</td></tr>
           </table>
         </div>
-        <p style="text-align:center;font-size:13px;color:#655356;font-family:sans-serif;margin:0 0 8px">
-          Need to make changes? <a href="mailto:kerichoplin@gmail.com" style="color:#513b3c">Reply to this email</a> or contact Keri directly.
+        <p style="text-align:center;font-size:13px;color:#8a7e78;font-family:sans-serif;margin:0 0 8px">
+          Need to make changes? <a href="mailto:kerichoplin@gmail.com" style="color:#9b6f6f">Reply to this email</a> or contact Keri directly.
         </p>
-        <p style="text-align:center;margin-top:20px;font-size:12px;color:#655356;font-family:sans-serif">Keri Choplin Hair Studio &middot; Lafayette, Louisiana</p>
+        <p style="text-align:center;margin-top:20px;font-size:12px;color:#8a7e78;font-family:sans-serif">Keri Choplin Hair Studio &middot; Lafayette, Louisiana</p>
       </div>`;
 
     try {
