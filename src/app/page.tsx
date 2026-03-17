@@ -38,7 +38,7 @@ export default function HomePage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
               d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" />
           </svg>
-          <span>Open Tuesday – Saturday &nbsp;·&nbsp; 9 AM – 5 PM</span>
+          <span>Open Tuesday – Friday &nbsp;·&nbsp; 9 AM – 5 PM</span>
         </div>
       </div>
 
