@@ -58,15 +58,17 @@ export async function GET(request: Request) {
     }
   }
 
-  if (clientMap.size === 0) return NextResponse.json({ clients: [], total: 0, hasMore: false });
+  const clientIds = clientMap.size > 0 ? Array.from(clientMap.keys()) : [];
 
-  const clientIds = Array.from(clientMap.keys());
-
-  // Get profile data
-  const { data: profiles } = await serviceClient
-    .from("profiles")
-    .select("id, full_name")
-    .in("id", clientIds);
+  // Get profile data for auth clients
+  let profiles: { id: string; full_name: string | null }[] = [];
+  if (clientIds.length > 0) {
+    const { data } = await serviceClient
+      .from("profiles")
+      .select("id, full_name")
+      .in("id", clientIds);
+    profiles = data ?? [];
+  }
 
   // Get emails from auth.users via admin API
   const emailMap = new Map<string, string>();
@@ -77,19 +79,63 @@ export async function GET(request: Request) {
     }
   } catch { /* emails optional */ }
 
-  // Build + filter full list
-  let clients = (profiles ?? [])
-    .map((p) => {
-      const stats = clientMap.get(p.id)!;
-      return {
-        id: p.id,
-        full_name: p.full_name,
-        email: emailMap.get(p.id) ?? null,
-        totalAppointments: stats.totalAppointments,
-        lastAppointment: stats.lastAppointment,
-        firstAppointment: stats.firstAppointment,
-      };
-    })
+  // Build auth client list
+  const authClients = profiles.map((p) => {
+    const stats = clientMap.get(p.id);
+    return {
+      id: p.id,
+      full_name: p.full_name,
+      email: emailMap.get(p.id) ?? null,
+      totalAppointments: stats?.totalAppointments ?? 0,
+      lastAppointment: stats?.lastAppointment ?? "",
+      firstAppointment: stats?.firstAppointment ?? "",
+      clientType: "auth" as const,
+    };
+  });
+
+  // ── Walk-in clients ──────────────────────────────────────────────────
+  const { data: walkIns } = await serviceClient
+    .from("walk_in_clients")
+    .select("id, full_name, phone, email, created_at")
+    .eq("stylist_id", stylist.id);
+
+  // Get service log counts for walk-in clients
+  const walkInIds = (walkIns ?? []).map((w) => w.id);
+  let walkInLogMap = new Map<string, { count: number; lastDate: string }>();
+  if (walkInIds.length > 0) {
+    const { data: logRows } = await serviceClient
+      .from("client_service_log")
+      .select("walk_in_client_id, visit_date")
+      .eq("stylist_id", stylist.id)
+      .in("walk_in_client_id", walkInIds);
+    for (const row of logRows ?? []) {
+      const wid = row.walk_in_client_id as string;
+      const existing = walkInLogMap.get(wid);
+      if (!existing) {
+        walkInLogMap.set(wid, { count: 1, lastDate: row.visit_date as string });
+      } else {
+        existing.count++;
+        if ((row.visit_date as string) > existing.lastDate) existing.lastDate = row.visit_date as string;
+      }
+    }
+  }
+
+  const walkInClients = (walkIns ?? []).map((w) => {
+    const stats = walkInLogMap.get(w.id);
+    return {
+      id: w.id,
+      full_name: w.full_name,
+      email: w.email ?? null,
+      phone: w.phone ?? null,
+      totalAppointments: stats?.count ?? 0,
+      lastAppointment: stats?.lastDate ?? w.created_at,
+      firstAppointment: w.created_at,
+      clientType: "walkin" as const,
+    };
+  });
+
+  // ── Merge, filter, sort, paginate ────────────────────────────────────
+  let clients = [...authClients, ...walkInClients]
     .filter((c) => {
       if (!search) return true;
       return (

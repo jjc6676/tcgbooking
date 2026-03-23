@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useToast } from "@/components/Toast";
 
 // Service → rebooking interval mapping
 function getRebookInterval(serviceName: string): string {
@@ -34,14 +36,34 @@ interface AppointmentRow {
   start_at: string;
   end_at: string;
   status: string;
+  final_price_cents?: number | null;
+  discount_cents?: number | null;
+  discount_note?: string | null;
   service?: { id: string; name: string; duration_minutes: number } | null;
+}
+
+interface ServiceLogEntry {
+  id: string;
+  service_name: string;
+  price_cents: number;
+  visit_date: string;
+  notes: string | null;
+  service_id: string | null;
+}
+
+interface ServiceOption {
+  id: string;
+  name: string;
+  internal_price_cents?: number;
 }
 
 interface ClientDetail {
   id: string;
   full_name: string | null;
   email: string | null;
+  phone?: string | null;
   created_at: string;
+  clientType?: "auth" | "walkin";
 }
 
 interface Stats {
@@ -51,10 +73,24 @@ interface Stats {
 }
 
 export default function ClientDetailPage({ params }: { params: { clientId: string } }) {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center py-16"><div className="w-6 h-6 border-2 border-[#9b6f6f] border-t-transparent rounded-full animate-spin" /></div>}>
+      <ClientDetailInner params={params} />
+    </Suspense>
+  );
+}
+
+function ClientDetailInner({ params }: { params: { clientId: string } }) {
   const { clientId } = params;
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const clientType = searchParams.get("type") ?? "auth";
+  const { toast } = useToast();
+
   const [client, setClient] = useState<ClientDetail | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
   const [appointments, setAppointments] = useState<AppointmentRow[]>([]);
+  const [serviceLog, setServiceLog] = useState<ServiceLogEntry[]>([]);
   const [notes, setNotes] = useState("");
   const [notesOriginal, setNotesOriginal] = useState("");
   const [notesSaving, setNotesSaving] = useState(false);
@@ -69,19 +105,58 @@ export default function ClientDetailPage({ params }: { params: { clientId: strin
   const [rebookSent, setRebookSent] = useState(false);
   const [rebookError, setRebookError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetch(`/api/admin/clients/${clientId}`)
+  // Log Service modal
+  const [showLogService, setShowLogService] = useState(false);
+  const [services, setServices] = useState<ServiceOption[]>([]);
+  const [logForm, setLogForm] = useState({
+    service_id: "",
+    service_name: "",
+    price: "",
+    visit_date: new Date().toISOString().slice(0, 10),
+    notes: "",
+  });
+  const [logSubmitting, setLogSubmitting] = useState(false);
+
+  // Pricing edit
+  const [editingPricing, setEditingPricing] = useState<string | null>(null);
+  const [pricingForm, setPricingForm] = useState({
+    final_price: "",
+    discount: "",
+    discount_note: "",
+  });
+  const [pricingSaving, setPricingSaving] = useState(false);
+
+  // Delete client
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  function fetchClient() {
+    const typeParam = clientType === "walkin" ? "?type=walkin" : "";
+    return fetch(`/api/admin/clients/${clientId}${typeParam}`)
       .then((r) => r.json())
       .then((data) => {
         setClient(data.client);
         setStats(data.stats);
         setAppointments(data.appointments ?? []);
+        setServiceLog(data.serviceLog ?? []);
         const n = data.notes ?? "";
         setNotes(n);
         setNotesOriginal(n);
-      })
-      .finally(() => setLoading(false));
-  }, [clientId]);
+      });
+  }
+
+  useEffect(() => {
+    fetchClient().finally(() => setLoading(false));
+  }, [clientId, clientType]);
+
+  // Load services for Log Service modal
+  useEffect(() => {
+    if (!showLogService) return;
+    fetch("/api/admin/services")
+      .then((r) => r.json())
+      .then((data) => setServices(data.services ?? []))
+      .catch(() => {});
+  }, [showLogService]);
 
   // Pre-fill rebook message when sheet opens
   useEffect(() => {
@@ -109,6 +184,7 @@ export default function ClientDetailPage({ params }: { params: { clientId: strin
   }, [showRebook, client, appointments]);
 
   async function saveNotes() {
+    if (clientType === "walkin") return; // Walk-in notes are on the walk_in_clients record
     setNotesSaving(true);
     const res = await fetch(`/api/admin/clients/${clientId}/notes`, {
       method: "PATCH",
@@ -144,6 +220,109 @@ export default function ClientDetailPage({ params }: { params: { clientId: strin
     setRebookSending(false);
   }
 
+  async function handleLogService(e: React.FormEvent) {
+    e.preventDefault();
+    if (!logForm.service_name.trim()) return;
+    setLogSubmitting(true);
+    try {
+      const payload: Record<string, unknown> = {
+        service_name: logForm.service_name,
+        price_cents: logForm.price ? Math.round(parseFloat(logForm.price) * 100) : 0,
+        visit_date: logForm.visit_date,
+        notes: logForm.notes || undefined,
+        service_id: logForm.service_id || undefined,
+      };
+      if (clientType === "walkin") {
+        payload.walk_in_client_id = clientId;
+      } else {
+        payload.client_id = clientId;
+      }
+
+      const res = await fetch("/api/admin/service-log", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        toast("Service logged!", "success");
+        setShowLogService(false);
+        setLogForm({
+          service_id: "",
+          service_name: "",
+          price: "",
+          visit_date: new Date().toISOString().slice(0, 10),
+          notes: "",
+        });
+        // Refresh
+        fetchClient();
+      } else {
+        const data = await res.json();
+        toast(data.error ?? "Failed to log service", "error");
+      }
+    } catch {
+      toast("Failed to log service", "error");
+    } finally {
+      setLogSubmitting(false);
+    }
+  }
+
+  function startPricingEdit(appt: AppointmentRow) {
+    setEditingPricing(appt.id);
+    setPricingForm({
+      final_price: appt.final_price_cents ? (appt.final_price_cents / 100).toFixed(2) : "",
+      discount: appt.discount_cents ? (appt.discount_cents / 100).toFixed(2) : "",
+      discount_note: appt.discount_note ?? "",
+    });
+  }
+
+  async function savePricing(apptId: string) {
+    setPricingSaving(true);
+    try {
+      const res = await fetch(`/api/admin/appointments/${apptId}/pricing`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          final_price_cents: pricingForm.final_price ? Math.round(parseFloat(pricingForm.final_price) * 100) : 0,
+          discount_cents: pricingForm.discount ? Math.round(parseFloat(pricingForm.discount) * 100) : 0,
+          discount_note: pricingForm.discount_note,
+        }),
+      });
+      if (res.ok) {
+        toast("Pricing updated!", "success");
+        setEditingPricing(null);
+        fetchClient();
+      } else {
+        const data = await res.json();
+        toast(data.error ?? "Failed to update pricing", "error");
+      }
+    } catch {
+      toast("Failed to update pricing", "error");
+    } finally {
+      setPricingSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    setDeleting(true);
+    try {
+      const typeParam = clientType === "walkin" ? "?type=walkin" : "";
+      const res = await fetch(`/api/admin/clients/${clientId}${typeParam}`, { method: "DELETE" });
+      if (res.ok) {
+        toast("Client deleted", "success");
+        router.push("/admin/clients");
+      } else {
+        const data = await res.json();
+        toast(data.error ?? "Failed to delete", "error");
+        setShowDeleteConfirm(false);
+      }
+    } catch {
+      toast("Failed to delete", "error");
+      setShowDeleteConfirm(false);
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
@@ -162,6 +341,8 @@ export default function ClientDetailPage({ params }: { params: { clientId: strin
       </div>
     );
   }
+
+  const isWalkin = clientType === "walkin" || client.clientType === "walkin";
 
   const statusColors: Record<string, string> = {
     confirmed: "bg-emerald-100 text-emerald-700",
@@ -241,6 +422,138 @@ export default function ClientDetailPage({ params }: { params: { clientId: strin
         </div>
       )}
 
+      {/* Log Service modal backdrop */}
+      {showLogService && (
+        <div className="fixed inset-0 z-40 bg-black/40" onClick={() => !logSubmitting && setShowLogService(false)} />
+      )}
+      {/* Log Service modal */}
+      {showLogService && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl shadow-xl p-5 max-w-2xl mx-auto lg:inset-x-auto lg:w-[600px] lg:left-1/2 lg:-translate-x-1/2" style={{ paddingBottom: "calc(5rem + env(safe-area-inset-bottom))" }}>
+          <div className="w-10 h-1 bg-[#e8e2dc] rounded-full mx-auto mb-4" />
+          <h3 className="font-display text-lg text-[#1a1714] mb-4">Log Service</h3>
+          <form onSubmit={handleLogService}>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-[#5c4a42] mb-1.5">Service</label>
+                <select
+                  value={logForm.service_id}
+                  onChange={(e) => {
+                    const svc = services.find((s) => s.id === e.target.value);
+                    setLogForm((f) => ({
+                      ...f,
+                      service_id: e.target.value,
+                      service_name: svc?.name ?? f.service_name,
+                      price: svc?.internal_price_cents ? (svc.internal_price_cents / 100).toFixed(2) : f.price,
+                    }));
+                  }}
+                  className="w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7]"
+                  style={{ fontSize: 16 }}
+                >
+                  <option value="">Select a service…</option>
+                  {services.map((s) => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#5c4a42] mb-1.5">Service Name <span className="text-red-400">*</span></label>
+                <input
+                  type="text"
+                  value={logForm.service_name}
+                  onChange={(e) => setLogForm((f) => ({ ...f, service_name: e.target.value }))}
+                  required
+                  className="w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7]"
+                  style={{ fontSize: 16 }}
+                  placeholder="e.g. Balayage + Cut"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#5c4a42] mb-1.5">Price ($)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={logForm.price}
+                  onChange={(e) => setLogForm((f) => ({ ...f, price: e.target.value }))}
+                  className="w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7]"
+                  style={{ fontSize: 16 }}
+                  placeholder="0.00"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#5c4a42] mb-1.5">Date</label>
+                <input
+                  type="date"
+                  value={logForm.visit_date}
+                  onChange={(e) => setLogForm((f) => ({ ...f, visit_date: e.target.value }))}
+                  className="w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7]"
+                  style={{ fontSize: 16 }}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#5c4a42] mb-1.5">Notes</label>
+                <textarea
+                  value={logForm.notes}
+                  onChange={(e) => setLogForm((f) => ({ ...f, notes: e.target.value }))}
+                  rows={2}
+                  className="w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7] resize-none"
+                  style={{ fontSize: 16 }}
+                  placeholder="Formula, process notes…"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 mt-5">
+              <button
+                type="submit"
+                disabled={logSubmitting || !logForm.service_name.trim()}
+                className="flex-1 py-2.5 bg-[#9b6f6f] text-white text-sm font-semibold rounded-full hover:bg-[#8a5f5f] disabled:opacity-50 transition-all active:scale-95 min-h-[44px]"
+              >
+                {logSubmitting ? "Saving…" : "Log Service"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowLogService(false)}
+                className="px-5 py-2.5 border border-[#e8e2dc] text-sm text-[#8a7e78] font-medium rounded-full hover:bg-[#f5f0eb] transition-all active:scale-95 min-h-[44px]"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Delete confirmation modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-40 bg-black/40" onClick={() => !deleting && setShowDeleteConfirm(false)} />
+      )}
+      {showDeleteConfirm && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl shadow-xl p-5 max-w-2xl mx-auto lg:inset-x-auto lg:w-[600px] lg:left-1/2 lg:-translate-x-1/2" style={{ paddingBottom: "calc(5rem + env(safe-area-inset-bottom))" }}>
+          <div className="w-10 h-1 bg-[#e8e2dc] rounded-full mx-auto mb-4" />
+          <h3 className="font-display text-lg text-[#1a1714] mb-2">Delete Client</h3>
+          <p className="text-sm text-[#8a7e78] mb-5">
+            Are you sure you want to delete <span className="font-semibold text-[#1a1714]">{client.full_name ?? "this client"}</span>?
+            {isWalkin
+              ? " This will permanently remove the client and all their service history."
+              : " This will remove all appointments, notes, and service history for this client."}
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="flex-1 py-2.5 bg-red-600 text-white text-sm font-semibold rounded-full hover:bg-red-700 disabled:opacity-50 transition-all active:scale-95 min-h-[44px]"
+            >
+              {deleting ? "Deleting…" : "Delete Client"}
+            </button>
+            <button
+              onClick={() => setShowDeleteConfirm(false)}
+              className="px-5 py-2.5 border border-[#e8e2dc] text-sm text-[#8a7e78] font-medium rounded-full hover:bg-[#f5f0eb] transition-all active:scale-95 min-h-[44px]"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-2xl">
         <div className="mb-5">
           <Link href="/admin/clients" className="text-xs text-[#8a7e78] hover:text-[#9b6f6f] inline-flex items-center gap-1 mb-3 transition-all min-h-[44px]">
@@ -258,22 +571,45 @@ export default function ClientDetailPage({ params }: { params: { clientId: strin
                 </span>
               </div>
               <div>
-                <h1 className="font-display text-2xl text-[#1a1714]">
-                  {client.full_name ?? "(no name)"}
-                </h1>
-                <p className="text-sm text-[#8a7e78]">{client.email ?? "—"}</p>
+                <div className="flex items-center gap-2">
+                  <h1 className="font-display text-2xl text-[#1a1714]">
+                    {client.full_name ?? "(no name)"}
+                  </h1>
+                  {isWalkin && (
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#c9a96e]/15 text-[#a08540]">
+                      Walk-in
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-[#8a7e78]">
+                  {client.email ?? "—"}
+                  {client.phone && <span className="ml-2">{client.phone}</span>}
+                </p>
               </div>
             </div>
-            <button
-              onClick={() => setShowRebook(true)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-[#9b6f6f] text-white text-sm font-medium rounded-full hover:bg-[#8a5f5f] transition-all active:scale-95 flex-shrink-0 min-h-[44px]"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              <span className="hidden sm:inline">Send Reminder</span>
-              <span className="sm:hidden">Remind</span>
-            </button>
+            <div className="flex gap-2 flex-shrink-0">
+              {!isWalkin && client.email && (
+                <button
+                  onClick={() => setShowRebook(true)}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-[#9b6f6f] text-white text-sm font-medium rounded-full hover:bg-[#8a5f5f] transition-all active:scale-95 min-h-[44px]"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  <span className="hidden sm:inline">Remind</span>
+                </button>
+              )}
+              <button
+                onClick={() => setShowLogService(true)}
+                className="flex items-center gap-2 px-4 py-2.5 border border-[#e8e2dc] bg-white text-sm font-medium text-[#1a1714] rounded-full hover:bg-[#f5f0eb] transition-all active:scale-95 min-h-[44px]"
+              >
+                <svg className="w-4 h-4 text-[#c9a96e]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                <span className="hidden sm:inline">Log Service</span>
+                <span className="sm:hidden">Log</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -281,7 +617,7 @@ export default function ClientDetailPage({ params }: { params: { clientId: strin
         {stats && (
           <div className="grid grid-cols-3 gap-3 mb-5">
             <div className="bg-white rounded-2xl border border-[#e8e2dc] px-4 py-3 text-center">
-              <p className="text-2xl font-display text-[#9b6f6f]">{stats.totalAppointments}</p>
+              <p className="text-2xl font-display text-[#9b6f6f]">{stats.totalAppointments + serviceLog.length}</p>
               <p className="text-xs text-[#8a7e78] mt-0.5">Total visits</p>
             </div>
             <div className="bg-white rounded-2xl border border-[#e8e2dc] px-4 py-3 text-center">
@@ -299,72 +635,216 @@ export default function ClientDetailPage({ params }: { params: { clientId: strin
           </div>
         )}
 
-        {/* Private notes */}
-        <div className="bg-white rounded-2xl border border-[#e8e2dc] p-5 mb-5">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <p className="text-sm font-semibold text-[#1a1714]">Private Notes</p>
-              <p className="text-xs text-[#8a7e78]">Only you can see these.</p>
+        {/* Private notes (auth clients only) */}
+        {!isWalkin && (
+          <div className="bg-white rounded-2xl border border-[#e8e2dc] p-5 mb-5">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="text-sm font-semibold text-[#1a1714]">Private Notes</p>
+                <p className="text-xs text-[#8a7e78]">Only you can see these.</p>
+              </div>
+              {notes !== notesOriginal && (
+                <button
+                  onClick={saveNotes}
+                  disabled={notesSaving}
+                  className="text-xs px-4 py-2 bg-[#9b6f6f] text-white rounded-full hover:bg-[#8a5f5f] disabled:opacity-50 transition-all active:scale-95 min-h-[44px]"
+                >
+                  {notesSaving ? "Saving…" : "Save"}
+                </button>
+              )}
+              {notesSaved && notes === notesOriginal && (
+                <span className="text-xs text-emerald-600 font-medium">Saved</span>
+              )}
             </div>
-            {notes !== notesOriginal && (
-              <button
-                onClick={saveNotes}
-                disabled={notesSaving}
-                className="text-xs px-4 py-2 bg-[#9b6f6f] text-white rounded-full hover:bg-[#8a5f5f] disabled:opacity-50 transition-all active:scale-95 min-h-[44px]"
-              >
-                {notesSaving ? "Saving…" : "Save"}
-              </button>
-            )}
-            {notesSaved && notes === notesOriginal && (
-              <span className="text-xs text-emerald-600 font-medium">Saved ✓</span>
-            )}
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={4}
+              placeholder="Allergies, preferences, color history, notes from last visit…"
+              className="w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7] resize-none"
+              style={{ fontSize: 16 }}
+            />
           </div>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={4}
-            placeholder="Allergies, preferences, color history, notes from last visit…"
-            className="w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7] resize-none"
-            style={{ fontSize: 16 }}
-          />
-        </div>
+        )}
 
-        {/* Appointment history */}
-        <div>
-          <p className="text-sm font-semibold text-[#1a1714] mb-3">Appointment History</p>
-          {appointments.length === 0 ? (
-            <div className="text-center py-8 bg-white rounded-2xl border border-dashed border-[#e8e2dc]">
-              <p className="text-sm text-[#8a7e78]">No appointments on record.</p>
-            </div>
-          ) : (
+        {/* Walk-in notes (shown as read-only info) */}
+        {isWalkin && notes && (
+          <div className="bg-white rounded-2xl border border-[#e8e2dc] p-5 mb-5">
+            <p className="text-sm font-semibold text-[#1a1714] mb-2">Notes</p>
+            <p className="text-sm text-[#8a7e78] whitespace-pre-wrap">{notes}</p>
+          </div>
+        )}
+
+        {/* Service Log */}
+        {serviceLog.length > 0 && (
+          <div className="mb-5">
+            <p className="text-sm font-semibold text-[#1a1714] mb-3">Service Log</p>
             <div className="bg-white rounded-2xl border border-[#e8e2dc] divide-y divide-[#f5f0eb] overflow-hidden">
-              {appointments.map((a) => (
-                <div key={a.id} className="px-5 py-4 flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-[#1a1714]">
-                      {a.service?.name ?? "Service"}
-                    </p>
-                    <p className="text-xs text-[#8a7e78] mt-0.5">
-                      {new Date(a.start_at).toLocaleDateString("en-US", {
-                        weekday: "short",
-                        month: "short",
-                        day: "numeric",
-                        year: new Date(a.start_at).getFullYear() !== new Date().getFullYear() ? "numeric" : undefined,
-                      })}{" "}
-                      ·{" "}
-                      {new Date(a.start_at).toLocaleTimeString("en-US", {
-                        hour: "numeric",
-                        minute: "2-digit",
-                      })}
-                    </p>
+              {serviceLog.map((entry) => (
+                <div key={entry.id} className="px-5 py-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-[#1a1714]">{entry.service_name}</p>
+                      <p className="text-xs text-[#8a7e78] mt-0.5">
+                        {new Date(entry.visit_date + "T12:00:00").toLocaleDateString("en-US", {
+                          weekday: "short",
+                          month: "short",
+                          day: "numeric",
+                          year: new Date(entry.visit_date).getFullYear() !== new Date().getFullYear() ? "numeric" : undefined,
+                        })}
+                      </p>
+                      {entry.notes && (
+                        <p className="text-xs text-[#8a7e78] mt-1 italic">{entry.notes}</p>
+                      )}
+                    </div>
+                    {entry.price_cents > 0 && (
+                      <span className="text-sm font-semibold text-[#1a1714] flex-shrink-0">
+                        ${(entry.price_cents / 100).toFixed(2)}
+                      </span>
+                    )}
                   </div>
-                  <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${statusColors[a.status] ?? "bg-[#f5f0eb] text-[#8a7e78]"}`}>
-                    {a.status.replace("_", " ")}
-                  </span>
                 </div>
               ))}
             </div>
-          )}
+          </div>
+        )}
+
+        {/* Appointment history (auth clients) */}
+        {!isWalkin && (
+          <div className="mb-5">
+            <p className="text-sm font-semibold text-[#1a1714] mb-3">Appointment History</p>
+            {appointments.length === 0 ? (
+              <div className="text-center py-8 bg-white rounded-2xl border border-dashed border-[#e8e2dc]">
+                <p className="text-sm text-[#8a7e78]">No appointments on record.</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl border border-[#e8e2dc] divide-y divide-[#f5f0eb] overflow-hidden">
+                {appointments.map((a) => (
+                  <div key={a.id} className="px-5 py-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-[#1a1714]">
+                          {a.service?.name ?? "Service"}
+                        </p>
+                        <p className="text-xs text-[#8a7e78] mt-0.5">
+                          {new Date(a.start_at).toLocaleDateString("en-US", {
+                            weekday: "short",
+                            month: "short",
+                            day: "numeric",
+                            year: new Date(a.start_at).getFullYear() !== new Date().getFullYear() ? "numeric" : undefined,
+                          })}{" "}
+                          ·{" "}
+                          {new Date(a.start_at).toLocaleTimeString("en-US", {
+                            hour: "numeric",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                        {/* Pricing info */}
+                        {(a.final_price_cents || a.discount_cents) && editingPricing !== a.id && (
+                          <div className="flex items-center gap-2 mt-1">
+                            {a.final_price_cents ? (
+                              <span className="text-xs font-medium text-[#1a1714]">
+                                ${(a.final_price_cents / 100).toFixed(2)}
+                              </span>
+                            ) : null}
+                            {a.discount_cents ? (
+                              <span className="text-xs text-[#c9a96e]">
+                                -${(a.discount_cents / 100).toFixed(2)}
+                                {a.discount_note && ` (${a.discount_note})`}
+                              </span>
+                            ) : null}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${statusColors[a.status] ?? "bg-[#f5f0eb] text-[#8a7e78]"}`}>
+                          {a.status.replace("_", " ")}
+                        </span>
+                        {(a.status === "confirmed" || a.status === "cancelled") && editingPricing !== a.id && (
+                          <button
+                            onClick={() => startPricingEdit(a)}
+                            className="text-[11px] text-[#9b6f6f] hover:text-[#8a5f5f] font-medium transition-colors min-h-[44px] flex items-center"
+                          >
+                            $
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Inline pricing edit */}
+                    {editingPricing === a.id && (
+                      <div className="mt-3 pt-3 border-t border-[#f5f0eb]">
+                        <div className="grid grid-cols-2 gap-2 mb-2">
+                          <div>
+                            <label className="block text-[10px] font-medium text-[#5c4a42] mb-1">Final Price ($)</label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={pricingForm.final_price}
+                              onChange={(e) => setPricingForm((f) => ({ ...f, final_price: e.target.value }))}
+                              className="w-full border border-[#e8e2dc] rounded-lg px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7]"
+                              style={{ fontSize: 16 }}
+                              placeholder="0.00"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-medium text-[#5c4a42] mb-1">Discount ($)</label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={pricingForm.discount}
+                              onChange={(e) => setPricingForm((f) => ({ ...f, discount: e.target.value }))}
+                              className="w-full border border-[#e8e2dc] rounded-lg px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7]"
+                              style={{ fontSize: 16 }}
+                              placeholder="0.00"
+                            />
+                          </div>
+                        </div>
+                        <div className="mb-2">
+                          <label className="block text-[10px] font-medium text-[#5c4a42] mb-1">Discount Note</label>
+                          <input
+                            type="text"
+                            value={pricingForm.discount_note}
+                            onChange={(e) => setPricingForm((f) => ({ ...f, discount_note: e.target.value }))}
+                            className="w-full border border-[#e8e2dc] rounded-lg px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7]"
+                            style={{ fontSize: 16 }}
+                            placeholder="e.g. loyalty, 20% off"
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => savePricing(a.id)}
+                            disabled={pricingSaving}
+                            className="text-xs px-4 py-2 bg-[#9b6f6f] text-white rounded-full hover:bg-[#8a5f5f] disabled:opacity-50 transition-all active:scale-95 min-h-[44px]"
+                          >
+                            {pricingSaving ? "Saving…" : "Save"}
+                          </button>
+                          <button
+                            onClick={() => setEditingPricing(null)}
+                            className="text-xs px-3 py-2 text-[#8a7e78] hover:text-[#1a1714] transition-colors min-h-[44px]"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Delete client */}
+        <div className="border-t border-[#e8e2dc] pt-6 mt-8 mb-8">
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="w-full py-3 border border-red-200 text-red-600 text-sm font-medium rounded-full hover:bg-red-50 transition-all active:scale-95 min-h-[44px]"
+          >
+            Delete Client
+          </button>
         </div>
       </div>
     </>

@@ -26,6 +26,8 @@ const config: Config = {
         },
         primary: {
           DEFAULT: "var(--primary)",
+          hover: "var(--primary-hover)",
+          active: "var(--primary-active)",
           foreground: "var(--primary-foreground)",
         },
         secondary: {
@@ -39,21 +41,37 @@ const config: Config = {
         accent: {
           DEFAULT: "var(--accent)",
           foreground: "var(--accent-foreground)",
+          bg: "var(--accent-bg)",
         },
         destructive: {
           DEFAULT: "var(--destructive)",
           foreground: "var(--destructive-foreground)",
+          light: "var(--destructive-light)",
+          bg: "var(--destructive-bg)",
         },
-        border: "var(--border)",
-        input: "var(--input)",
+        border: {
+          DEFAULT: "var(--border)",
+          light: "var(--border-light)",
+        },
+        input: {
+          DEFAULT: "var(--input)",
+          bg: "var(--input-bg)",
+        },
         ring: "var(--ring)",
         salon: {
-          rose: "#9b6f6f",
-          blush: "#f5ede8",
-          gold: "#c9a96e",
-          dark: "#1a1714",
-          muted: "#8a7e78",
-          warm: "#faf8f5",
+          rose: "var(--primary)",
+          blush: "var(--secondary)",
+          gold: "var(--accent)",
+          dark: "var(--foreground)",
+          muted: "var(--muted-foreground)",
+          warm: "var(--background)",
+        },
+        sidebar: {
+          DEFAULT: "var(--sidebar)",
+          foreground: "var(--sidebar-foreground)",
+          hover: "var(--sidebar-hover)",
+          muted: "var(--sidebar-muted)",
+          "muted-hover": "var(--sidebar-muted-hover)",
         },
       },
       borderRadius: {

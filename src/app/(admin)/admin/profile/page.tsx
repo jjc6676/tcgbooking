@@ -109,8 +109,7 @@ export default function ProfilePage() {
       {stylist && (
         <div className="bg-white rounded-2xl border border-[#e8e2dc] p-5 mb-5 flex items-center gap-4">
           {avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={avatarUrl} alt={name} className="w-14 h-14 rounded-full object-cover border-2 border-[#e8e2dc] flex-shrink-0" />
+            <Image src={avatarUrl} alt={name} width={56} height={56} className="w-14 h-14 rounded-full object-cover border-2 border-[#e8e2dc] flex-shrink-0" />
           ) : (
             <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#f5ede8] to-[#e8d8d0] flex items-center justify-center flex-shrink-0 border-2 border-[#e8e2dc]">
               <span className="text-2xl font-display text-[#9b6f6f]">{name.charAt(0) || "K"}</span>
