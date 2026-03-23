@@ -129,6 +129,7 @@ function ClientDetailInner({ params }: { params: { clientId: string } }) {
   // Delete client
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deletingApptId, setDeletingApptId] = useState<string | null>(null);
 
   function fetchClient() {
     const typeParam = clientType === "walkin" ? "?type=walkin" : "";
@@ -300,6 +301,23 @@ function ClientDetailInner({ params }: { params: { clientId: string } }) {
       toast("Failed to update pricing", "error");
     } finally {
       setPricingSaving(false);
+    }
+  }
+
+  async function deleteAppointment(apptId: string) {
+    setDeletingApptId(apptId);
+    try {
+      const res = await fetch(`/api/admin/appointments/${apptId}`, { method: "DELETE" });
+      if (res.ok) {
+        setAppointments(prev => prev.filter(a => a.id !== apptId));
+        toast("Appointment deleted", "info");
+      } else {
+        toast("Failed to delete appointment", "error");
+      }
+    } catch {
+      toast("Failed to delete appointment", "error");
+    } finally {
+      setDeletingApptId(null);
     }
   }
 
@@ -767,6 +785,22 @@ function ClientDetailInner({ params }: { params: { clientId: string } }) {
                             className="text-[11px] text-[#9b6f6f] hover:text-[#8a5f5f] font-medium transition-colors min-h-[44px] flex items-center"
                           >
                             $
+                          </button>
+                        )}
+                        {editingPricing !== a.id && (
+                          <button
+                            onClick={() => deleteAppointment(a.id)}
+                            disabled={deletingApptId === a.id}
+                            className="text-[#c9a96e] hover:text-red-500 transition-colors min-h-[44px] flex items-center disabled:opacity-40"
+                            title="Delete appointment"
+                          >
+                            {deletingApptId === a.id ? (
+                              <span className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin block" />
+                            ) : (
+                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            )}
                           </button>
                         )}
                       </div>
