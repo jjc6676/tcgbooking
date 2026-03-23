@@ -1,22 +1,23 @@
 import { createClient } from "@/lib/supabase/server";
+import { getAdminContext } from "@/lib/supabase/admin-auth";
 import { NextResponse } from "next/server";
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
+  const ctx = getAdminContext(request);
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { stylistId } = ctx;
+
   const supabase = await createClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-  if (authError || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  // RLS ensures the stylist can only delete their own overrides
+  // Add stylist_id filter for extra safety (in addition to RLS)
   const { error } = await supabase
     .from("operational_hours_overrides")
     .delete()
-    .eq("id", params.id);
+    .eq("id", params.id)
+    .eq("stylist_id", stylistId);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

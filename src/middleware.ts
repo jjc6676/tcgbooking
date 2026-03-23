@@ -1,10 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-
-
 export async function middleware(request: NextRequest) {
-  // Rate limit API routes first
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -41,6 +38,41 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/auth/")
   ) {
     return supabaseResponse;
+  }
+
+  // ─── Admin API routes: inject auth headers ─────────────────────────────────
+  if (pathname.startsWith("/api/admin")) {
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Fetch stylist ID via direct Supabase REST API (edge-compatible)
+    const stylistRes = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/stylists?user_id=eq.${user.id}&select=id&limit=1`,
+      {
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`,
+          Accept: "application/json",
+        },
+      }
+    );
+
+    const stylists = await stylistRes.json();
+    const stylistId = stylists?.[0]?.id ?? null;
+
+    if (!stylistId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    // Inject user/stylist IDs into request headers for the API route
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-user-id", user.id);
+    requestHeaders.set("x-stylist-id", stylistId);
+
+    return NextResponse.next({
+      request: { headers: requestHeaders },
+    });
   }
 
   // Unauthenticated — redirect to login

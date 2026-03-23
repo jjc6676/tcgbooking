@@ -1,26 +1,18 @@
-import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { getAdminContext } from "@/lib/supabase/admin-auth";
 import { NextResponse } from "next/server";
 import type { AppointmentStatus } from "@/lib/supabase/types";
 import { sendStatusUpdateEmail } from "@/lib/email";
 
 const VALID_STATUSES: AppointmentStatus[] = ["pending", "confirmed", "cancelled"];
 
-async function getAuthedStylist(supabase: Awaited<ReturnType<typeof createClient>>) {
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user) return null;
-  const { data: stylist } = await supabase
-    .from("stylists").select("id, name").eq("user_id", user.id).single();
-  return stylist ? { ...stylist, userId: user.id } : null;
-}
-
 export async function PATCH(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const supabase = await createClient();
-  const stylist = await getAuthedStylist(supabase);
-  if (!stylist) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const ctx = getAdminContext(request);
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { stylistId } = ctx;
 
   const body = await request.json();
 
@@ -47,11 +39,12 @@ export async function PATCH(
     .from("appointments")
     .update(updateFields)
     .eq("id", params.id)
-    .eq("stylist_id", stylist.id)
+    .eq("stylist_id", stylistId)
     .select(`
       *,
       client:profiles!client_id(id, full_name),
-      service:services!service_id(id, name, duration_minutes)
+      service:services!service_id(id, name, duration_minutes),
+      stylist:stylists!stylist_id(name)
     `)
     .single();
 
@@ -64,13 +57,14 @@ export async function PATCH(
   if (data && body.status && (body.status === "confirmed" || body.status === "cancelled")) {
     const clientProfile = data.client as { id: string; full_name: string | null } | null;
     const service = data.service as { id: string; name: string; duration_minutes: number } | null;
+    const stylistData = data.stylist as { name: string } | null;
     const { data: authUser } = await serviceClient.auth.admin.getUserById(data.client_id as string);
     const clientEmail = authUser?.user?.email ?? null;
     if (clientEmail && service) {
       sendStatusUpdateEmail({
         clientEmail,
         clientName: clientProfile?.full_name ?? null,
-        stylistName: stylist.name,
+        stylistName: stylistData?.name ?? "Your Stylist",
         serviceName: service.name,
         startAt: data.start_at as string,
         status: body.status,
@@ -83,19 +77,19 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
-  const supabase = await createClient();
-  const stylist = await getAuthedStylist(supabase);
-  if (!stylist) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const ctx = getAdminContext(request);
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { stylistId } = ctx;
 
   const serviceClient = createServiceClient();
   const { error } = await serviceClient
     .from("appointments")
     .delete()
     .eq("id", params.id)
-    .eq("stylist_id", stylist.id);
+    .eq("stylist_id", stylistId);
 
   if (error) {
     console.error("[api/admin/appointments/[id] DELETE]", { error: error.message, appointmentId: params.id });

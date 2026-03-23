@@ -1,18 +1,14 @@
-import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { getAdminContext } from "@/lib/supabase/admin-auth";
 
 export async function PATCH(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const supabase = await createClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { data: stylist } = await supabase
-    .from("stylists").select("id").eq("user_id", user.id).single();
-  if (!stylist) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const ctx = getAdminContext(request);
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { stylistId } = ctx;
 
   let body: { final_price_cents?: number; discount_cents?: number; discount_note?: string };
   try {
@@ -36,7 +32,7 @@ export async function PATCH(
     .from("appointments")
     .update(updateFields)
     .eq("id", params.id)
-    .eq("stylist_id", stylist.id)
+    .eq("stylist_id", stylistId)
     .select()
     .single();
 

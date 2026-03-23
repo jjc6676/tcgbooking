@@ -1,27 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
+import { getAdminContext } from "@/lib/supabase/admin-auth";
 import { NextResponse } from "next/server";
 
-async function getStylistId(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
-  const { data } = await supabase
-    .from("stylists")
-    .select("id")
-    .eq("user_id", userId)
-    .single();
-  return data?.id ?? null;
-}
+export async function GET(request: Request) {
+  const ctx = getAdminContext(request);
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { stylistId } = ctx;
 
-export async function GET() {
   const supabase = await createClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const stylistId = await getStylistId(supabase, user.id);
-  if (!stylistId) {
-    return NextResponse.json({ overrides: [] });
-  }
 
   const { data, error } = await supabase
     .from("operational_hours_overrides")
@@ -37,20 +23,11 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const ctx = getAdminContext(request);
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { stylistId } = ctx;
+
   const supabase = await createClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const stylistId = await getStylistId(supabase, user.id);
-  if (!stylistId) {
-    return NextResponse.json(
-      { error: "Create your profile before setting overrides." },
-      { status: 400 }
-    );
-  }
 
   const body = await request.json() as {
     label?: string;

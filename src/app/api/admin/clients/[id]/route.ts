@@ -1,25 +1,16 @@
-import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { getAdminContext } from "@/lib/supabase/admin-auth";
 import { NextResponse } from "next/server";
 
 function getServiceClient() {
   return createServiceClient();
 }
 
-async function getAuth() {
-  const supabase = await createClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return null;
-  const { data: stylist } = await supabase
-    .from("stylists").select("id").eq("user_id", user.id).single();
-  return stylist ? { userId: user.id, stylistId: stylist.id } : null;
-}
-
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const auth = await getAuth();
+  const auth = getAdminContext(request);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const clientId = params.id;
@@ -143,7 +134,7 @@ export async function DELETE(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const auth = await getAuth();
+  const auth = getAdminContext(request);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const clientId = params.id;

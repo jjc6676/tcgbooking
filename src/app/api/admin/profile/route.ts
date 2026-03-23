@@ -1,21 +1,18 @@
 import { createClient } from "@/lib/supabase/server";
+import { getAdminContext } from "@/lib/supabase/admin-auth";
 import { NextResponse } from "next/server";
 
-export async function GET() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
+export async function GET(request: Request) {
+  const ctx = getAdminContext(request);
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { userId } = ctx;
 
-  if (authError || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const supabase = await createClient();
 
   const { data: stylist, error } = await supabase
     .from("stylists")
     .select("*")
-    .eq("user_id", user.id)
+    .eq("user_id", userId)
     .single();
 
   if (error && error.code !== "PGRST116") {
@@ -26,15 +23,11 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
+  const ctx = getAdminContext(request);
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { userId } = ctx;
 
-  if (authError || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const supabase = await createClient();
 
   const body = await request.json();
   const { name, bio, avatar_url, cancellation_policy } = body as {
@@ -51,7 +44,7 @@ export async function POST(request: Request) {
   const { data: existing } = await supabase
     .from("stylists")
     .select("id")
-    .eq("user_id", user.id)
+    .eq("user_id", userId)
     .single();
 
   let result;
@@ -59,13 +52,13 @@ export async function POST(request: Request) {
     result = await supabase
       .from("stylists")
       .update({ name: name.trim(), bio: bio ?? null, avatar_url: avatar_url ?? null, cancellation_policy: cancellation_policy ?? null })
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .select()
       .single();
   } else {
     result = await supabase
       .from("stylists")
-      .insert({ user_id: user.id, name: name.trim(), bio: bio ?? null, avatar_url: avatar_url ?? null, cancellation_policy: cancellation_policy ?? null })
+      .insert({ user_id: userId, name: name.trim(), bio: bio ?? null, avatar_url: avatar_url ?? null, cancellation_policy: cancellation_policy ?? null })
       .select()
       .single();
   }

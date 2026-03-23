@@ -1,16 +1,12 @@
-import { createClient } from "@/lib/supabase/server";
+import { getAdminContext } from "@/lib/supabase/admin-auth";
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { sendRebookingReminder } from "@/lib/email";
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { data: stylist } = await supabase
-    .from("stylists").select("id, name").eq("user_id", user.id).single();
-  if (!stylist) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const ctx = getAdminContext(request);
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { stylistId } = ctx;
 
   const body = await request.json() as {
     appointment_id: string;
@@ -49,7 +45,7 @@ export async function POST(request: Request) {
   await sendRebookingReminder({
     clientEmail,
     clientName,
-    stylistId: stylist.id,
+    stylistId,
     serviceName: service_name,
     serviceId: service_id,
     message,
@@ -60,7 +56,7 @@ export async function POST(request: Request) {
   // Record reminder sent — graceful if table doesn't exist yet
   try {
     await serviceClient.from("rebooking_reminders").insert({
-      stylist_id: stylist.id,
+      stylist_id: stylistId,
       client_id,
       appointment_id: appointment_id ?? null,
       service_id,

@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
+import { getAdminContext } from "@/lib/supabase/admin-auth";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getStylistId } from "@/lib/auth-helpers";
 
 // ─── Zod validation ──────────────────────────────────────────────────────────
 
@@ -11,21 +11,12 @@ const PostServiceSchema = z.object({
   internal_price_cents: z.number().int().min(0, "internal_price_cents min 0").max(999999, "internal_price_cents max 999999").optional().default(0),
 });
 
-export async function GET() {
+export async function GET(request: Request) {
+  const ctx = getAdminContext(request);
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { stylistId } = ctx;
+
   const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const stylistId = await getStylistId(supabase, user.id);
-  if (!stylistId) {
-    return NextResponse.json({ services: [] });
-  }
 
   const { data, error } = await supabase
     .from("services")
@@ -34,7 +25,7 @@ export async function GET() {
     .order("created_at");
 
   if (error) {
-    console.error("[api/admin/services GET]", { error: error.message, userId: user.id });
+    console.error("[api/admin/services GET]", { error: error.message });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
@@ -42,23 +33,11 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const ctx = getAdminContext(request);
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { stylistId } = ctx;
+
   const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const stylistId = await getStylistId(supabase, user.id);
-  if (!stylistId) {
-    return NextResponse.json(
-      { error: "Create your profile before adding services." },
-      { status: 400 }
-    );
-  }
 
   let body: unknown;
   try {
@@ -89,7 +68,7 @@ export async function POST(request: Request) {
     .single();
 
   if (error) {
-    console.error("[api/admin/services POST]", { error: error.message, userId: user.id, name });
+    console.error("[api/admin/services POST]", { error: error.message, name });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 

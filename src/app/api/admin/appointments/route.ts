@@ -1,26 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
+import { getAdminContext } from "@/lib/supabase/admin-auth";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
+  const ctx = getAdminContext(request);
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { stylistId } = ctx;
+
   const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { data: stylist } = await supabase
-    .from("stylists")
-    .select("id")
-    .eq("user_id", user.id)
-    .single();
-
-  if (!stylist) {
-    return NextResponse.json({ appointments: [] });
-  }
 
   const { searchParams } = new URL(request.url);
   const status = searchParams.get("status"); // optional filter
@@ -35,7 +22,7 @@ export async function GET(request: Request) {
       appointment_services(service_id, service:services(id, name, duration_minutes, internal_price_cents))
     `
     )
-    .eq("stylist_id", stylist.id)
+    .eq("stylist_id", stylistId)
     .order("start_at");
 
   if (status === "all") {
@@ -51,7 +38,7 @@ export async function GET(request: Request) {
   const { data, error } = await query;
 
   if (error) {
-    console.error("[api/admin/appointments GET]", { error: error.message, userId: user.id, status });
+    console.error("[api/admin/appointments GET]", { error: error.message, status });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 

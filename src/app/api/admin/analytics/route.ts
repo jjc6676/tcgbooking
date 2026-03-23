@@ -1,26 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
+import { getAdminContext } from "@/lib/supabase/admin-auth";
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const ctx = getAdminContext(request);
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { stylistId } = ctx;
+
   const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { data: stylist } = await supabase
-    .from("stylists")
-    .select("id")
-    .eq("user_id", user.id)
-    .single();
-
-  if (!stylist) {
-    return NextResponse.json({ error: "No stylist profile" }, { status: 400 });
-  }
 
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
@@ -33,21 +20,21 @@ export async function GET() {
     supabase
       .from("appointments")
       .select("*, service:services!service_id(id, name, duration_minutes, internal_price_cents)")
-      .eq("stylist_id", stylist.id)
+      .eq("stylist_id", stylistId)
       .gte("start_at", monthStart)
       .lte("start_at", monthEnd),
     // Last 6 months for trends + top services (merged two queries into one)
     supabase
       .from("appointments")
       .select("start_at, status, service:services!service_id(id, name)")
-      .eq("stylist_id", stylist.id)
+      .eq("stylist_id", stylistId)
       .gte("start_at", sixMonthsAgo)
       .in("status", ["confirmed", "pending"]),
     // Recent 10 appointments
     supabase
       .from("appointments")
       .select("*, client:profiles!client_id(id, full_name), service:services!service_id(id, name)")
-      .eq("stylist_id", stylist.id)
+      .eq("stylist_id", stylistId)
       .order("start_at", { ascending: false })
       .limit(10),
   ]);
@@ -78,7 +65,7 @@ export async function GET() {
     const { data: priorAppts } = await supabase
       .from("appointments")
       .select("client_id")
-      .eq("stylist_id", stylist.id)
+      .eq("stylist_id", stylistId)
       .in("client_id", clientIds)
       .lt("start_at", monthStart)
       .in("status", ["confirmed", "pending"]);

@@ -1,33 +1,16 @@
 import { createClient } from "@/lib/supabase/server";
+import { getAdminContext } from "@/lib/supabase/admin-auth";
 import { NextResponse } from "next/server";
-
-async function getStylistId(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
-  const { data } = await supabase
-    .from("stylists")
-    .select("id")
-    .eq("user_id", userId)
-    .single();
-  return data?.id ?? null;
-}
 
 export async function PATCH(
   request: Request,
   { params }: { params: { id: string } }
 ) {
+  const ctx = getAdminContext(request);
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { stylistId } = ctx;
+
   const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const stylistId = await getStylistId(supabase, user.id);
-  if (!stylistId) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
 
   const body = await request.json();
   const { name, duration_minutes, internal_price_cents, is_active } = body as {
@@ -59,23 +42,14 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
+  const ctx = getAdminContext(request);
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { stylistId } = ctx;
+
   const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const stylistId = await getStylistId(supabase, user.id);
-  if (!stylistId) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
 
   const { error } = await supabase
     .from("services")

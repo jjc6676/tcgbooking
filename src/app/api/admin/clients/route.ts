@@ -1,15 +1,11 @@
-import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { getAdminContext } from "@/lib/supabase/admin-auth";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-  const supabase = await createClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { data: stylist } = await supabase
-    .from("stylists").select("id").eq("user_id", user.id).single();
-  if (!stylist) return NextResponse.json({ clients: [], total: 0, hasMore: false });
+  const ctx = getAdminContext(request);
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { stylistId } = ctx;
 
   const { searchParams } = new URL(request.url);
   const search = searchParams.get("q")?.toLowerCase() ?? "";
@@ -22,11 +18,11 @@ export async function GET(request: Request) {
   const { data: apptRows, error } = await serviceClient
     .from("appointments")
     .select("client_id, start_at, status")
-    .eq("stylist_id", stylist.id)
+    .eq("stylist_id", stylistId)
     .not("client_id", "is", null);
 
   if (error) {
-    console.error("[api/admin/clients GET]", { error: error.message, userId: user.id });
+    console.error("[api/admin/clients GET]", { error: error.message });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
@@ -63,7 +59,7 @@ export async function GET(request: Request) {
     serviceClient
       .from("walk_in_clients")
       .select("id, full_name, phone, email, created_at")
-      .eq("stylist_id", stylist.id),
+      .eq("stylist_id", stylistId),
   ]);
 
   const profiles = profilesResult.data ?? [];
@@ -91,7 +87,7 @@ export async function GET(request: Request) {
     const { data: logRows } = await serviceClient
       .from("client_service_log")
       .select("walk_in_client_id, visit_date")
-      .eq("stylist_id", stylist.id)
+      .eq("stylist_id", stylistId)
       .in("walk_in_client_id", walkInIds);
     for (const row of logRows ?? []) {
       const wid = row.walk_in_client_id as string;

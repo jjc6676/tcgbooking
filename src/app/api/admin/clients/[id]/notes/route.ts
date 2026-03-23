@@ -1,6 +1,6 @@
-import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { getAdminContext } from "@/lib/supabase/admin-auth";
 import { z } from "zod";
 
 // Validation schema for notes
@@ -12,13 +12,9 @@ export async function PATCH(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const supabase = await createClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { data: stylist } = await supabase
-    .from("stylists").select("id").eq("user_id", user.id).single();
-  if (!stylist) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const ctx = getAdminContext(request);
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { stylistId } = ctx;
 
   let body: unknown;
   try {
@@ -44,7 +40,7 @@ export async function PATCH(
     .from("stylist_client_notes")
     .upsert(
       {
-        stylist_id: stylist.id,
+        stylist_id: stylistId,
         client_id: params.id,
         notes: notes ?? null,
         updated_at: new Date().toISOString(),

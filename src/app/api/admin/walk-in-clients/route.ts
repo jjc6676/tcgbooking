@@ -1,7 +1,6 @@
-import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import { getStylistId } from "@/lib/auth-helpers";
+import { getAdminContext } from "@/lib/supabase/admin-auth";
 import { z } from "zod";
 
 // Validation schema for walk-in client creation
@@ -18,12 +17,9 @@ function sanitizeSearch(input: string): string {
 }
 
 export async function GET(request: Request) {
-  const supabase = await createClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const stylistId = await getStylistId(supabase, user.id);
-  if (!stylistId) return NextResponse.json({ clients: [] });
+  const ctx = getAdminContext(request);
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { stylistId } = ctx;
 
   const serviceClient = createServiceClient();
 
@@ -52,12 +48,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const stylistId = await getStylistId(supabase, user.id);
-  if (!stylistId) return NextResponse.json({ error: "Create your profile first." }, { status: 400 });
+  const ctx = getAdminContext(request);
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { stylistId } = ctx;
 
   let body: unknown;
   try {

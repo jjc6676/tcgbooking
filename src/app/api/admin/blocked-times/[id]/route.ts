@@ -1,35 +1,22 @@
 import { createClient } from "@/lib/supabase/server";
+import { getAdminContext } from "@/lib/supabase/admin-auth";
 import { NextResponse } from "next/server";
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
+  const ctx = getAdminContext(request);
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { stylistId } = ctx;
+
   const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { data: stylist } = await supabase
-    .from("stylists")
-    .select("id")
-    .eq("user_id", user.id)
-    .single();
-
-  if (!stylist) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
 
   const { error } = await supabase
     .from("blocked_times")
     .delete()
     .eq("id", params.id)
-    .eq("stylist_id", stylist.id);
+    .eq("stylist_id", stylistId);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
