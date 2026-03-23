@@ -28,5 +28,12 @@ export async function GET(
     return NextResponse.json({ error: svcError.message }, { status: 500 });
   }
 
-  return NextResponse.json({ stylist: { ...stylist, services: services ?? [] } });
+  return NextResponse.json(
+    { stylist: { ...stylist, services: services ?? [] } },
+    {
+      headers: {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+      },
+    }
+  );
 }

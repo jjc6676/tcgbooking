@@ -42,5 +42,12 @@ export async function GET() {
     services: servicesByStyleist[s.id] ?? [],
   }));
 
-  return NextResponse.json({ stylists: result });
+  return NextResponse.json(
+    { stylists: result },
+    {
+      headers: {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+      },
+    }
+  );
 }

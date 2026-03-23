@@ -1,0 +1,33 @@
+export default function ServicesLoading() {
+  return (
+    <div className="max-w-2xl">
+      {/* Header skeleton */}
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <div className="h-9 w-28 bg-[#e8e2dc] rounded-2xl animate-pulse" />
+          <div className="h-4 w-52 bg-[#e8e2dc] rounded-xl animate-pulse mt-2" />
+        </div>
+        <div className="h-11 w-32 bg-[#e8e2dc] rounded-full animate-pulse" />
+      </div>
+
+      {/* Services list skeleton */}
+      <div className="bg-white rounded-2xl border border-[#e8e2dc] divide-y divide-[#f5f0eb] overflow-hidden">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="flex items-center justify-between px-5 py-4">
+            <div className="flex-1 min-w-0">
+              <div className="h-4 w-36 bg-[#e8e2dc] rounded-xl animate-pulse" />
+              <div className="flex items-center gap-3 mt-2">
+                <div className="h-3 w-16 bg-[#e8e2dc] rounded-xl animate-pulse" />
+                <div className="h-3 w-12 bg-[#e8e2dc] rounded-xl animate-pulse" />
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="h-6 w-16 bg-[#e8e2dc] rounded-full animate-pulse" />
+              <div className="w-4 h-4 bg-[#e8e2dc] rounded animate-pulse" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
