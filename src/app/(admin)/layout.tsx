@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import AdminSignOutButton from "@/components/AdminSignOutButton";
@@ -6,6 +7,53 @@ import { ToastProvider } from "@/components/Toast";
 import ClientAuthGuard from "@/components/ClientAuthGuard";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import PendingBanner from "@/components/PendingBanner";
+
+function PageSkeleton() {
+  return (
+    <div className="animate-pulse">
+      <div className="h-9 bg-[#f0ebe6] rounded-lg w-48 mb-2" />
+      <div className="h-4 bg-[#f0ebe6] rounded w-64 mb-6" />
+      <div className="space-y-4">
+        <div className="bg-white rounded-2xl border border-[#e8e2dc] p-5">
+          <div className="flex gap-4">
+            <div className="w-14">
+              <div className="h-5 bg-[#f0ebe6] rounded w-10 mx-auto mb-1" />
+              <div className="h-3 bg-[#f0ebe6] rounded w-8 mx-auto" />
+            </div>
+            <div className="flex-1">
+              <div className="h-4 bg-[#f0ebe6] rounded w-32 mb-2" />
+              <div className="h-3 bg-[#f0ebe6] rounded w-24" />
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-2xl border border-[#e8e2dc] p-5">
+          <div className="flex gap-4">
+            <div className="w-14">
+              <div className="h-5 bg-[#f0ebe6] rounded w-10 mx-auto mb-1" />
+              <div className="h-3 bg-[#f0ebe6] rounded w-8 mx-auto" />
+            </div>
+            <div className="flex-1">
+              <div className="h-4 bg-[#f0ebe6] rounded w-40 mb-2" />
+              <div className="h-3 bg-[#f0ebe6] rounded w-28" />
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-2xl border border-[#e8e2dc] p-5">
+          <div className="flex gap-4">
+            <div className="w-14">
+              <div className="h-5 bg-[#f0ebe6] rounded w-10 mx-auto mb-1" />
+              <div className="h-3 bg-[#f0ebe6] rounded w-8 mx-auto" />
+            </div>
+            <div className="flex-1">
+              <div className="h-4 bg-[#f0ebe6] rounded w-36 mb-2" />
+              <div className="h-3 bg-[#f0ebe6] rounded w-20" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const NAV_MAIN = [
   {
@@ -231,7 +279,11 @@ export default async function AdminLayout({
         <div className="flex-1 min-w-0 flex flex-col">
           <PendingBanner />
           <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto pb-24 lg:pb-8">
-            <ErrorBoundary>{children}</ErrorBoundary>
+            <ErrorBoundary>
+              <Suspense fallback={<PageSkeleton />}>
+                {children}
+              </Suspense>
+            </ErrorBoundary>
           </main>
         </div>
       </div>
