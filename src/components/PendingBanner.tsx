@@ -37,7 +37,7 @@ export default function PendingBanner() {
     }
 
     fetchCount();
-    const interval = setInterval(fetchCount, 30_000);
+    const interval = setInterval(fetchCount, 300_000); // poll every 5 min, not 30s
     return () => { cancelled = true; clearInterval(interval); };
   }, []);
 
