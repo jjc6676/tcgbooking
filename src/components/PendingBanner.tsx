@@ -6,40 +6,52 @@ import { createClient } from "@/lib/supabase/client";
 
 export default function PendingBanner() {
   const [count, setCount] = useState(0);
+  const [stylistId, setStylistId] = useState<string | null>(null);
 
+  // Get stylist ID once on mount
   useEffect(() => {
-    let cancelled = false;
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase.from("stylists").select("id").eq("user_id", user.id).single()
+        .then(({ data }) => { if (data) setStylistId(data.id); });
+    });
+  }, []);
+
+  // Once we have stylistId: fetch count + subscribe to realtime changes
+  useEffect(() => {
+    if (!stylistId) return;
+    const supabase = createClient();
 
     async function fetchCount() {
-      try {
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user || cancelled) return;
-
-        const { data: stylist } = await supabase
-          .from("stylists")
-          .select("id")
-          .eq("user_id", user.id)
-          .single();
-        if (!stylist || cancelled) return;
-
-        const { count: c } = await supabase
-          .from("appointments")
-          .select("id", { count: "exact", head: true })
-          .eq("stylist_id", stylist.id)
-          .in("status", ["pending"])
-          .gte("start_at", new Date().toISOString());
-
-        if (!cancelled) setCount(c ?? 0);
-      } catch {
-        // silently fail
-      }
+      const { count: c } = await supabase
+        .from("appointments")
+        .select("id", { count: "exact", head: true })
+        .eq("stylist_id", stylistId)
+        .eq("status", "pending")
+        .gte("start_at", new Date().toISOString());
+      setCount(c ?? 0);
     }
 
     fetchCount();
-    const interval = setInterval(fetchCount, 300_000); // poll every 5 min, not 30s
-    return () => { cancelled = true; clearInterval(interval); };
-  }, []);
+
+    // Subscribe to appointment inserts/updates — refetch count on change
+    const channel = supabase
+      .channel("pending-banner")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "appointments",
+          filter: `stylist_id=eq.${stylistId}`,
+        },
+        () => fetchCount()
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [stylistId]);
 
   if (count === 0) return null;
 
