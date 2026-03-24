@@ -3,20 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { useAdminAuth } from "@/contexts/AdminAuthContext";
 
 export default function PendingBanner() {
   const [count, setCount] = useState(0);
-  const [stylistId, setStylistId] = useState<string | null>(null);
-
-  // Get stylist ID once on mount
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) return;
-      supabase.from("stylists").select("id").eq("user_id", user.id).single()
-        .then(({ data }) => { if (data) setStylistId(data.id); });
-    });
-  }, []);
+  const { stylistId } = useAdminAuth();
 
   // Once we have stylistId: fetch count + subscribe to realtime changes
   useEffect(() => {

@@ -135,6 +135,7 @@ export default function AdminBottomNav({ pendingCount }: Props) {
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={false}
                   onClick={() => setShowMore(false)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all active:scale-[0.98] min-h-[44px] ${
                     active ? "bg-[#f5ede8] text-[#9b6f6f]" : "text-[#1a1714] hover:bg-[#f5f0eb]"
@@ -176,6 +177,7 @@ export default function AdminBottomNav({ pendingCount }: Props) {
               <Link
                 key={tab.href}
                 href={tab.href}
+                prefetch={false}
                 className={`flex-1 flex flex-col items-center justify-center py-2.5 gap-1 relative transition-all active:opacity-70 min-h-[48px] ${
                   active ? "text-[#9b6f6f]" : "text-[#8a7e78]"
                 }`}

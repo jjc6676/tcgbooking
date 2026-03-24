@@ -179,6 +179,7 @@ export default async function AdminLayout({
 
   return (
     <ToastProvider>
+    <AdminAuthProvider>
     <ClientAuthGuard />
     <div className="min-h-screen bg-[#faf8f5]">
       {/* Mobile top bar */}
@@ -197,7 +198,7 @@ export default async function AdminLayout({
           </div>
         </div>
         {pendingCount > 0 && (
-          <Link href="/admin/appointments" className="relative flex items-center gap-1.5 bg-[#fffbeb] border border-[#fcd34d] text-[#d97706] text-xs font-semibold rounded-full px-3 py-1.5">
+          <Link href="/admin/appointments" prefetch={false} className="relative flex items-center gap-1.5 bg-[#fffbeb] border border-[#fcd34d] text-[#d97706] text-xs font-semibold rounded-full px-3 py-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-[#d97706] animate-pulse" />
             {pendingCount} pending
           </Link>
@@ -230,6 +231,7 @@ export default async function AdminLayout({
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={false}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#a89e96] hover:text-white hover:bg-[#2a2320] transition-colors mb-0.5 group"
                 >
                   <span className="text-[#6b5e56] group-hover:text-[#c9a96e] transition-colors">
@@ -252,6 +254,7 @@ export default async function AdminLayout({
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={false}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#a89e96] hover:text-white hover:bg-[#2a2320] transition-colors mb-0.5 group"
               >
                 <span className="text-[#6b5e56] group-hover:text-[#c9a96e] transition-colors">
@@ -292,6 +295,7 @@ export default async function AdminLayout({
       {/* Mobile bottom tab nav */}
       <AdminBottomNav pendingCount={pendingCount} />
     </div>
+    </AdminAuthProvider>
     </ToastProvider>
   );
 }
