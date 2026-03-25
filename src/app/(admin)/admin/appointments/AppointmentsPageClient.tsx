@@ -772,7 +772,6 @@ function CreateAppointmentModal({
 
   const totalDur = selectedServices.reduce((sum, s) => sum + s.duration_minutes, 0);
   const totalPrice = selectedServices.reduce((sum, s) => sum + s.price_cents, 0);
-  const hasRealService = selectedServices.some((s) => !s.isCustom);
 
   function computeEndIso(): string {
     const start = new Date(`${date}T${time}:00`);
