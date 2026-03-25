@@ -689,16 +689,13 @@ function CreateAppointmentModal({
     const controller = new AbortController();
     const timer = setTimeout(async () => {
       try {
-        const [authRes, walkinRes] = await Promise.all([
-          fetch(`/api/admin/clients?search=${encodeURIComponent(clientSearch)}&limit=5`, { signal: controller.signal }),
-          fetch(`/api/admin/walk-in-clients?search=${encodeURIComponent(clientSearch)}`, { signal: controller.signal }),
-        ]);
-        const authData = await authRes.json();
-        const walkinData = await walkinRes.json();
-        const results: ClientOption[] = [
-          ...(authData.clients ?? []).map((c: { id: string; full_name: string | null }) => ({ id: c.id, full_name: c.full_name, type: "auth" as const })),
-          ...(walkinData.clients ?? []).map((c: { id: string; full_name: string | null }) => ({ id: c.id, full_name: c.full_name, type: "walkin" as const })),
-        ];
+        const res = await fetch(`/api/admin/clients?q=${encodeURIComponent(clientSearch)}&limit=10`, { signal: controller.signal });
+        const data = await res.json();
+        const results: ClientOption[] = (data.clients ?? []).map((c: { id: string; full_name: string | null; clientType: string }) => ({
+          id: c.id,
+          full_name: c.full_name,
+          type: c.clientType === "walkin" ? "walkin" as const : "auth" as const,
+        }));
         setClientResults(results);
       } catch {
         // aborted or error
