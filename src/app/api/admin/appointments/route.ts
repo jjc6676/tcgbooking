@@ -89,11 +89,10 @@ export async function POST(request: Request) {
   }
 
   const {
-    client_id, walk_in_client_id, service_ids, start_at, end_at,
+    client_id, service_ids, start_at, end_at,
     status, client_notes, final_price_cents, discount_cents, discount_note,
   } = parsed.data;
 
-  // Must have at least one client reference (or neither for a quick manual entry)
   const serviceClient = createServiceClient();
 
   // Verify services belong to stylist and are active
