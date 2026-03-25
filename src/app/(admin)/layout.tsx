@@ -69,13 +69,24 @@ const NAV_MAIN = [
     ),
   },
   {
-    href: "/admin/appointments",
+    href: "/admin/requests",
     label: "Requests",
     exact: false,
     icon: (
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
           d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+      </svg>
+    ),
+  },
+  {
+    href: "/admin/appointments",
+    label: "Appointments",
+    exact: false,
+    icon: (
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
+          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
       </svg>
     ),
   },
@@ -198,7 +209,7 @@ export default async function AdminLayout({
           </div>
         </div>
         {pendingCount > 0 && (
-          <Link href="/admin/appointments" prefetch={false} className="relative flex items-center gap-1.5 bg-[#fffbeb] border border-[#fcd34d] text-[#d97706] text-xs font-semibold rounded-full px-3 py-1.5">
+          <Link href="/admin/requests" prefetch={false} className="relative flex items-center gap-1.5 bg-[#fffbeb] border border-[#fcd34d] text-[#d97706] text-xs font-semibold rounded-full px-3 py-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-[#d97706] animate-pulse" />
             {pendingCount} pending
           </Link>
@@ -226,7 +237,7 @@ export default async function AdminLayout({
 
           <nav className="flex-1 py-4 px-3 overflow-y-auto">
             {NAV_MAIN.map((item) => {
-              const isRequests = item.href === "/admin/appointments";
+              const isRequests = item.href === "/admin/requests";
               return (
                 <Link
                   key={item.href}

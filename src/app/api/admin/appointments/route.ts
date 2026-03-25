@@ -33,6 +33,11 @@ export async function GET(request: Request) {
     query = query.eq("status", "cancelled");
   } else if (status === "no_show") {
     query = query.eq("status", "no_show");
+  } else if (status === "requests") {
+    // Pending + reschedule requests only
+    query = query
+      .in("status", ["pending", "reschedule_requested"])
+      .gte("start_at", new Date().toISOString());
   } else {
     // "upcoming" (default)
     query = query
