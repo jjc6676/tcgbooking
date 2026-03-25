@@ -132,24 +132,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // Insert into appointment_services junction table (if table exists)
-  // TODO: Run migration to create appointment_services table:
-  //   CREATE TABLE IF NOT EXISTS appointment_services (
-  //     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  //     appointment_id uuid REFERENCES appointments(id) ON DELETE CASCADE,
-  //     service_id uuid REFERENCES services(id),
-  //     created_at timestamptz DEFAULT now()
-  //   );
+  // Insert into appointment_services junction table
   if (appointment) {
-    try {
-      const rows = resolvedServiceIds.map((sid) => ({
-        appointment_id: appointment.id,
-        service_id: sid,
-      }));
-      await supabase.from("appointment_services").insert(rows);
-    } catch {
-      // Table may not exist yet — gracefully ignore
-      console.warn("[api/appointments POST] appointment_services insert skipped (table may not exist)");
+    const rows = resolvedServiceIds.map((sid) => ({
+      appointment_id: appointment.id,
+      service_id: sid,
+    }));
+    const { error: asError } = await supabase.from("appointment_services").insert(rows);
+    if (asError) {
+      console.error("[api/appointments POST] appointment_services insert failed", { error: asError.message });
     }
   }
 

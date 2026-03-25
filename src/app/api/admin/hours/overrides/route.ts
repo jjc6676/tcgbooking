@@ -38,6 +38,7 @@ export async function POST(request: Request) {
     close_time?: string | null;
     is_closed?: boolean;
     note?: string | null;
+    force?: boolean;
   };
 
   const { label, effective_from, effective_until, day_of_week, open_time, close_time, is_closed } = body;
@@ -54,6 +55,37 @@ export async function POST(request: Request) {
 
   if (!closed && (!open_time || !close_time)) {
     return NextResponse.json({ error: "open_time and close_time are required unless is_closed is true" }, { status: 400 });
+  }
+
+  // Check for conflicting appointments in the affected date range
+  if (closed || open_time || close_time) {
+    const rangeStart = `${effective_from}T00:00:00`;
+    const rangeEnd = `${effective_until}T23:59:59`;
+
+    const { data: affectedAppts } = await supabase
+      .from("appointments")
+      .select("id, start_at, end_at, status, client:profiles!client_id(full_name), service:services!service_id(name)")
+      .eq("stylist_id", stylistId)
+      .in("status", ["pending", "confirmed"])
+      .gte("start_at", rangeStart)
+      .lte("start_at", rangeEnd);
+
+    if (affectedAppts && affectedAppts.length > 0 && !body.force) {
+      return NextResponse.json({
+        needs_confirmation: true,
+        affected_appointments: affectedAppts.map((a) => {
+          const client = a.client as unknown as { full_name: string | null } | null;
+          const service = a.service as unknown as { name: string } | null;
+          return {
+            id: a.id,
+            start_at: a.start_at,
+            client_name: client?.full_name ?? "Guest",
+            service_name: service?.name ?? "Service",
+          };
+        }),
+        message: `${affectedAppts.length} appointment(s) fall within this date range.`,
+      }, { status: 200 });
+    }
   }
 
   // For single-day overrides (from=until, day_of_week=null), upsert to prevent duplicates

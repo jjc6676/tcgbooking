@@ -600,10 +600,12 @@ function ClientDetailInner({ params }: { params: { clientId: string } }) {
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-[#8a7e78]">
-                  {client.email ?? "—"}
-                  {client.phone && <span className="ml-2">{client.phone}</span>}
-                </p>
+                <p className="text-sm text-[#8a7e78]">{client.email ?? "—"}</p>
+                {client.phone && (
+                  <a href={`tel:${client.phone}`} className="text-sm text-[#9b6f6f] hover:underline">
+                    {client.phone}
+                  </a>
+                )}
               </div>
             </div>
             <div className="flex gap-2 flex-shrink-0">
@@ -700,9 +702,9 @@ function ClientDetailInner({ params }: { params: { clientId: string } }) {
             <p className="text-sm font-semibold text-[#1a1714] mb-3">Service Log</p>
             <div className="bg-white rounded-2xl border border-[#e8e2dc] divide-y divide-[#f5f0eb] overflow-hidden">
               {serviceLog.map((entry) => (
-                <div key={entry.id} className="px-5 py-4">
+                <div key={entry.id} className="px-5 py-4 group">
                   <div className="flex items-start justify-between gap-3">
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-[#1a1714]">{entry.service_name}</p>
                       <p className="text-xs text-[#8a7e78] mt-0.5">
                         {new Date(entry.visit_date + "T12:00:00").toLocaleDateString("en-US", {
@@ -716,11 +718,28 @@ function ClientDetailInner({ params }: { params: { clientId: string } }) {
                         <p className="text-xs text-[#8a7e78] mt-1 italic">{entry.notes}</p>
                       )}
                     </div>
-                    {entry.price_cents > 0 && (
-                      <span className="text-sm font-semibold text-[#1a1714] flex-shrink-0">
-                        ${(entry.price_cents / 100).toFixed(2)}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {entry.price_cents > 0 && (
+                        <span className="text-sm font-semibold text-[#1a1714]">
+                          ${(entry.price_cents / 100).toFixed(2)}
+                        </span>
+                      )}
+                      <button
+                        onClick={async () => {
+                          if (!confirm("Delete this service log entry?")) return;
+                          const res = await fetch(`/api/admin/service-log/${entry.id}`, { method: "DELETE" });
+                          if (res.ok) {
+                            setServiceLog((prev) => prev.filter((e) => e.id !== entry.id));
+                          }
+                        }}
+                        className="opacity-0 group-hover:opacity-100 focus:opacity-100 p-1.5 rounded-lg text-[#8a7e78] hover:text-red-500 hover:bg-red-50 transition-all"
+                        title="Delete entry"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}

@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import type { AppointmentStatus } from "@/lib/supabase/types";
 import { sendStatusUpdateEmail } from "@/lib/email";
 
-const VALID_STATUSES: AppointmentStatus[] = ["pending", "confirmed", "cancelled"];
+const VALID_STATUSES: AppointmentStatus[] = ["pending", "confirmed", "cancelled", "no_show"];
 
 export async function PATCH(
   request: Request,

@@ -45,6 +45,47 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "end_at must be after start_at" }, { status: 400 });
   }
 
+  // Check for conflicting appointments
+  const { data: conflicts } = await supabase
+    .from("appointments")
+    .select("id, start_at, end_at, status, client:profiles!client_id(full_name), service:services!service_id(name)")
+    .eq("stylist_id", stylistId)
+    .in("status", ["pending", "confirmed"])
+    .lt("start_at", end_at)
+    .gt("end_at", start_at);
+
+  const force = body.force === true;
+  const cancelConflicts = body.cancel_conflicts === true;
+
+  if (conflicts && conflicts.length > 0 && !force && !cancelConflicts) {
+    return NextResponse.json({
+      needs_confirmation: true,
+      conflicts: conflicts.map((c) => {
+        const client = c.client as unknown as { full_name: string | null } | null;
+        const service = c.service as unknown as { name: string } | null;
+        return {
+          id: c.id,
+          start_at: c.start_at,
+          end_at: c.end_at,
+          status: c.status,
+          client_name: client?.full_name ?? "Guest",
+          service_name: service?.name ?? "Service",
+        };
+      }),
+      message: `This time overlaps with ${conflicts.length} existing appointment(s).`,
+    }, { status: 200 });
+  }
+
+  // Cancel conflicts if requested
+  if (cancelConflicts && conflicts && conflicts.length > 0) {
+    const conflictIds = conflicts.map((c) => c.id);
+    await supabase
+      .from("appointments")
+      .update({ status: "cancelled" })
+      .in("id", conflictIds)
+      .eq("stylist_id", stylistId);
+  }
+
   const { data, error } = await supabase
     .from("blocked_times")
     .insert({ stylist_id: stylistId, start_at, end_at, reason: reason ?? null })

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { useToast } from "@/components/Toast";
 
 interface ServiceInfo {
@@ -88,6 +89,7 @@ const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; d
   pending: { label: "Pending", bg: "bg-amber-50", text: "text-amber-700", dot: "bg-amber-400" },
   confirmed: { label: "Confirmed", bg: "bg-emerald-50", text: "text-emerald-700", dot: "bg-emerald-400" },
   cancelled: { label: "Cancelled", bg: "bg-gray-100", text: "text-gray-500", dot: "bg-gray-300" },
+  no_show: { label: "No Show", bg: "bg-red-50", text: "text-red-700", dot: "bg-red-400" },
   reschedule_requested: { label: "Reschedule Req.", bg: "bg-purple-50", text: "text-purple-700", dot: "bg-purple-400" },
 };
 
@@ -133,7 +135,9 @@ export default function AppointmentsPageClient({
 }: AppointmentsPageClientProps) {
   const [appointments, setAppointments] = useState<AppointmentRow[]>(initialAppointments);
   const [loading, setLoading] = useState(false);
-  const [filter, setFilter] = useState<"upcoming" | "all" | "cancelled">("upcoming");
+  const searchParams = useSearchParams();
+  const [filter, setFilter] = useState<"upcoming" | "all" | "cancelled" | "no_show">("upcoming");
+  const [showCreate, setShowCreate] = useState(searchParams.get("action") === "create");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [expanded, setExpanded] = useState<string | null>(null);
   const [editAppt, setEditAppt] = useState<EditState | null>(null);
@@ -147,11 +151,12 @@ export default function AppointmentsPageClient({
     fetch("/api/admin/services").then(r => r.json()).then(d => setServices(d.services ?? []));
   }, []);
 
-  const loadAppointments = useCallback(async (filterValue: "upcoming" | "all" | "cancelled") => {
+  const loadAppointments = useCallback(async (filterValue: "upcoming" | "all" | "cancelled" | "no_show") => {
     setLoading(true);
     let url = "/api/admin/appointments";
     if (filterValue === "cancelled") url += "?status=cancelled";
     else if (filterValue === "all") url += "?status=all";
+    else if (filterValue === "no_show") url += "?status=no_show";
     const res = await fetch(url);
     const data = await res.json();
     setAppointments(data.appointments ?? []);
@@ -166,7 +171,7 @@ export default function AppointmentsPageClient({
   }, [filter, loadAppointments]);
 
   // When switching back to upcoming and we've changed filters before, refetch
-  const handleFilterChange = useCallback((newFilter: "upcoming" | "all" | "cancelled") => {
+  const handleFilterChange = useCallback((newFilter: "upcoming" | "all" | "cancelled" | "no_show") => {
     if (newFilter === filter) return;
     setFilter(newFilter);
     if (newFilter !== "upcoming") {
@@ -280,9 +285,20 @@ export default function AppointmentsPageClient({
 
   return (
     <div className="max-w-3xl">
-      <div className="mb-6">
-        <h1 className="font-display text-3xl text-[#1a1714]">Appointments</h1>
-        <p className="text-[#8a7e78] text-sm mt-1">Confirm or decline client requests.</p>
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl text-[#1a1714]">Appointments</h1>
+          <p className="text-[#8a7e78] text-sm mt-1">Confirm or decline client requests.</p>
+        </div>
+        <button
+          onClick={() => setShowCreate(true)}
+          className="flex items-center gap-2 px-4 py-2.5 bg-[#9b6f6f] text-white text-sm font-semibold rounded-full hover:bg-[#8a5f5f] active:scale-95 transition-all min-h-[44px] flex-shrink-0"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          <span className="hidden sm:inline">Add Appointment</span>
+        </button>
       </div>
 
       {/* Pending banner */}
@@ -299,16 +315,16 @@ export default function AppointmentsPageClient({
       )}
 
       {/* Filter tabs */}
-      <div className="flex gap-2 mb-6 bg-[#f5f0eb] p-1 rounded-xl w-fit">
-        {(["upcoming", "all", "cancelled"] as const).map((f) => (
+      <div className="flex gap-1 mb-6 bg-[#f5f0eb] p-1 rounded-xl w-fit overflow-x-auto">
+        {(["upcoming", "all", "cancelled", "no_show"] as const).map((f) => (
           <button
             key={f}
             onClick={() => handleFilterChange(f)}
-            className={`text-sm px-4 py-2 rounded-lg transition-colors font-medium min-h-[44px] ${
+            className={`text-sm px-3 sm:px-4 py-2 rounded-lg transition-colors font-medium min-h-[44px] whitespace-nowrap ${
               filter === f ? "bg-white text-[#1a1714] shadow-sm" : "text-[#8a7e78] hover:text-[#5c4a42]"
             }`}
           >
-            {f === "upcoming" ? "Upcoming" : f === "all" ? "All" : "Cancelled"}
+            {f === "upcoming" ? "Upcoming" : f === "all" ? "All" : f === "cancelled" ? "Cancelled" : "No Show"}
           </button>
         ))}
       </div>
@@ -422,7 +438,7 @@ export default function AppointmentsPageClient({
                           )}
 
                           <div className="flex flex-wrap items-center gap-2">
-                              {appt.status !== "cancelled" && (
+                              {appt.status !== "cancelled" && appt.status !== "no_show" && (
                                 <>
                                   {appt.status === "pending" && (
                                     <button
@@ -444,6 +460,17 @@ export default function AppointmentsPageClient({
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                       </svg>
                                       Mark Rescheduled
+                                    </button>
+                                  )}
+                                  {appt.status === "confirmed" && new Date(appt.start_at) < new Date() && (
+                                    <button
+                                      onClick={() => updateStatus(appt.id, "no_show")}
+                                      className="flex items-center gap-1.5 px-4 py-2.5 bg-red-500 text-white text-sm font-semibold rounded-full hover:bg-red-600 active:scale-95 transition-all min-h-[44px]"
+                                    >
+                                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                      </svg>
+                                      No Show
                                     </button>
                                   )}
                                   <button
@@ -600,6 +627,295 @@ export default function AppointmentsPageClient({
           </div>
         </div>
       )}
+
+      {/* Add Appointment Modal */}
+      {showCreate && (
+        <CreateAppointmentModal
+          services={services}
+          onClose={() => setShowCreate(false)}
+          onCreated={() => {
+            setShowCreate(false);
+            loadAppointments(filter);
+            toast("Appointment created", "success");
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── Create Appointment Modal ────────────────────────────────────────────────
+
+interface ClientOption {
+  id: string;
+  full_name: string | null;
+  type: "auth" | "walkin";
+}
+
+function CreateAppointmentModal({
+  services,
+  onClose,
+  onCreated,
+}: {
+  services: ServiceInfo[];
+  onClose: () => void;
+  onCreated: () => void;
+}) {
+  const [clientSearch, setClientSearch] = useState("");
+  const [clientResults, setClientResults] = useState<ClientOption[]>([]);
+  const [selectedClient, setSelectedClient] = useState<ClientOption | null>(null);
+  const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
+  const [date, setDate] = useState(() => {
+    const d = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  });
+  const [time, setTime] = useState("10:00");
+  const [status, setStatus] = useState<"confirmed" | "pending" | "cancelled" | "no_show">("confirmed");
+  const [notes, setNotes] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const isPast = new Date(`${date}T${time}`) < new Date();
+
+  // Search clients when typing
+  useEffect(() => {
+    if (clientSearch.length < 2) { setClientResults([]); return; }
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        const [authRes, walkinRes] = await Promise.all([
+          fetch(`/api/admin/clients?search=${encodeURIComponent(clientSearch)}&limit=5`, { signal: controller.signal }),
+          fetch(`/api/admin/walk-in-clients?search=${encodeURIComponent(clientSearch)}`, { signal: controller.signal }),
+        ]);
+        const authData = await authRes.json();
+        const walkinData = await walkinRes.json();
+        const results: ClientOption[] = [
+          ...(authData.clients ?? []).map((c: { id: string; full_name: string | null }) => ({ id: c.id, full_name: c.full_name, type: "auth" as const })),
+          ...(walkinData.clients ?? []).map((c: { id: string; full_name: string | null }) => ({ id: c.id, full_name: c.full_name, type: "walkin" as const })),
+        ];
+        setClientResults(results);
+      } catch {
+        // aborted or error
+      }
+    }, 300);
+    return () => { controller.abort(); clearTimeout(timer); };
+  }, [clientSearch]);
+
+  // Compute end time from selected services
+  const totalDur = selectedServiceIds.reduce((sum, sid) => {
+    const svc = services.find((s) => s.id === sid);
+    return sum + (svc?.duration_minutes ?? 0);
+  }, 0);
+
+  const totalPrice = selectedServiceIds.reduce((sum, sid) => {
+    const svc = services.find((s) => s.id === sid);
+    return sum + (svc?.internal_price_cents ?? 0);
+  }, 0);
+
+  function computeEndIso(): string {
+    const start = new Date(`${date}T${time}:00`);
+    start.setMinutes(start.getMinutes() + (totalDur || 60));
+    return start.toISOString();
+  }
+
+  async function handleSubmit() {
+    if (selectedServiceIds.length === 0) { setError("Select at least one service"); return; }
+    setSaving(true);
+    setError("");
+
+    const startIso = new Date(`${date}T${time}:00`).toISOString();
+    const endIso = computeEndIso();
+
+    try {
+      const res = await fetch("/api/admin/appointments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          client_id: selectedClient?.type === "auth" ? selectedClient.id : null,
+          walk_in_client_id: selectedClient?.type === "walkin" ? selectedClient.id : null,
+          service_ids: selectedServiceIds,
+          start_at: startIso,
+          end_at: endIso,
+          status,
+          client_notes: notes.trim() || undefined,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "Failed to create appointment");
+        setSaving(false);
+        return;
+      }
+
+      onCreated();
+    } catch {
+      setError("Something went wrong");
+      setSaving(false);
+    }
+  }
+
+  function toggleService(id: string) {
+    setSelectedServiceIds((prev) =>
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
+    );
+  }
+
+  const statusOptions = isPast
+    ? [{ value: "confirmed", label: "Confirmed" }, { value: "no_show", label: "No Show" }, { value: "cancelled", label: "Cancelled" }]
+    : [{ value: "confirmed", label: "Confirmed" }, { value: "pending", label: "Pending" }];
+
+  return (
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-4" onClick={onClose}>
+      <div
+        className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 space-y-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="font-display text-xl text-[#1a1714]">Add Appointment</h2>
+
+        {/* Client Search */}
+        <div>
+          <label className="text-xs font-medium text-[#8a7e78] uppercase tracking-wide">Client</label>
+          {selectedClient ? (
+            <div className="mt-1 flex items-center gap-2 border border-[#e8e2dc] rounded-xl px-3 py-2.5">
+              <span className="text-sm text-[#1a1714] flex-1">{selectedClient.full_name || "Guest"}</span>
+              <span className="text-[10px] text-[#8a7e78] px-1.5 py-0.5 rounded bg-[#f5f0eb]">
+                {selectedClient.type === "walkin" ? "Walk-in" : "Client"}
+              </span>
+              <button onClick={() => { setSelectedClient(null); setClientSearch(""); }} className="text-[#8a7e78] hover:text-red-500">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+          ) : (
+            <div className="relative mt-1">
+              <input
+                type="text"
+                value={clientSearch}
+                onChange={(e) => setClientSearch(e.target.value)}
+                placeholder="Search by name or email…"
+                className="w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f]"
+                style={{ fontSize: 16 }}
+              />
+              {clientResults.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#e8e2dc] rounded-xl shadow-lg z-10 max-h-40 overflow-y-auto">
+                  {clientResults.map((c) => (
+                    <button
+                      key={`${c.type}-${c.id}`}
+                      onClick={() => { setSelectedClient(c); setClientSearch(""); setClientResults([]); }}
+                      className="w-full text-left px-3 py-2.5 text-sm hover:bg-[#f5f0eb] flex items-center justify-between"
+                    >
+                      <span>{c.full_name || "Guest"}</span>
+                      <span className="text-[10px] text-[#8a7e78]">{c.type === "walkin" ? "Walk-in" : "Client"}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          <p className="text-[10px] text-[#8a7e78] mt-1">Optional — leave blank for unassigned</p>
+        </div>
+
+        {/* Services multi-select */}
+        <div>
+          <label className="text-xs font-medium text-[#8a7e78] uppercase tracking-wide">Services</label>
+          <div className="mt-1 space-y-1 max-h-40 overflow-y-auto border border-[#e8e2dc] rounded-xl p-2">
+            {services.filter((s) => s.duration_minutes > 0).map((s) => (
+              <button
+                key={s.id}
+                onClick={() => toggleService(s.id)}
+                className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between transition-colors ${
+                  selectedServiceIds.includes(s.id) ? "bg-[#9b6f6f]/10 text-[#9b6f6f] font-semibold" : "hover:bg-[#f5f0eb] text-[#1a1714]"
+                }`}
+              >
+                <span>{s.name}</span>
+                <span className="text-xs text-[#8a7e78]">{s.duration_minutes}m{s.internal_price_cents ? ` · $${(s.internal_price_cents / 100).toFixed(0)}` : ""}</span>
+              </button>
+            ))}
+          </div>
+          {totalDur > 0 && (
+            <p className="text-xs text-[#8a7e78] mt-1">
+              Total: {totalDur}m{totalPrice > 0 ? ` · $${(totalPrice / 100).toFixed(0)}` : ""}
+            </p>
+          )}
+        </div>
+
+        {/* Date + Time */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs font-medium text-[#8a7e78] uppercase tracking-wide">Date</label>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="mt-1 w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f]"
+              style={{ fontSize: 16 }}
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-[#8a7e78] uppercase tracking-wide">Start Time</label>
+            <input
+              type="time"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              className="mt-1 w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f]"
+              style={{ fontSize: 16 }}
+            />
+          </div>
+        </div>
+        {isPast && <p className="text-xs text-amber-600 -mt-2">This date is in the past — creating for record-keeping</p>}
+
+        {/* Status */}
+        <div>
+          <label className="text-xs font-medium text-[#8a7e78] uppercase tracking-wide">Status</label>
+          <div className="flex gap-2 mt-1">
+            {statusOptions.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setStatus(opt.value as typeof status)}
+                className={`flex-1 text-sm py-2 rounded-xl font-medium transition-colors ${
+                  status === opt.value
+                    ? opt.value === "no_show" ? "bg-red-500 text-white" : opt.value === "cancelled" ? "bg-gray-500 text-white" : "bg-[#9b6f6f] text-white"
+                    : "border border-[#e8e2dc] text-[#8a7e78] hover:bg-[#f5f0eb]"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Notes */}
+        <div>
+          <label className="text-xs font-medium text-[#8a7e78] uppercase tracking-wide">Notes</label>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={2}
+            placeholder="Optional notes…"
+            className="mt-1 w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] resize-none"
+            style={{ fontSize: 16 }}
+          />
+        </div>
+
+        {error && <p className="text-sm text-red-600">{error}</p>}
+
+        <div className="flex gap-3 pt-2">
+          <button
+            onClick={onClose}
+            className="flex-1 py-3 border border-[#e8e2dc] rounded-xl text-sm font-semibold text-[#8a7e78] hover:bg-[#f5f0eb] transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={saving || selectedServiceIds.length === 0}
+            className="flex-1 py-3 bg-[#9b6f6f] text-white rounded-xl text-sm font-semibold hover:bg-[#8a5f5f] disabled:opacity-50 transition-colors"
+          >
+            {saving ? "Creating…" : "Add Appointment"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

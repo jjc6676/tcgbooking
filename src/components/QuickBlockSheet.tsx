@@ -24,13 +24,15 @@ export default function QuickBlockSheet({ onBlocked }: Props) {
   const [endTime, setEndTime] = useState("13:00");
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
+  const [conflicts, setConflicts] = useState<Array<{ id: string; client_name: string; service_name: string; start_at: string }>>([]);
+  const [showConflictDialog, setShowConflictDialog] = useState(false);
   const { toast } = useToast();
 
   function getDateStr() {
     return date === "today" ? todayLocalStr() : tomorrowLocalStr();
   }
 
-  async function handleSave() {
+  async function handleSave(opts?: { force?: boolean; cancel_conflicts?: boolean }) {
     const dateStr = getDateStr();
     const start_at = `${dateStr}T${startTime}:00Z`;
     const end_at   = `${dateStr}T${endTime}:00Z`;
@@ -45,15 +47,29 @@ export default function QuickBlockSheet({ onBlocked }: Props) {
       const res = await fetch("/api/admin/blocked-times", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ start_at, end_at, reason: note.trim() || null }),
+        body: JSON.stringify({
+          start_at, end_at, reason: note.trim() || null,
+          ...(opts?.force ? { force: true } : {}),
+          ...(opts?.cancel_conflicts ? { cancel_conflicts: true } : {}),
+        }),
       });
-      if (res.ok) {
+      const d = await res.json();
+
+      if (d.needs_confirmation) {
+        setConflicts(d.conflicts ?? []);
+        setShowConflictDialog(true);
+        setSaving(false);
+        return;
+      }
+
+      if (res.ok && d.blocked_time) {
         toast(`Blocked ${startTime}–${endTime} ✓`, "success");
         setOpen(false);
         setNote("");
+        setConflicts([]);
+        setShowConflictDialog(false);
         onBlocked?.();
-      } else {
-        const d = await res.json();
+      } else if (!res.ok) {
         toast(d.error ?? "Failed to block time", "error");
       }
     } catch {
@@ -155,22 +171,61 @@ export default function QuickBlockSheet({ onBlocked }: Props) {
               />
             </div>
 
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="w-full py-3 bg-[#9b6f6f] text-white font-semibold rounded-full hover:bg-[#8a5f5f] disabled:opacity-50 transition-all text-sm min-h-[48px]"
-            >
-              {saving ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Blocking…
-                </span>
-              ) : "Block This Time"}
-            </button>
+            {showConflictDialog && conflicts.length > 0 ? (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-3">
+                <p className="text-sm font-semibold text-amber-800 mb-2">
+                  {conflicts.length} appointment{conflicts.length > 1 ? "s" : ""} overlap{conflicts.length === 1 ? "s" : ""} with this block:
+                </p>
+                <div className="space-y-1.5 mb-3">
+                  {conflicts.map((c) => (
+                    <p key={c.id} className="text-xs text-amber-700">
+                      {c.client_name} — {c.service_name} ({new Date(c.start_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })})
+                    </p>
+                  ))}
+                </div>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => handleSave({ cancel_conflicts: true })}
+                    disabled={saving}
+                    className="w-full py-2.5 bg-red-500 text-white font-semibold rounded-full text-sm hover:bg-red-600 disabled:opacity-50"
+                  >
+                    Block & Cancel These
+                  </button>
+                  <button
+                    onClick={() => handleSave({ force: true })}
+                    disabled={saving}
+                    className="w-full py-2.5 bg-amber-500 text-white font-semibold rounded-full text-sm hover:bg-amber-600 disabled:opacity-50"
+                  >
+                    Block Anyway
+                  </button>
+                  <button
+                    onClick={() => { setShowConflictDialog(false); setConflicts([]); }}
+                    className="w-full py-2.5 border border-[#e8e2dc] text-[#8a7e78] font-semibold rounded-full text-sm hover:bg-[#f5f0eb]"
+                  >
+                    Never Mind
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <button
+                  onClick={() => handleSave()}
+                  disabled={saving}
+                  className="w-full py-3 bg-[#9b6f6f] text-white font-semibold rounded-full hover:bg-[#8a5f5f] disabled:opacity-50 transition-all text-sm min-h-[48px]"
+                >
+                  {saving ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Blocking…
+                    </span>
+                  ) : "Block This Time"}
+                </button>
 
-            <p className="text-xs text-[#8a7e78] text-center mt-3">
-              This will hide those slots from clients immediately.
-            </p>
+                <p className="text-xs text-[#8a7e78] text-center mt-3">
+                  This will hide those slots from clients immediately.
+                </p>
+              </>
+            )}
           </div>
         </div>
       )}

@@ -26,6 +26,33 @@ export async function PATCH(
   if (internal_price_cents !== undefined) updates.internal_price_cents = internal_price_cents;
   if (is_active !== undefined) updates.is_active = is_active;
 
+  // When deactivating, check for future pending appointments using this service
+  if (is_active === false && !body.force) {
+    const { data: affected } = await supabase
+      .from("appointments")
+      .select("id, start_at, client:profiles!client_id(full_name)")
+      .eq("stylist_id", stylistId)
+      .eq("service_id", params.id)
+      .in("status", ["pending", "confirmed"])
+      .gte("start_at", new Date().toISOString());
+
+    if (affected && affected.length > 0) {
+      return NextResponse.json({
+        needs_confirmation: true,
+        affected_count: affected.length,
+        affected_appointments: affected.map((a) => {
+          const client = a.client as unknown as { full_name: string | null } | null;
+          return {
+            id: a.id,
+            start_at: a.start_at,
+            client_name: client?.full_name ?? "Guest",
+          };
+        }),
+        message: `${affected.length} upcoming appointment(s) use this service.`,
+      });
+    }
+  }
+
   const { data, error } = await supabase
     .from("services")
     .update(updates)
@@ -50,6 +77,26 @@ export async function DELETE(
   const { stylistId } = ctx;
 
   const supabase = await createClient();
+
+  // Check for future appointments using this service
+  const { searchParams } = new URL(request.url);
+  if (!searchParams.get("force")) {
+    const { data: futureAppts } = await supabase
+      .from("appointments")
+      .select("id")
+      .eq("stylist_id", stylistId)
+      .eq("service_id", params.id)
+      .in("status", ["pending", "confirmed"])
+      .gte("start_at", new Date().toISOString());
+
+    if (futureAppts && futureAppts.length > 0) {
+      return NextResponse.json({
+        needs_confirmation: true,
+        affected_count: futureAppts.length,
+        message: `${futureAppts.length} upcoming appointment(s) use this service. They will lose their service reference.`,
+      });
+    }
+  }
 
   const { error } = await supabase
     .from("services")

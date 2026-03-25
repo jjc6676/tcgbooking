@@ -62,52 +62,19 @@ export async function GET(request: Request) {
   const tomorrow = getTomorrow();
   const errors: string[] = [];
 
-  // Query approved appointments for tomorrow
-  // Handle reminder_sent column gracefully — it may not exist yet
-  let query = supabase
+  // Query confirmed appointments for tomorrow
+  const { data: appointments, error: queryError } = await supabase
     .from("appointments")
     .select(`
       id, start_at, client_id,
       service:services!service_id(name),
-      client:profiles!client_id(full_name, email:id)
+      client:profiles!client_id(full_name)
     `)
-    .eq("status", "approved")
+    .eq("status", "confirmed")
     .gte("start_at", `${tomorrow}T00:00:00`)
     .lt("start_at", `${tomorrow}T23:59:59`);
 
-  // Try to filter by reminder_sent if the column exists
-  try {
-    query = query.eq("reminder_sent", false);
-  } catch {
-    // Column may not exist — proceed without filter
-  }
-
-  const { data: appointments, error: queryError } = await query;
-
   if (queryError) {
-    // If error is about reminder_sent column, retry without it
-    if (queryError.message?.includes("reminder_sent")) {
-      const { data: fallbackAppts, error: fallbackError } = await supabase
-        .from("appointments")
-        .select(`
-          id, start_at, client_id,
-          service:services!service_id(name),
-          client:profiles!client_id(full_name, email:id)
-        `)
-        .eq("status", "approved")
-        .gte("start_at", `${tomorrow}T00:00:00`)
-        .lt("start_at", `${tomorrow}T23:59:59`);
-
-      if (fallbackError) {
-        return NextResponse.json(
-          { error: fallbackError.message, sent: 0, errors: [fallbackError.message] },
-          { status: 500 }
-        );
-      }
-
-      return await processAppointments(supabase, fallbackAppts ?? [], errors);
-    }
-
     return NextResponse.json(
       { error: queryError.message, sent: 0, errors: [queryError.message] },
       { status: 500 }

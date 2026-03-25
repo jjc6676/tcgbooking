@@ -158,20 +158,31 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   }
 
-  // For auth clients: delete their service log entries and notes (can't delete the auth user)
+  // For auth clients:
+  // 1. Cancel future pending/confirmed appointments (don't delete — preserve history)
+  await serviceClient
+    .from("appointments")
+    .update({ status: "cancelled" })
+    .eq("stylist_id", auth.stylistId)
+    .eq("client_id", clientId)
+    .in("status", ["pending", "confirmed"])
+    .gte("start_at", new Date().toISOString());
+
+  // 2. Delete service log entries for this stylist
   await serviceClient
     .from("client_service_log")
     .delete()
     .eq("stylist_id", auth.stylistId)
     .eq("client_id", clientId);
 
+  // 3. Delete private notes for this stylist
   await serviceClient
     .from("stylist_client_notes")
     .delete()
     .eq("stylist_id", auth.stylistId)
     .eq("client_id", clientId);
 
-  // Delete appointments for this client with this stylist
+  // 4. Delete past appointments (history cleanup)
   await serviceClient
     .from("appointments")
     .delete()

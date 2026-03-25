@@ -1,5 +1,5 @@
 export type UserRole = "client" | "stylist" | "admin";
-export type AppointmentStatus = "pending" | "confirmed" | "cancelled";
+export type AppointmentStatus = "pending" | "confirmed" | "cancelled" | "no_show";
 
 export interface Profile {
   id: string;

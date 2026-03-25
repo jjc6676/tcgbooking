@@ -1,6 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { getAdminContext } from "@/lib/supabase/admin-auth";
 import { NextResponse } from "next/server";
+import { z } from "zod";
+
+const APPT_SELECT = `
+  *,
+  client:profiles!client_id(id, full_name),
+  service:services!service_id(id, name, duration_minutes, internal_price_cents),
+  appointment_services(service_id, service:services(id, name, duration_minutes, internal_price_cents))
+`;
 
 export async function GET(request: Request) {
   const ctx = getAdminContext(request);
@@ -14,22 +23,18 @@ export async function GET(request: Request) {
 
   let query = supabase
     .from("appointments")
-    .select(
-      `
-      *,
-      client:profiles!client_id(id, full_name),
-      service:services!service_id(id, name, duration_minutes, internal_price_cents),
-      appointment_services(service_id, service:services(id, name, duration_minutes, internal_price_cents))
-    `
-    )
+    .select(APPT_SELECT)
     .eq("stylist_id", stylistId)
     .order("start_at");
 
   if (status === "all") {
-    query = query.gte("start_at", new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString());
+    // No date restriction for "all" — show everything
   } else if (status === "cancelled") {
     query = query.eq("status", "cancelled");
+  } else if (status === "no_show") {
+    query = query.eq("status", "no_show");
   } else {
+    // "upcoming" (default)
     query = query
       .in("status", ["pending", "confirmed", "reschedule_requested"])
       .gte("start_at", new Date().toISOString());
@@ -43,4 +48,139 @@ export async function GET(request: Request) {
   }
 
   return NextResponse.json({ appointments: data });
+}
+
+// ─── Admin appointment creation (receptionist mode) ─────────────────────────
+
+const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const AdminCreateSchema = z.object({
+  client_id: z.string().regex(uuidRegex).optional().nullable(),
+  walk_in_client_id: z.string().regex(uuidRegex).optional().nullable(),
+  client_name: z.string().max(200).optional(),
+  service_ids: z.array(z.string().regex(uuidRegex)).min(1, "At least one service is required"),
+  start_at: z.string().datetime({ message: "start_at must be a valid ISO date" }),
+  end_at: z.string().datetime({ message: "end_at must be a valid ISO date" }),
+  status: z.enum(["pending", "confirmed", "cancelled", "no_show"]).default("confirmed"),
+  client_notes: z.string().max(500).optional(),
+  final_price_cents: z.number().int().min(0).optional(),
+  discount_cents: z.number().int().min(0).optional(),
+  discount_note: z.string().max(200).optional(),
+});
+
+export async function POST(request: Request) {
+  const ctx = getAdminContext(request);
+  if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { stylistId } = ctx;
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const parsed = AdminCreateSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Validation failed", details: parsed.error.issues.map((e) => ({ path: e.path.join("."), message: e.message })) },
+      { status: 400 }
+    );
+  }
+
+  const {
+    client_id, walk_in_client_id, service_ids, start_at, end_at,
+    status, client_notes, final_price_cents, discount_cents, discount_note,
+  } = parsed.data;
+
+  // Must have at least one client reference (or neither for a quick manual entry)
+  const serviceClient = createServiceClient();
+
+  // Verify services belong to stylist and are active
+  const { data: services } = await serviceClient
+    .from("services")
+    .select("id, name, is_active, internal_price_cents")
+    .in("id", service_ids)
+    .eq("stylist_id", stylistId);
+
+  if (!services || services.length !== service_ids.length) {
+    return NextResponse.json({ error: "One or more services not found" }, { status: 400 });
+  }
+  if (services.some((s) => !s.is_active)) {
+    return NextResponse.json({ error: "One or more services are inactive" }, { status: 400 });
+  }
+
+  const isPast = new Date(start_at) < new Date();
+
+  // Check for time conflicts (skip for past appointments — they're record-keeping)
+  if (!isPast) {
+    const { data: conflicts } = await serviceClient
+      .from("appointments")
+      .select("id")
+      .eq("stylist_id", stylistId)
+      .in("status", ["pending", "confirmed"])
+      .lt("start_at", end_at)
+      .gt("end_at", start_at);
+
+    if (conflicts && conflicts.length > 0) {
+      return NextResponse.json(
+        { error: "This time slot conflicts with an existing appointment.", conflicts },
+        { status: 409 }
+      );
+    }
+
+    // Check against blocked times
+    const { data: blockedConflicts } = await serviceClient
+      .from("blocked_times")
+      .select("id, reason")
+      .eq("stylist_id", stylistId)
+      .lt("start_at", end_at)
+      .gt("end_at", start_at);
+
+    if (blockedConflicts && blockedConflicts.length > 0) {
+      return NextResponse.json(
+        { warning: "This time overlaps a blocked period.", blocked: blockedConflicts },
+        { status: 200 }
+      );
+    }
+  }
+
+  const primaryServiceId = service_ids[0]!;
+
+  // Insert appointment
+  const { data: appointment, error } = await serviceClient
+    .from("appointments")
+    .insert({
+      client_id: client_id || null,
+      stylist_id: stylistId,
+      service_id: primaryServiceId,
+      start_at,
+      end_at,
+      status,
+      client_notes: client_notes?.trim() || null,
+      final_price_cents: final_price_cents ?? null,
+      discount_cents: discount_cents ?? null,
+      discount_note: discount_note?.trim() || null,
+    })
+    .select(APPT_SELECT)
+    .single();
+
+  if (error) {
+    console.error("[api/admin/appointments POST]", { error: error.message, stylistId });
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  // Insert appointment_services
+  if (appointment) {
+    const rows = service_ids.map((sid) => ({
+      appointment_id: appointment.id,
+      service_id: sid,
+    }));
+    const { error: asError } = await serviceClient.from("appointment_services").insert(rows);
+    if (asError) {
+      console.error("[api/admin/appointments POST] appointment_services", { error: asError.message });
+    }
+  }
+
+  return NextResponse.json({ appointment }, { status: 201 });
 }

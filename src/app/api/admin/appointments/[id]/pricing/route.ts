@@ -10,7 +10,13 @@ export async function PATCH(
   if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { stylistId } = ctx;
 
-  let body: { final_price_cents?: number; discount_cents?: number; discount_note?: string };
+  let body: {
+    final_price_cents?: number;
+    discount_cents?: number;
+    discount_note?: string;
+    adjustment_cents?: number;
+    adjustment_note?: string;
+  };
   try {
     body = await request.json();
   } catch {
@@ -23,6 +29,8 @@ export async function PATCH(
   if (body.final_price_cents !== undefined) updateFields.final_price_cents = body.final_price_cents;
   if (body.discount_cents !== undefined) updateFields.discount_cents = body.discount_cents;
   if (body.discount_note !== undefined) updateFields.discount_note = body.discount_note || null;
+  if (body.adjustment_cents !== undefined) updateFields.adjustment_cents = body.adjustment_cents;
+  if (body.adjustment_note !== undefined) updateFields.adjustment_note = body.adjustment_note || null;
 
   if (Object.keys(updateFields).length === 0) {
     return NextResponse.json({ error: "No fields to update" }, { status: 400 });
