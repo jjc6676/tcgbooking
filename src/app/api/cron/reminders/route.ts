@@ -89,20 +89,19 @@ export async function GET(request: Request) {
 async function processAppointments(supabase: any, appointments: any[], errors: string[]) {
   let sent = 0;
 
-  // We need client emails — profiles table has id but not email directly.
-  // Get emails from auth via Supabase admin API
+  // Get emails in bulk via listUsers (single call instead of N)
   const clientIds = Array.from(new Set(appointments.map((a: { client_id: string }) => a.client_id)));
   const emailMap = new Map<string, string>();
 
-  for (const clientId of clientIds) {
-    try {
-      const { data } = await supabase.auth.admin.getUserById(clientId);
-      if (data?.user?.email) {
-        emailMap.set(clientId, data.user.email);
+  try {
+    const { data: { users } } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+    for (const u of users) {
+      if (clientIds.includes(u.id) && u.email) {
+        emailMap.set(u.id, u.email);
       }
-    } catch {
-      // Skip if can't get email
     }
+  } catch {
+    // Fallback: no emails available
   }
 
   for (const appt of appointments) {

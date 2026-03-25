@@ -131,25 +131,22 @@ export async function GET(request: Request) {
   clients = clients.slice(offset, offset + limit);
   const hasMore = offset + clients.length < total;
 
-  // Fetch emails only for the paginated auth clients (instead of all users)
+  // Fetch emails in bulk via auth.admin.listUsers (single call instead of N)
   const authClientIds = clients
     .filter((c) => c.clientType === "auth")
     .map((c) => c.id);
 
   if (authClientIds.length > 0) {
-    const emailResults = await Promise.all(
-      authClientIds.map((id) =>
-        serviceClient.auth.admin.getUserById(id).then(
-          ({ data }) => ({ id, email: data?.user?.email ?? null }),
-          () => ({ id, email: null })
-        )
-      )
-    );
-    const emailMap = new Map(emailResults.map((r) => [r.id, r.email]));
-    for (const c of clients) {
-      if (c.clientType === "auth") {
-        c.email = emailMap.get(c.id) ?? null;
+    try {
+      const { data: { users } } = await serviceClient.auth.admin.listUsers({ perPage: 1000 });
+      const emailMap = new Map(users.map((u) => [u.id, u.email ?? null]));
+      for (const c of clients) {
+        if (c.clientType === "auth") {
+          c.email = emailMap.get(c.id) ?? null;
+        }
       }
+    } catch {
+      // Fallback: leave emails null
     }
   }
 
