@@ -126,6 +126,11 @@ function ClientDetailInner({ params }: { params: { clientId: string } }) {
   });
   const [pricingSaving, setPricingSaving] = useState(false);
 
+  // Edit client info
+  const [showEditClient, setShowEditClient] = useState(false);
+  const [editForm, setEditForm] = useState({ full_name: "", phone: "", email: "", notes: "" });
+  const [editSaving, setEditSaving] = useState(false);
+
   // Delete client
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -599,6 +604,23 @@ function ClientDetailInner({ params }: { params: { clientId: string } }) {
                       Walk-in
                     </span>
                   )}
+                  <button
+                    onClick={() => {
+                      setEditForm({
+                        full_name: client.full_name ?? "",
+                        phone: client.phone ?? "",
+                        email: client.email ?? "",
+                        notes: "",
+                      });
+                      setShowEditClient(true);
+                    }}
+                    className="p-1.5 rounded-lg text-[#8a7e78] hover:text-[#9b6f6f] hover:bg-[#f5f0eb] transition-all"
+                    title="Edit client"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
                 </div>
                 <p className="text-sm text-[#8a7e78]">{client.email ?? "—"}</p>
                 {client.phone && (
@@ -901,6 +923,100 @@ function ClientDetailInner({ params }: { params: { clientId: string } }) {
           </button>
         </div>
       </div>
+
+      {/* Edit Client Modal */}
+      {showEditClient && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-4" onClick={() => setShowEditClient(false)}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+            <h2 className="font-display text-xl text-[#1a1714]">Edit Client</h2>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-medium text-[#8a7e78] uppercase tracking-wide">Name</label>
+                <input
+                  type="text"
+                  value={editForm.full_name}
+                  onChange={(e) => setEditForm((f) => ({ ...f, full_name: e.target.value }))}
+                  className="mt-1 w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f]"
+                  style={{ fontSize: 16 }}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[#8a7e78] uppercase tracking-wide">Phone</label>
+                <input
+                  type="tel"
+                  value={editForm.phone}
+                  onChange={(e) => setEditForm((f) => ({ ...f, phone: e.target.value }))}
+                  placeholder="(555) 123-4567"
+                  className="mt-1 w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f]"
+                  style={{ fontSize: 16 }}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[#8a7e78] uppercase tracking-wide">Email</label>
+                <input
+                  type="email"
+                  value={editForm.email}
+                  onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))}
+                  placeholder="email@example.com"
+                  className="mt-1 w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f]"
+                  style={{ fontSize: 16 }}
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setShowEditClient(false)}
+                className="flex-1 py-3 border border-[#e8e2dc] rounded-xl text-sm font-semibold text-[#8a7e78] hover:bg-[#f5f0eb] transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  setEditSaving(true);
+                  try {
+                    if (isWalkin) {
+                      const res = await fetch("/api/admin/walk-in-clients", {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          id: client.id,
+                          full_name: editForm.full_name,
+                          phone: editForm.phone || null,
+                          email: editForm.email || null,
+                        }),
+                      });
+                      if (res.ok) {
+                        setClient((c) => c ? { ...c, full_name: editForm.full_name, phone: editForm.phone || null, email: editForm.email || null } : c);
+                        setShowEditClient(false);
+                      }
+                    } else {
+                      // Auth clients: update profile name via admin API
+                      // Phone isn't on profiles table for auth clients, but name is
+                      const res = await fetch(`/api/admin/clients/${client.id}/profile`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ full_name: editForm.full_name }),
+                      });
+                      if (res.ok) {
+                        setClient((c) => c ? { ...c, full_name: editForm.full_name } : c);
+                        setShowEditClient(false);
+                      }
+                    }
+                  } catch {
+                    // error
+                  } finally {
+                    setEditSaving(false);
+                  }
+                }}
+                disabled={editSaving}
+                className="flex-1 py-3 bg-[#9b6f6f] text-white rounded-xl text-sm font-semibold hover:bg-[#8a5f5f] disabled:opacity-50 transition-colors"
+              >
+                {editSaving ? "Saving…" : "Save Changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
