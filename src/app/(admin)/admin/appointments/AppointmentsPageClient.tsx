@@ -21,8 +21,13 @@ interface AppointmentRow {
   reschedule_preferred_time?: string | null;
   reschedule_note?: string | null;
   client: { id: string; full_name: string | null } | null;
+  walk_in: { id: string; full_name: string | null } | null;
   service: ServiceInfo | null;
   appointment_services?: Array<{ service_id: string; service: ServiceInfo | null }> | null;
+}
+
+function clientName(appt: AppointmentRow): string {
+  return appt.client?.full_name ?? appt.walk_in?.full_name ?? "Guest";
 }
 
 /** Get all services for an appointment: prefer appointment_services, fall back to service */
@@ -374,7 +379,7 @@ export default function AppointmentsPageClient({
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
                               <div>
-                                <p className="font-semibold text-[#1a1714] text-sm">{appt.client?.full_name ?? "Guest"}</p>
+                                <p className="font-semibold text-[#1a1714] text-sm">{clientName(appt)}</p>
                                 <p className="text-xs text-[#8a7e78] mt-0.5">{serviceNames(appt)}</p>
                               </div>
                               <div className="flex items-center gap-2 flex-shrink-0">
@@ -604,7 +609,7 @@ export default function AppointmentsPageClient({
             <div className="text-center">
               <h2 className="font-display text-lg text-[#1a1714]">Delete Appointment?</h2>
               <p className="text-sm text-[#8a7e78] mt-1">
-                {deleteAppt.client?.full_name ?? "Guest"} · {serviceNames(deleteAppt)}<br />
+                {clientName(deleteAppt)} · {serviceNames(deleteAppt)}<br />
                 {new Date(deleteAppt.start_at).toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" })} at {formatTime(deleteAppt.start_at)}
               </p>
               <p className="text-xs text-red-600 mt-2">This cannot be undone.</p>

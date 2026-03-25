@@ -7,6 +7,7 @@ import { z } from "zod";
 const APPT_SELECT = `
   *,
   client:profiles!client_id(id, full_name),
+  walk_in:walk_in_clients!walk_in_client_id(id, full_name),
   service:services!service_id(id, name, duration_minutes, internal_price_cents),
   appointment_services(service_id, service:services(id, name, duration_minutes, internal_price_cents))
 `;
@@ -94,7 +95,7 @@ export async function POST(request: Request) {
   }
 
   const {
-    client_id, service_ids, start_at, end_at,
+    client_id, walk_in_client_id, service_ids, start_at, end_at,
     status, client_notes, final_price_cents, discount_cents, discount_note,
   } = parsed.data;
 
@@ -156,6 +157,7 @@ export async function POST(request: Request) {
     .from("appointments")
     .insert({
       client_id: client_id || null,
+      walk_in_client_id: walk_in_client_id || null,
       stylist_id: stylistId,
       service_id: primaryServiceId,
       start_at,
