@@ -34,7 +34,8 @@ function formatDateTime(iso: string): string {
     hour: "2-digit",
     minute: "2-digit",
     timeZone: "America/Chicago",
-  }) + " CDT";
+    timeZoneName: "short",
+  });
 }
 
 function googleCalendarUrl(title: string, startAt: string, endAt: string, description: string): string {

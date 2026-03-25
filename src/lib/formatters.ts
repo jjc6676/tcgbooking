@@ -82,5 +82,6 @@ export function formatDateTime(iso: string, options?: { timeZone?: string }): st
     hour: "2-digit",
     minute: "2-digit",
     timeZone: tz,
-  }) + " CDT";
+    timeZoneName: "short",
+  });
 }
