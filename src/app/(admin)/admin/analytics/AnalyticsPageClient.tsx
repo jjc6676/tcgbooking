@@ -126,7 +126,7 @@ export default function AnalyticsPageClient({ initialData, error }: AnalyticsPag
         <div className="bg-white rounded-2xl border border-[#e8e2dc] p-5 mb-4">
           <h2 className="font-display text-lg text-[#1a1714] mb-4">Top Services</h2>
           {data.topServices.map((s) => (
-            <HorizontalBar key={s.name} label={s.name} value={s.count} max={maxService} />
+            <HorizontalBar key={s.name} label={s.name} value={s.count} max={maxService} stacked />
           ))}
         </div>
       )}
