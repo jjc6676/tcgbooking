@@ -2,17 +2,18 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import PendingRequestsList from "@/components/PendingRequestsList";
 import DashboardQuickActions from "@/components/DashboardQuickActions";
+import { STUDIO } from "@/config/studio";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Dashboard · Keri Choplin Studio",
+  title: `Dashboard · ${STUDIO.name}`,
 };
 
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
-    timeZone: "America/Chicago",
+    timeZone: STUDIO.timezone,
   });
 }
 
@@ -27,12 +28,12 @@ function getTodayRange(): { start: string; end: string } {
   const now = new Date();
   const d = new Date();
   d.setHours(0, 0, 0, 0);
-  const start = new Date(d.toLocaleString("en-US", { timeZone: "America/Chicago" }));
+  const start = new Date(d.toLocaleString("en-US", { timeZone: STUDIO.timezone }));
   start.setHours(0, 0, 0, 0);
   const end = new Date(start);
   end.setHours(23, 59, 59, 999);
   // Use UTC-based range for the CDT day
-  const todayStr = now.toLocaleDateString("en-CA", { timeZone: "America/Chicago" });
+  const todayStr = now.toLocaleDateString("en-CA", { timeZone: STUDIO.timezone });
   return {
     start: `${todayStr}T00:00:00`,
     end: `${todayStr}T23:59:59`,
@@ -41,7 +42,7 @@ function getTodayRange(): { start: string; end: string } {
 
 function getWeekRange(): { start: string; end: string } {
   const now = new Date();
-  const todayStr = now.toLocaleDateString("en-CA", { timeZone: "America/Chicago" });
+  const todayStr = now.toLocaleDateString("en-CA", { timeZone: STUDIO.timezone });
   const [y, m, day] = todayStr.split("-").map(Number);
   const date = new Date(Date.UTC(y!, m! - 1, day!));
   const dayOfWeek = date.getUTCDay();
@@ -60,7 +61,7 @@ function getGreeting(): string {
   const hour = new Date().toLocaleString("en-US", {
     hour: "numeric",
     hour12: false,
-    timeZone: "America/Chicago",
+    timeZone: STUDIO.timezone,
   });
   const h = parseInt(hour, 10);
   if (h >= 5 && h < 12) return "Good morning";
@@ -95,7 +96,7 @@ export default async function AdminDashboardPage() {
               d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
         </div>
-        <h1 className="font-display text-2xl text-[#1a1714] mb-2">Welcome, Keri!</h1>
+        <h1 className="font-display text-2xl text-[#1a1714] mb-2">Welcome, {STUDIO.ownerName}!</h1>
         <p className="text-[#8a7e78] text-sm mb-6">Let&apos;s set up your profile to start accepting bookings.</p>
         <Link
           href="/admin/profile"
@@ -155,7 +156,7 @@ export default async function AdminDashboardPage() {
     weekday: "long",
     month: "long",
     day: "numeric",
-    timeZone: "America/Chicago",
+    timeZone: STUDIO.timezone,
   });
 
   const greeting = getGreeting();
@@ -165,7 +166,7 @@ export default async function AdminDashboardPage() {
       {/* Greeting */}
       <div className="mb-6">
         <p className="text-xs text-[#c9a96e] uppercase tracking-widest font-medium mb-1">{todayDate}</p>
-        <h1 className="font-display text-3xl text-[#1a1714]">{greeting}, Keri</h1>
+        <h1 className="font-display text-3xl text-[#1a1714]">{greeting}, {STUDIO.ownerName}</h1>
       </div>
 
       {/* Quick stats */}

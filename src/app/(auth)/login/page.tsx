@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { STUDIO } from "@/config/studio";
 
 function LoginForm() {
   const router = useRouter();
@@ -116,7 +117,7 @@ export default function LoginPage() {
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#f5ede8] to-[#e8d8d0] flex items-center justify-center mx-auto mb-4 border-2 border-[#e8e2dc] shadow-sm">
             <span className="font-display text-white text-2xl font-bold" style={{ color: "#9b6f6f" }}>K</span>
           </div>
-          <h1 className="font-display text-3xl text-[#1a1714]">Keri Choplin</h1>
+          <h1 className="font-display text-3xl text-[#1a1714]">{STUDIO.ownerName}</h1>
           <p className="text-sm text-[#8a7e78] mt-1">Sign in to your account</p>
         </div>
 

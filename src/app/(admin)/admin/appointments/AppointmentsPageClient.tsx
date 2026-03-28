@@ -233,8 +233,8 @@ export default function AppointmentsPageClient({
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          start_at: editAppt.start_at,
-          end_at: editAppt.end_at,
+          start_at: editAppt.start_at.endsWith("Z") ? editAppt.start_at : `${editAppt.start_at}:00Z`,
+          end_at: editAppt.end_at.endsWith("Z") ? editAppt.end_at : `${editAppt.end_at}:00Z`,
           service_id: editAppt.service_id || undefined,
           client_notes: editAppt.client_notes,
         }),
@@ -270,11 +270,11 @@ export default function AppointmentsPageClient({
 
   function openEdit(appt: AppointmentRow) {
     const svc = getAllServices(appt)[0];
-    // Convert UTC ISO to local datetime-local format
+    // Convert fake-UTC ISO to datetime-local format (use UTC methods since times are stored as fake-UTC)
     const toLocalDT = (iso: string) => {
       const d = new Date(iso);
       const pad = (n: number) => String(n).padStart(2, "0");
-      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
     };
     setEditAppt({
       id: appt.id,
@@ -774,9 +774,12 @@ function CreateAppointmentModal({
   const totalPrice = selectedServices.reduce((sum, s) => sum + s.price_cents, 0);
 
   function computeEndIso(): string {
-    const start = new Date(`${date}T${time}:00`);
-    start.setMinutes(start.getMinutes() + (totalDur || 60));
-    return start.toISOString();
+    // Build end time by adding duration to start, keeping fake-UTC convention
+    const [h, m] = time.split(":").map(Number);
+    const totalMin = (h ?? 0) * 60 + (m ?? 0) + (totalDur || 60);
+    const eh = String(Math.floor(totalMin / 60) % 24).padStart(2, "0");
+    const em = String(totalMin % 60).padStart(2, "0");
+    return `${date}T${eh}:${em}:00Z`;
   }
 
   async function handleSubmit() {
@@ -784,7 +787,7 @@ function CreateAppointmentModal({
     setSaving(true);
     setError("");
 
-    const startIso = new Date(`${date}T${time}:00`).toISOString();
+    const startIso = `${date}T${time}:00Z`;
     const endIso = computeEndIso();
 
     // Only send real service IDs (not custom ones)

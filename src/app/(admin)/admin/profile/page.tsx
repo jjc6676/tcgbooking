@@ -5,6 +5,7 @@ import Image from "next/image";
 import type { Stylist } from "@/lib/supabase/types";
 import { useToast } from "@/components/Toast";
 import { ChangePasswordForm } from "@/components/ChangePasswordForm";
+import { STUDIO } from "@/config/studio";
 
 const MAX_BIO = 300;
 
@@ -162,7 +163,7 @@ export default function ProfilePage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            placeholder="e.g. Keri Choplin"
+            placeholder={`e.g. ${STUDIO.ownerName}`}
             className="w-full border border-[#e8e2dc] rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7] min-h-[44px]"
           />
         </div>

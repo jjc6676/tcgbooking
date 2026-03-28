@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { sendBookingConfirmation } from "@/lib/email";
+import { STUDIO } from "@/config/studio";
 import { z } from "zod";
 
 
@@ -161,7 +162,7 @@ export async function POST(request: Request) {
         clientEmail: user.email,
         clientName: clientData?.full_name ?? null,
         stylistName: stylistData.name,
-        stylistEmail: process.env.STYLIST_NOTIFICATION_EMAIL ?? "kerichoplin@gmail.com",
+        stylistEmail: process.env.STYLIST_NOTIFICATION_EMAIL ?? STUDIO.contactEmail,
         serviceName: serviceNames,
         startAt: appointment.start_at,
         endAt: appointment.end_at,

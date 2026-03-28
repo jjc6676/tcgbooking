@@ -8,6 +8,7 @@ import ClientAuthGuard from "@/components/ClientAuthGuard";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import PendingBanner from "@/components/PendingBanner";
 import { AdminAuthProvider } from "@/contexts/AdminAuthContext";
+import { STUDIO } from "@/config/studio";
 
 function PageSkeleton() {
   return (
@@ -201,7 +202,7 @@ export default async function AdminLayout({
           </div>
           <div className="leading-tight">
             <p className="font-display text-[#1a1714] text-base font-semibold leading-none">
-              Keri Choplin
+              {STUDIO.ownerName}
             </p>
             <p className="text-[#c9a96e] text-[9px] tracking-widest uppercase leading-tight">
               Studio Dashboard
@@ -226,7 +227,7 @@ export default async function AdminLayout({
               </div>
               <div>
                 <p className="text-white font-semibold text-base leading-none font-display">
-                  Keri Choplin
+                  {STUDIO.ownerName}
                 </p>
                 <p className="text-[#c9a96e] text-[10px] tracking-widest uppercase leading-tight mt-0.5">
                   Hair Studio

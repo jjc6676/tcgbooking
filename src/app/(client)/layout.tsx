@@ -1,6 +1,7 @@
 import ClientNav from "@/components/ClientNav";
 import ClientAuthGuard from "@/components/ClientAuthGuard";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { STUDIO } from "@/config/studio";
 
 export default async function ClientLayout({
   children,
@@ -18,11 +19,11 @@ export default async function ClientLayout({
       {/* Footer */}
       <footer className="border-t border-[#e8e2dc] bg-white mt-16">
         <div className="max-w-2xl mx-auto px-6 py-8 text-center space-y-3">
-          <p className="font-display text-[#1a1714] text-lg">Keri Choplin</p>
-          <p className="text-sm text-[#8a7e78]">Tue – Fri &nbsp;·&nbsp; Lafayette, Louisiana</p>
+          <p className="font-display text-[#1a1714] text-lg">{STUDIO.ownerName}</p>
+          <p className="text-sm text-[#8a7e78]">Tue – Fri &nbsp;·&nbsp; {STUDIO.location}</p>
           <div className="flex items-center justify-center gap-4 text-xs text-[#8a7e78]">
-            <a href="mailto:kerichoplin@gmail.com" className="hover:text-[#9b6f6f] transition-colors">
-              kerichoplin@gmail.com
+            <a href={`mailto:${STUDIO.contactEmail}`} className="hover:text-[#9b6f6f] transition-colors">
+              {STUDIO.contactEmail}
             </a>
           </div>
         </div>

@@ -2,6 +2,7 @@
  * Email helper using Resend API.
  * Set RESEND_API_KEY env var to enable. Silently skips if not configured.
  */
+import { STUDIO } from "@/config/studio";
 
 interface BookingConfirmationData {
   clientEmail: string;
@@ -33,7 +34,7 @@ function formatDateTime(iso: string): string {
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-    timeZone: "America/Chicago",
+    timeZone: STUDIO.timezone,
     timeZoneName: "short",
   });
 }
@@ -46,7 +47,7 @@ function googleCalendarUrl(title: string, startAt: string, endAt: string, descri
     text: title,
     dates: `${fmt(startAt)}/${fmt(endAt)}`,
     details: description,
-    location: "Keri Choplin Hair Studio, Lafayette, Louisiana",
+    location: `${STUDIO.name}, ${STUDIO.location}`,
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
@@ -55,15 +56,13 @@ async function sendEmail(to: string, subject: string, html: string): Promise<voi
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) return;
 
-  const fromEmail = process.env.RESEND_FROM_EMAIL ?? "hello@kerichoplinhair.com";
-
   await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ from: `Keri Choplin Hair <${fromEmail}>`, to, subject, html }),
+    body: JSON.stringify({ from: `${STUDIO.shortName} <${STUDIO.fromEmail}>`, to, subject, html }),
   });
 }
 
@@ -87,7 +86,7 @@ export async function sendBookingConfirmation(data: BookingConfirmationData): Pr
     `${serviceName} with ${stylistName}`,
     startAt,
     endAt,
-    `Your appointment with ${stylistName} at Keri Choplin Hair Studio.`
+    `Your appointment with ${stylistName} at ${STUDIO.name}.`
   );
 
   const policyRow = cancellationPolicy
@@ -102,7 +101,7 @@ export async function sendBookingConfirmation(data: BookingConfirmationData): Pr
       <div style="text-align:center;margin-bottom:24px">
         ${monogram()}
         <h2 style="margin:0;font-size:22px;color:#1a1714;font-family:Georgia,serif">Request Sent ✨</h2>
-        <p style="margin:4px 0 0;font-size:13px;color:#8a7e78;font-family:sans-serif">Hi ${displayName}, Keri got your request!</p>
+        <p style="margin:4px 0 0;font-size:13px;color:#8a7e78;font-family:sans-serif">Hi ${displayName}, ${STUDIO.ownerName} got your request!</p>
       </div>
       <div style="${cardStyle}">
         <table style="${rowStyle}">
@@ -119,9 +118,9 @@ export async function sendBookingConfirmation(data: BookingConfirmationData): Pr
         </a>
       </div>
       <p style="text-align:center;font-size:13px;color:#8a7e78;font-family:sans-serif;margin:0 0 8px">
-        Keri will review and confirm shortly. Need to change plans? <a href="mailto:kerichoplin@gmail.com" style="color:#9b6f6f">Contact Keri</a>
+        ${STUDIO.ownerName} will review and confirm shortly. Need to change plans? <a href="mailto:${STUDIO.contactEmail}" style="color:#9b6f6f">Contact ${STUDIO.ownerName}</a>
       </p>
-      <p style="text-align:center;margin-top:20px;font-size:12px;color:#8a7e78;font-family:sans-serif">Keri Choplin Hair Studio · Lafayette, Louisiana</p>
+      <p style="text-align:center;margin-top:20px;font-size:12px;color:#8a7e78;font-family:sans-serif">${STUDIO.name} · ${STUDIO.location}</p>
     </div>`;
 
   const stylistHtml = `
@@ -129,7 +128,7 @@ export async function sendBookingConfirmation(data: BookingConfirmationData): Pr
       <div style="text-align:center;margin-bottom:24px">
         ${monogram()}
         <h2 style="margin:0;font-size:22px;color:#1a1714;font-family:Georgia,serif">New Booking Request</h2>
-        <p style="margin:4px 0 0;font-size:13px;color:#8a7e78;font-family:sans-serif">You have a new request, Keri!</p>
+        <p style="margin:4px 0 0;font-size:13px;color:#8a7e78;font-family:sans-serif">You have a new request, ${STUDIO.ownerName}!</p>
       </div>
       <div style="${cardStyle}">
         <table style="${rowStyle}">
@@ -141,11 +140,11 @@ export async function sendBookingConfirmation(data: BookingConfirmationData): Pr
         </table>
       </div>
       <div style="text-align:center">
-        <a href="https://tcgbooking.vercel.app/admin" style="display:inline-block;background:#9b6f6f;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:50px;font-family:sans-serif;font-size:14px;font-weight:600">
+        <a href="${STUDIO.appUrl}/admin" style="display:inline-block;background:#9b6f6f;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:50px;font-family:sans-serif;font-size:14px;font-weight:600">
           Log in to approve →
         </a>
       </div>
-      <p style="text-align:center;margin-top:20px;font-size:12px;color:#8a7e78;font-family:sans-serif">Keri Choplin Hair Studio · Lafayette, Louisiana</p>
+      <p style="text-align:center;margin-top:20px;font-size:12px;color:#8a7e78;font-family:sans-serif">${STUDIO.name} · ${STUDIO.location}</p>
     </div>`;
 
   await Promise.allSettled([
@@ -195,12 +194,12 @@ export async function sendRebookingReminder(data: RebookingReminderData): Promis
         </a>
       </div>
       <p style="text-align:center;font-size:12px;color:#8a7e78;font-family:sans-serif;margin:0">
-        Questions? <a href="mailto:kerichoplin@gmail.com" style="color:#9b6f6f">Reply to Keri</a>
+        Questions? <a href="mailto:${STUDIO.contactEmail}" style="color:#9b6f6f">Reply to ${STUDIO.ownerName}</a>
       </p>
-      <p style="text-align:center;margin-top:20px;font-size:12px;color:#8a7e78;font-family:sans-serif">Keri Choplin Hair Studio · Lafayette, Louisiana</p>
+      <p style="text-align:center;margin-top:20px;font-size:12px;color:#8a7e78;font-family:sans-serif">${STUDIO.name} · ${STUDIO.location}</p>
     </div>`;
 
-  await sendEmail(clientEmail, `Keri thinks it's time for your next ${serviceName} 💇‍♀️`, html);
+  await sendEmail(clientEmail, `${STUDIO.ownerName} thinks it's time for your next ${serviceName} 💇‍♀️`, html);
 }
 
 // ─── Reschedule Request ───────────────────────────────────────────────────────
@@ -242,7 +241,7 @@ export async function sendRescheduleRequest(data: RescheduleRequestData): Promis
         </a>
       </div>
       <p style="text-align:center;font-size:13px;color:#8a7e78;font-family:sans-serif">Reply to this email or reach out to ${displayName} directly to find a new time.</p>
-      <p style="text-align:center;margin-top:20px;font-size:12px;color:#8a7e78;font-family:sans-serif">Keri Choplin Hair Studio · Lafayette, Louisiana</p>
+      <p style="text-align:center;margin-top:20px;font-size:12px;color:#8a7e78;font-family:sans-serif">${STUDIO.name} · ${STUDIO.location}</p>
     </div>`;
 
   await sendEmail(stylistEmail, `${displayName} wants to reschedule their ${serviceName}`, html);
@@ -258,7 +257,7 @@ export async function sendStatusUpdateEmail(data: StatusUpdateData): Promise<voi
       `${serviceName} with ${stylistName}`,
       startAt,
       new Date(new Date(startAt).getTime() + 60 * 60 * 1000).toISOString(),
-      `Confirmed appointment with ${stylistName} at Keri Choplin Hair Studio.`
+      `Confirmed appointment with ${stylistName} at ${STUDIO.name}.`
     );
 
     const html = `
@@ -266,7 +265,7 @@ export async function sendStatusUpdateEmail(data: StatusUpdateData): Promise<voi
         <div style="text-align:center;margin-bottom:24px">
           ${monogram()}
           <h2 style="margin:0;font-size:24px;color:#1a1714;font-family:Georgia,serif">You&rsquo;re confirmed! 🎉</h2>
-          <p style="margin:8px 0 0;font-size:14px;color:#8a7e78;font-family:sans-serif">Keri confirmed your appointment, ${displayName}!</p>
+          <p style="margin:8px 0 0;font-size:14px;color:#8a7e78;font-family:sans-serif">${STUDIO.ownerName} confirmed your appointment, ${displayName}!</p>
         </div>
         <div style="${cardStyle}">
           <table style="${rowStyle}">
@@ -280,19 +279,19 @@ export async function sendStatusUpdateEmail(data: StatusUpdateData): Promise<voi
           </a>
         </div>
         <p style="text-align:center;font-size:13px;color:#8a7e78;font-family:sans-serif">
-          See you there! Need to cancel? <a href="mailto:kerichoplin@gmail.com" style="color:#9b6f6f">Contact Keri</a>
+          See you there! Need to cancel? <a href="mailto:${STUDIO.contactEmail}" style="color:#9b6f6f">Contact ${STUDIO.ownerName}</a>
         </p>
-        <p style="text-align:center;margin-top:20px;font-size:12px;color:#8a7e78;font-family:sans-serif">Keri Choplin Hair Studio · Lafayette, Louisiana</p>
+        <p style="text-align:center;margin-top:20px;font-size:12px;color:#8a7e78;font-family:sans-serif">${STUDIO.name} · ${STUDIO.location}</p>
       </div>`;
 
-    await sendEmail(clientEmail, `Keri confirmed your appointment! — ${serviceName}`, html);
+    await sendEmail(clientEmail, `${STUDIO.ownerName} confirmed your appointment! — ${serviceName}`, html);
   } else if (status === "cancelled") {
     const html = `
       <div style="${baseStyle}">
         <div style="text-align:center;margin-bottom:24px">
           ${monogram()}
           <h2 style="margin:0;font-size:22px;color:#1a1714;font-family:Georgia,serif">Appointment Declined</h2>
-          <p style="margin:8px 0 0;font-size:14px;color:#8a7e78;font-family:sans-serif">Hi ${displayName}, unfortunately Keri can&rsquo;t take this appointment.</p>
+          <p style="margin:8px 0 0;font-size:14px;color:#8a7e78;font-family:sans-serif">Hi ${displayName}, unfortunately ${STUDIO.ownerName} can&rsquo;t take this appointment.</p>
         </div>
         <div style="${cardStyle}">
           <table style="${rowStyle}">
@@ -306,9 +305,9 @@ export async function sendStatusUpdateEmail(data: StatusUpdateData): Promise<voi
           </a>
         </div>
         <p style="text-align:center;font-size:13px;color:#8a7e78;font-family:sans-serif">
-          Questions? <a href="mailto:kerichoplin@gmail.com" style="color:#9b6f6f">Email Keri directly</a>
+          Questions? <a href="mailto:${STUDIO.contactEmail}" style="color:#9b6f6f">Email ${STUDIO.ownerName} directly</a>
         </p>
-        <p style="text-align:center;margin-top:20px;font-size:12px;color:#8a7e78;font-family:sans-serif">Keri Choplin Hair Studio · Lafayette, Louisiana</p>
+        <p style="text-align:center;margin-top:20px;font-size:12px;color:#8a7e78;font-family:sans-serif">${STUDIO.name} · ${STUDIO.location}</p>
       </div>`;
 
     await sendEmail(clientEmail, `About your booking — ${serviceName}`, html);

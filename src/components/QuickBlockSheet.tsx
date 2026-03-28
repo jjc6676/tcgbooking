@@ -2,19 +2,20 @@
 
 import { useState } from "react";
 import { useToast } from "@/components/Toast";
+import { STUDIO } from "@/config/studio";
 
 interface Props {
   onBlocked?: () => void;
 }
 
 function todayLocalStr(): string {
-  return new Date().toLocaleDateString("en-CA", { timeZone: "America/Chicago" });
+  return new Date().toLocaleDateString("en-CA", { timeZone: STUDIO.timezone });
 }
 
 function tomorrowLocalStr(): string {
   const d = new Date();
   d.setDate(d.getDate() + 1);
-  return d.toLocaleDateString("en-CA", { timeZone: "America/Chicago" });
+  return d.toLocaleDateString("en-CA", { timeZone: STUDIO.timezone });
 }
 
 export default function QuickBlockSheet({ onBlocked }: Props) {

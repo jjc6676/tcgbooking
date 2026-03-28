@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { STUDIO } from "@/config/studio";
 
 export default function HomePage() {
   return (
@@ -9,13 +10,13 @@ export default function HomePage() {
         <div className="flex items-center gap-4 mb-8">
           <div className="h-px w-16 bg-[#c9a96e]" />
           <span className="text-[#c9a96e] text-xs tracking-[0.3em] uppercase font-medium">
-            Lafayette, Louisiana
+            {STUDIO.location}
           </span>
           <div className="h-px w-16 bg-[#c9a96e]" />
         </div>
 
         <h1 className="font-display text-5xl sm:text-6xl md:text-7xl text-[#1a1714] mb-4 leading-tight">
-          Keri Choplin
+          {STUDIO.ownerName}
         </h1>
 
         <p className="text-[#8a7e78] text-lg sm:text-xl max-w-md mx-auto mt-4 mb-10 leading-relaxed font-light">

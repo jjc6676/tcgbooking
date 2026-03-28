@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { STUDIO } from "@/config/studio";
 
 export default function ClientNav() {
   const pathname = usePathname();
@@ -15,7 +16,7 @@ export default function ClientNav() {
             <span className="font-display text-[#9b6f6f] text-sm font-semibold">K</span>
           </div>
           <div className="leading-tight min-w-0 hidden xs:block">
-            <p className="font-display text-[#1a1714] text-base font-semibold leading-none truncate">Keri Choplin</p>
+            <p className="font-display text-[#1a1714] text-base font-semibold leading-none truncate">{STUDIO.ownerName}</p>
             <p className="text-[10px] text-[#c9a96e] tracking-widest uppercase leading-tight">Lafayette, LA</p>
           </div>
         </Link>

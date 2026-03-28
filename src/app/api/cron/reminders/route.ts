@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { STUDIO } from "@/config/studio";
 
 function getTomorrow(): string {
   const d = new Date();
@@ -15,7 +16,7 @@ function formatDateTime(iso: string): string {
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-    timeZone: "America/Chicago",
+    timeZone: STUDIO.timezone,
     timeZoneName: "short",
   });
 }
@@ -33,7 +34,7 @@ async function sendEmail(to: string, subject: string, html: string): Promise<voi
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: `Keri Choplin Hair <${fromEmail}>`,
+      from: `${STUDIO.shortName} <${fromEmail}>`,
       to,
       subject,
       html,
@@ -119,7 +120,7 @@ async function processAppointments(supabase: any, appointments: any[], errors: s
       <div style="font-family:Georgia,serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#faf8f5">
         <div style="text-align:center;margin-bottom:24px">
           <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#f5ede8,#e8d8d0);display:inline-flex;align-items:center;justify-content:center;border:2px solid #e8e2dc;margin-bottom:12px">
-            <span style="font-size:24px;color:#9b6f6f;font-weight:600;font-family:Georgia,serif">K</span>
+            <span style="font-size:24px;color:#9b6f6f;font-weight:600;font-family:Georgia,serif">${STUDIO.monogramLetter}</span>
           </div>
           <h2 style="margin:0;font-size:22px;color:#1a1714;font-family:Georgia,serif">See you tomorrow!</h2>
           <p style="margin:8px 0 0;font-size:14px;color:#8a7e78;font-family:sans-serif">Hi ${clientName}, just a friendly reminder</p>
@@ -131,15 +132,15 @@ async function processAppointments(supabase: any, appointments: any[], errors: s
           </table>
         </div>
         <p style="text-align:center;font-size:13px;color:#8a7e78;font-family:sans-serif;margin:0 0 8px">
-          Need to make changes? <a href="mailto:kerichoplin@gmail.com" style="color:#9b6f6f">Reply to this email</a> or contact Keri directly.
+          Need to make changes? <a href="mailto:${STUDIO.contactEmail}" style="color:#9b6f6f">Reply to this email</a> or contact ${STUDIO.ownerName} directly.
         </p>
-        <p style="text-align:center;margin-top:20px;font-size:12px;color:#8a7e78;font-family:sans-serif">Keri Choplin Hair Studio &middot; Lafayette, Louisiana</p>
+        <p style="text-align:center;margin-top:20px;font-size:12px;color:#8a7e78;font-family:sans-serif">${STUDIO.name} &middot; ${STUDIO.location}</p>
       </div>`;
 
     try {
       await sendEmail(
         clientEmail,
-        "Reminder: Your appointment tomorrow with Keri",
+        `Reminder: Your appointment tomorrow with ${STUDIO.ownerName}`,
         html
       );
       sent++;

@@ -1,3 +1,5 @@
+import { STUDIO } from "@/config/studio";
+
 /**
  * Shared formatting utilities
  */
@@ -9,7 +11,7 @@ export function formatTime(iso: string, options?: { timeZone?: string }): string
   return new Date(iso).toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
-    timeZone: options?.timeZone ?? "America/Chicago",
+    timeZone: options?.timeZone ?? STUDIO.timezone,
   });
 }
 
@@ -73,7 +75,7 @@ export function formatDateLong(iso: string, options?: { timeZone?: string }): st
  * Format ISO date to full datetime string with timezone
  */
 export function formatDateTime(iso: string, options?: { timeZone?: string }): string {
-  const tz = options?.timeZone ?? "America/Chicago";
+  const tz = options?.timeZone ?? STUDIO.timezone;
   return new Date(iso).toLocaleString("en-US", {
     weekday: "long",
     year: "numeric",

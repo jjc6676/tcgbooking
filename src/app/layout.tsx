@@ -3,6 +3,7 @@ import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import OfflineBanner from "@/components/OfflineBanner";
 import PWARegister from "@/components/PWARegister";
+import { STUDIO } from "@/config/studio";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -25,16 +26,16 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "Book with Keri Choplin · Lafayette, LA",
-    template: "%s · Keri Choplin",
+    default: `Book with ${STUDIO.ownerName} · Lafayette, LA`,
+    template: `%s · ${STUDIO.ownerName}`,
   },
   description:
-    "Book your salon appointment with Keri Choplin — luxury hair color, cuts, and treatments in Lafayette, Louisiana.",
-  applicationName: "Keri Choplin Studio",
+    `Book your salon appointment with ${STUDIO.ownerName} — luxury hair color, cuts, and treatments in ${STUDIO.location}.`,
+  applicationName: STUDIO.name,
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Keri Choplin Studio",
+    title: STUDIO.name,
   },
   manifest: "/manifest.json",
   icons: {
@@ -42,16 +43,16 @@ export const metadata: Metadata = {
     apple: "/icon-192.png",
   },
   openGraph: {
-    title: "Book with Keri Choplin · Lafayette, LA",
-    description: "Luxury hair · 20+ years experience · Color specialist · Lafayette, Louisiana",
+    title: `Book with ${STUDIO.ownerName} · Lafayette, LA`,
+    description: `Luxury hair · 20+ years experience · Color specialist · ${STUDIO.location}`,
     type: "website",
-    url: "https://tcgbooking.vercel.app",
-    siteName: "Keri Choplin Studio",
+    url: STUDIO.appUrl,
+    siteName: STUDIO.name,
   },
   twitter: {
     card: "summary",
-    title: "Book with Keri Choplin · Lafayette, LA",
-    description: "Luxury hair · Color specialist · Lafayette, Louisiana",
+    title: `Book with ${STUDIO.ownerName} · Lafayette, LA`,
+    description: `Luxury hair · Color specialist · ${STUDIO.location}`,
   },
 };
 

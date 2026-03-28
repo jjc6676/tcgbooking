@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
+import { STUDIO } from "@/config/studio";
 
 // Page title — can't use generateMetadata in client component, set via document
 // Meta description handled in layout
@@ -75,8 +76,8 @@ function googleCalendarUrl(title: string, startAt: string, endAt: string): strin
     action: "TEMPLATE",
     text: title,
     dates: `${fmt(startAt)}/${fmt(endAt)}`,
-    details: "Your appointment with Keri Choplin — Lafayette, Louisiana",
-    location: "Keri Choplin Hair Studio, Lafayette, Louisiana",
+    details: `Your appointment with ${STUDIO.shortName} — ${STUDIO.location}`,
+    location: `${STUDIO.name}, ${STUDIO.location}`,
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
@@ -312,7 +313,7 @@ export default function StylistBookingPage() {
           </div>
           <h2 className="font-display text-2xl text-[#1a1714] mb-2">Request Sent!</h2>
           <p className="text-[#8a7e78] mb-6 text-sm leading-relaxed max-w-xs mx-auto">
-            Keri will review and confirm shortly. You&apos;ll get an email when it&apos;s approved.
+            {STUDIO.ownerName} will review and confirm shortly. You&apos;ll get an email when it&apos;s approved.
           </p>
 
           <div className="bg-[#faf8f5] rounded-xl p-5 text-left space-y-3 mb-6 border border-[#e8e2dc]">
@@ -354,8 +355,8 @@ export default function StylistBookingPage() {
 
           <p className="text-xs text-[#8a7e78] mb-5">
             Questions?{" "}
-            <a href="mailto:kerichoplin@gmail.com" className="text-[#9b6f6f] hover:underline">
-              Contact Keri
+            <a href={`mailto:${STUDIO.contactEmail}`} className="text-[#9b6f6f] hover:underline">
+              Contact {STUDIO.ownerName}
             </a>
           </p>
 
@@ -376,8 +377,8 @@ export default function StylistBookingPage() {
           {stylist.services.length === 0 ? (
             <div className="text-center py-12 bg-white rounded-2xl border border-[#e8e2dc]">
               <p className="text-sm text-[#8a7e78]">No services available at this time.</p>
-              <a href="mailto:kerichoplin@gmail.com" className="text-[#9b6f6f] text-sm mt-3 block hover:underline">
-                Contact Keri directly →
+              <a href={`mailto:${STUDIO.contactEmail}`} className="text-[#9b6f6f] text-sm mt-3 block hover:underline">
+                Contact {STUDIO.ownerName} directly →
               </a>
             </div>
           ) : (
@@ -455,7 +456,7 @@ export default function StylistBookingPage() {
           )}
           <p className="text-xs text-[#8a7e78] text-center mt-5">
             Questions?{" "}
-            <a href="mailto:kerichoplin@gmail.com" className="text-[#9b6f6f] hover:underline">Contact Keri</a>
+            <a href={`mailto:${STUDIO.contactEmail}`} className="text-[#9b6f6f] hover:underline">Contact {STUDIO.ownerName}</a>
           </p>
         </div>
       )}
@@ -651,7 +652,7 @@ export default function StylistBookingPage() {
           {/* Client notes */}
           <div className="mb-5">
             <label className="block text-sm font-medium text-[#5c4a42] mb-2">
-              Notes for Keri <span className="text-[#8a7e78] font-normal">(optional)</span>
+              Notes for {STUDIO.ownerName} <span className="text-[#8a7e78] font-normal">(optional)</span>
             </label>
             <textarea
               value={clientNotes}
@@ -677,7 +678,7 @@ export default function StylistBookingPage() {
             </div>
           )}
 
-          <p className="text-xs text-[#8a7e78] mb-4 text-center">Keri will review and confirm your request.</p>
+          <p className="text-xs text-[#8a7e78] mb-4 text-center">{STUDIO.ownerName} will review and confirm your request.</p>
 
           <button
             onClick={handleConfirm}
@@ -694,7 +695,7 @@ export default function StylistBookingPage() {
 
           <p className="text-xs text-[#8a7e78] text-center mt-3">
             Need to cancel?{" "}
-            <a href="mailto:kerichoplin@gmail.com" className="text-[#9b6f6f] hover:underline">Contact Keri</a>
+            <a href={`mailto:${STUDIO.contactEmail}`} className="text-[#9b6f6f] hover:underline">Contact {STUDIO.ownerName}</a>
           </p>
         </div>
       )}

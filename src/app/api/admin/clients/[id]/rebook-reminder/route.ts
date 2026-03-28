@@ -2,10 +2,12 @@ import { createClient } from "@/lib/supabase/server";
 import { getAdminContext } from "@/lib/supabase/admin-auth";
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { STUDIO } from "@/config/studio";
 
 async function sendEmailViaResend(to: string, subject: string, html: string) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) return;
+  const fromEmail = process.env.RESEND_FROM_EMAIL ?? "hello@kerichoplinhair.com";
   await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -13,7 +15,7 @@ async function sendEmailViaResend(to: string, subject: string, html: string) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "Keri Choplin Hair <onboarding@resend.dev>",
+      from: `${STUDIO.shortName} <${fromEmail}>`,
       to,
       subject,
       html,
@@ -61,7 +63,7 @@ export async function POST(
   }
 
   const displayName = clientName ?? "there";
-  const bookUrl = "https://tcgbooking.vercel.app/book";
+  const bookUrl = `${STUDIO.appUrl}/book`;
 
   const suggestedLine = suggestedDate
     ? `<p style="font-size:13px;color:#8a7e78;font-family:sans-serif;text-align:center;margin:0 0 20px">
@@ -73,7 +75,7 @@ export async function POST(
     <div style="font-family:Georgia,serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#faf8f5">
       <div style="text-align:center;margin-bottom:24px">
         <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#f5ede8,#e8d8d0);display:inline-flex;align-items:center;justify-content:center;border:2px solid #e8e2dc;margin-bottom:12px">
-          <span style="font-size:24px;color:#9b6f6f;font-weight:600;font-family:Georgia,serif">K</span>
+          <span style="font-size:24px;color:#9b6f6f;font-weight:600;font-family:Georgia,serif">${STUDIO.monogramLetter}</span>
         </div>
         <h2 style="margin:0;font-size:22px;color:#1a1714;font-family:Georgia,serif">Time for your next appointment with ${stylistName} ✨</h2>
         <p style="margin:8px 0 0;font-size:14px;color:#8a7e78;font-family:sans-serif">Hi ${displayName}!</p>
@@ -88,9 +90,9 @@ export async function POST(
         </a>
       </div>
       <p style="text-align:center;font-size:12px;color:#8a7e78;font-family:sans-serif;margin:0">
-        Questions? <a href="mailto:kerichoplin@gmail.com" style="color:#9b6f6f">Reply to ${stylistName}</a>
+        Questions? <a href="mailto:${STUDIO.contactEmail}" style="color:#9b6f6f">Reply to ${stylistName}</a>
       </p>
-      <p style="text-align:center;margin-top:20px;font-size:12px;color:#8a7e78;font-family:sans-serif">${stylistName} · Lafayette, Louisiana</p>
+      <p style="text-align:center;margin-top:20px;font-size:12px;color:#8a7e78;font-family:sans-serif">${stylistName} · ${STUDIO.location}</p>
     </div>`;
 
   await sendEmailViaResend(

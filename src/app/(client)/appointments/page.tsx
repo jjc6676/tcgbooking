@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { STUDIO } from "@/config/studio";
 
 interface AppointmentWithDetails {
   id: string;
@@ -108,7 +109,7 @@ function RescheduleSheet({
         </div>
 
         <p className="text-sm text-[#5c4a42] mb-4 leading-relaxed">
-          Let Keri know when works best for you — she&apos;ll reach out to find a new time.
+          Let {STUDIO.ownerName} know when works best for you — she&apos;ll reach out to find a new time.
         </p>
 
         <div className="mb-3">
@@ -131,7 +132,7 @@ function RescheduleSheet({
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="Anything else Keri should know…"
+            placeholder={`Anything else ${STUDIO.ownerName} should know\u2026`}
             rows={2}
             className="w-full border border-[#e8e2dc] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] resize-none"
             style={{ fontSize: 16 }}
@@ -187,7 +188,7 @@ export default function AppointmentsPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="font-display text-3xl text-[#1a1714]">My Appointments</h1>
-          <p className="text-[#8a7e78] text-sm mt-1">Your bookings with Keri</p>
+          <p className="text-[#8a7e78] text-sm mt-1">Your bookings with {STUDIO.ownerName}</p>
         </div>
         <Link href="/book" className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#9b6f6f] text-white text-sm font-medium rounded-full hover:bg-[#8a5f5f] transition-colors min-h-[44px]">
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -213,7 +214,7 @@ export default function AppointmentsPage() {
             </svg>
           </div>
           <p className="font-display text-xl text-[#1a1714] mb-2">No appointments yet</p>
-          <p className="text-sm text-[#8a7e78] mb-6">Ready to book your first appointment with Keri?</p>
+          <p className="text-sm text-[#8a7e78] mb-6">Ready to book your first appointment with {STUDIO.ownerName}?</p>
           <Link href="/book" className="inline-flex items-center px-6 py-2.5 bg-[#9b6f6f] text-white text-sm font-medium rounded-full hover:bg-[#8a5f5f] transition-colors">
             Browse Services
           </Link>
@@ -246,7 +247,7 @@ export default function AppointmentsPage() {
                         <div className="flex items-start justify-between gap-2">
                           <div>
                             <p className="font-semibold text-[#1a1714] text-sm leading-tight">{appt.service?.name ?? "Service"}</p>
-                            <p className="text-xs text-[#8a7e78] mt-0.5">with {appt.stylist?.name ?? "Keri"}</p>
+                            <p className="text-xs text-[#8a7e78] mt-0.5">with {appt.stylist?.name ?? STUDIO.ownerName}</p>
                           </div>
                           <span className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 ${status.bg} ${status.text}`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${status.dot} ${isPending ? "animate-pulse" : ""}`} />
@@ -277,10 +278,10 @@ export default function AppointmentsPage() {
                               Request Reschedule
                             </button>
                           ) : appt.status === "reschedule_requested" || rescheduledIds.has(appt.id) ? (
-                            <span className="text-xs text-purple-600 font-medium">Reschedule requested — Keri will reach out</span>
+                            <span className="text-xs text-purple-600 font-medium">Reschedule requested — {STUDIO.ownerName} will reach out</span>
                           ) : null}
-                          <a href="mailto:kerichoplin@gmail.com" className="text-xs text-[#9b6f6f] hover:underline">
-                            Contact Keri →
+                          <a href={`mailto:${STUDIO.contactEmail}`} className="text-xs text-[#9b6f6f] hover:underline">
+                            Contact {STUDIO.ownerName} →
                           </a>
                         </div>
                       </div>
