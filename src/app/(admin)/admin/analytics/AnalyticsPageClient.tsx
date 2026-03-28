@@ -29,8 +29,24 @@ function formatCents(cents: number): string {
   return `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
-function HorizontalBar({ label, value, max }: { label: string; value: number; max: number }) {
+function HorizontalBar({ label, value, max, stacked = false }: { label: string; value: number; max: number; stacked?: boolean }) {
   const pct = max > 0 ? (value / max) * 100 : 0;
+  if (stacked) {
+    return (
+      <div className="mb-3">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-xs text-[#5c4a42] font-medium leading-tight truncate max-w-[65%]">{label}</span>
+          <span className="text-xs font-medium text-[#5c4a42] ml-2 flex-shrink-0">{value}</span>
+        </div>
+        <div className="w-full h-5 bg-[#f5f0eb] rounded-lg overflow-hidden">
+          <div
+            className="h-full bg-[#9b6f6f] rounded-lg transition-all duration-500"
+            style={{ width: `${Math.max(pct, 2)}%` }}
+          />
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="flex items-center gap-3 mb-2">
       <span className="text-xs text-[#5c4a42] w-12 text-right flex-shrink-0">{label}</span>

@@ -345,7 +345,7 @@ function NotifyModal({
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/30" onClick={onClose}>
       <div
-        className="bg-white rounded-2xl border border-[#e8e2dc] shadow-xl w-full max-w-md max-h-[85vh] overflow-y-auto"
+        className="bg-white rounded-2xl border border-[#e8e2dc] shadow-xl w-full max-w-md max-h-[85vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-5 border-b border-[#e8e2dc]">
@@ -354,7 +354,7 @@ function NotifyModal({
             Let them know about an available slot.
           </p>
         </div>
-        <div className="p-5 space-y-4">
+        <div className="p-5 space-y-4 overflow-y-auto flex-1 min-h-0">
           <div>
             <label className="block text-sm font-medium text-[#1a1714] mb-1">Available Date</label>
             <input
