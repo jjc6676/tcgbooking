@@ -591,7 +591,7 @@ export default function AppointmentsPageClient({
       {/* Edit Modal */}
       {editAppt && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-4" onClick={() => setEditAppt(null)}>
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 pb-24 lg:pb-6 space-y-4" onClick={e => e.stopPropagation()}>
             <h2 className="font-display text-xl text-[#1a1714]">Edit Appointment</h2>
 
             <div className="space-y-3">
@@ -668,7 +668,7 @@ export default function AppointmentsPageClient({
       {/* Delete Confirm Modal */}
       {deleteAppt && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-4" onClick={() => setDeleteAppt(null)}>
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 pb-24 lg:pb-6 space-y-4" onClick={e => e.stopPropagation()}>
             <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto">
               <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -717,7 +717,7 @@ export default function AppointmentsPageClient({
       {/* Waitlist notification prompt */}
       {waitlistPrompt && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/30" onClick={() => setWaitlistPrompt(null)}>
-          <div className="bg-white rounded-2xl border border-[#e8e2dc] shadow-xl p-5 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl border border-[#e8e2dc] shadow-xl p-5 pb-24 lg:pb-5 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
             <div className="text-center mb-4">
               <div className="w-10 h-10 rounded-full bg-[#f5ede8] flex items-center justify-center mx-auto mb-3">
                 <svg className="w-5 h-5 text-[#9b6f6f]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -942,7 +942,7 @@ function CreateAppointmentModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90dvh] overflow-y-auto p-6 pb-24 lg:pb-6 space-y-4" onClick={(e) => e.stopPropagation()}>
         <h2 className="font-display text-xl text-[#1a1714]">Add Appointment</h2>
 
         {/* Client */}

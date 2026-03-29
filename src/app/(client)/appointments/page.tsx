@@ -93,7 +93,7 @@ function RescheduleSheet({
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative w-full sm:max-w-sm bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl p-5">
+      <div className="relative w-full sm:max-w-sm bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl p-5 pb-24 sm:pb-5">
         <div className="flex justify-center mb-4 sm:hidden">
           <div className="w-10 h-1 bg-[#e8e2dc] rounded-full" />
         </div>

@@ -1026,7 +1026,7 @@ function ClientDetailInner({ params }: { params: { clientId: string } }) {
       {/* Edit Client Modal */}
       {showEditClient && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-4" onClick={() => setShowEditClient(false)}>
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 pb-24 lg:pb-6 space-y-4" onClick={(e) => e.stopPropagation()}>
             <h2 className="font-display text-xl text-[#1a1714]">Edit Client</h2>
             <div className="space-y-3">
               <div>
