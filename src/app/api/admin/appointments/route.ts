@@ -52,7 +52,28 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ appointments: data });
+  // Resolve display names for clients with null full_name (fallback to email prefix)
+  const appointments = data ?? [];
+  const nullNameIds = appointments
+    .filter((a: Record<string, unknown>) => {
+      const client = a.client as { id: string; full_name: string | null } | null;
+      return client && !client.full_name;
+    })
+    .map((a: Record<string, unknown>) => (a.client as { id: string }).id);
+
+  if (nullNameIds.length > 0) {
+    const { resolveEmails } = await import("@/lib/supabase/resolve-emails");
+    const emailMap = await resolveEmails(Array.from(new Set(nullNameIds)));
+    for (const appt of appointments) {
+      const client = (appt as Record<string, unknown>).client as { id: string; full_name: string | null } | null;
+      if (client && !client.full_name) {
+        const email = emailMap.get(client.id);
+        if (email) client.full_name = email.split("@")[0]!;
+      }
+    }
+  }
+
+  return NextResponse.json({ appointments });
 }
 
 // ─── Admin appointment creation (receptionist mode) ─────────────────────────

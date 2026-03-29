@@ -189,6 +189,31 @@ export default async function AdminDashboardPage() {
   const pendingList = pendingAppts ?? [];
   const upcomingList = upcomingAppts ?? [];
 
+  // Resolve emails for clients whose full_name is null (shows as "Guest" otherwise)
+  const allAppts = [...todayList, ...pendingList, ...upcomingList];
+  const nullNameClientIds = allAppts
+    .filter((a) => {
+      const client = a.client as { id: string; full_name: string | null } | null;
+      return client && !client.full_name;
+    })
+    .map((a) => (a.client as { id: string }).id);
+
+  let clientEmailMap = new Map<string, string>();
+  if (nullNameClientIds.length > 0) {
+    const { resolveEmails } = await import("@/lib/supabase/resolve-emails");
+    clientEmailMap = await resolveEmails(Array.from(new Set(nullNameClientIds)));
+  }
+
+  /** Get display name: full_name → email prefix → "Guest" */
+  function getClientName(client: { id: string; full_name: string | null } | null): string {
+    if (client?.full_name) return client.full_name;
+    if (client) {
+      const email = clientEmailMap.get(client.id);
+      if (email) return email.split("@")[0]!;
+    }
+    return "Guest";
+  }
+
   const now = new Date();
   const todayDate = now.toLocaleDateString("en-US", {
     weekday: "long",
@@ -312,7 +337,7 @@ export default async function AdminDashboardPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-[#1a1714] truncate">
-                      {client?.full_name ?? "Guest"}
+                      {getClientName(client)}
                     </p>
                     <p className="text-xs text-[#8a7e78] mt-0.5 truncate">{svcNames}</p>
                   </div>
@@ -384,7 +409,7 @@ export default async function AdminDashboardPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-[#1a1714] truncate">
-                          {client?.full_name ?? "Guest"}
+                          {getClientName(client)}
                         </p>
                         <p className="text-xs text-[#8a7e78] mt-0.5 truncate">{svcNames}</p>
                       </div>
