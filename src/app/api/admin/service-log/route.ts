@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getAdminContext } from "@/lib/supabase/admin-auth";
 import { z } from "zod";
+import { log } from "@/lib/logger";
 
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -43,7 +44,7 @@ export async function GET(request: Request) {
     .order("visit_date", { ascending: false });
 
   if (error) {
-    console.error("[api/admin/service-log GET]", { error: error.message });
+    log.error("api/admin/service-log GET", { error: error.message });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
@@ -90,7 +91,7 @@ export async function POST(request: Request) {
     .single();
 
   if (error) {
-    console.error("[api/admin/service-log POST]", { error: error.message });
+    log.error("api/admin/service-log POST", { error: error.message });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 

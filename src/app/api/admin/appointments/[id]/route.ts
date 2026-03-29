@@ -3,6 +3,7 @@ import { getAdminContext } from "@/lib/supabase/admin-auth";
 import { NextResponse } from "next/server";
 import type { AppointmentStatus } from "@/lib/supabase/types";
 import { sendStatusUpdateEmail } from "@/lib/email";
+import { log } from "@/lib/logger";
 
 const VALID_STATUSES: AppointmentStatus[] = ["pending", "confirmed", "cancelled", "no_show"];
 
@@ -49,7 +50,7 @@ export async function PATCH(
     .single();
 
   if (error) {
-    console.error("[api/admin/appointments/[id] PATCH]", { error: error.message, appointmentId: params.id });
+    log.error("api/admin/appointments/[id] PATCH", { error: error.message, appointmentId: params.id });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
@@ -105,7 +106,7 @@ export async function DELETE(
     .eq("stylist_id", stylistId);
 
   if (error) {
-    console.error("[api/admin/appointments/[id] DELETE]", { error: error.message, appointmentId: params.id });
+    log.error("api/admin/appointments/[id] DELETE", { error: error.message, appointmentId: params.id });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 

@@ -7,7 +7,8 @@ export async function POST() {
   const response = NextResponse.redirect(new URL("/login", process.env.NEXT_PUBLIC_APP_URL ?? "https://tcgbooking.vercel.app"), {
     status: 302,
   });
-  // Clear cached role cookie
+  // Clear cached cookies
   response.cookies.set("x-user-role", "", { path: "/", maxAge: 0 });
+  response.cookies.set("x-stylist-id", "", { path: "/", maxAge: 0 });
   return response;
 }

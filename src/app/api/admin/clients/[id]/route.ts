@@ -1,6 +1,7 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { getAdminContext } from "@/lib/supabase/admin-auth";
 import { NextResponse } from "next/server";
+import { log } from "@/lib/logger";
 
 function getServiceClient() {
   return createServiceClient();
@@ -152,7 +153,7 @@ export async function DELETE(
       .eq("stylist_id", auth.stylistId);
 
     if (error) {
-      console.error("[api/admin/clients/[id] DELETE walkin]", { error: error.message });
+      log.error("api/admin/clients/[id] DELETE walkin", { error: error.message });
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
     return NextResponse.json({ success: true });

@@ -1,6 +1,7 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { getAdminContext } from "@/lib/supabase/admin-auth";
 import { NextResponse } from "next/server";
+import { log } from "@/lib/logger";
 
 export async function GET(request: Request) {
   const ctx = getAdminContext(request);
@@ -22,7 +23,7 @@ export async function GET(request: Request) {
     .not("client_id", "is", null);
 
   if (error) {
-    console.error("[api/admin/clients GET]", { error: error.message });
+    log.error("api/admin/clients GET", { error: error.message });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 

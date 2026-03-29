@@ -46,14 +46,17 @@ export async function middleware(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Fetch stylist ID using the authenticated session
-    const { data: stylistData } = await supabase
-      .from("stylists")
-      .select("id")
-      .eq("user_id", user.id)
-      .single();
+    // Use cached stylist ID or fetch it
+    let stylistId: string | null = request.cookies.get("x-stylist-id")?.value ?? null;
 
-    const stylistId = stylistData?.id ?? null;
+    if (!stylistId) {
+      const { data: stylistData } = await supabase
+        .from("stylists")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+      stylistId = stylistData?.id ?? null;
+    }
 
     if (!stylistId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -64,9 +67,22 @@ export async function middleware(request: NextRequest) {
     requestHeaders.set("x-user-id", user.id);
     requestHeaders.set("x-stylist-id", stylistId);
 
-    return NextResponse.next({
+    const adminResponse = NextResponse.next({
       request: { headers: requestHeaders },
     });
+
+    // Cache stylist ID for subsequent requests
+    if (!request.cookies.get("x-stylist-id")?.value) {
+      adminResponse.cookies.set("x-stylist-id", stylistId, {
+        path: "/",
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax",
+        maxAge: 3600,
+      });
+    }
+
+    return adminResponse;
   }
 
   // Unauthenticated — redirect to login

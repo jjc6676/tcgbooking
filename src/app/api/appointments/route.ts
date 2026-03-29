@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { sendBookingConfirmation } from "@/lib/email";
 import { STUDIO } from "@/config/studio";
 import { z } from "zod";
+import { log } from "@/lib/logger";
 
 
 // ─── Zod validation ──────────────────────────────────────────────────────────
@@ -44,7 +45,7 @@ export async function GET() {
     .order("start_at");
 
   if (error) {
-    console.error("[api/appointments GET]", { error: error.message, userId: user.id });
+    log.error("api/appointments GET", { error: error.message, userId: user.id });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
@@ -114,7 +115,7 @@ export async function POST(request: Request) {
     if (rpcError.message?.includes("CONFLICT")) {
       return NextResponse.json({ error: "This time slot is no longer available." }, { status: 409 });
     }
-    console.error("[api/appointments POST]", { error: rpcError.message, userId: user.id, stylist_id, service_ids: resolvedServiceIds });
+    log.error("api/appointments POST", { error: rpcError.message, userId: user.id, stylist_id, service_ids: resolvedServiceIds });
     return NextResponse.json({ error: rpcError.message }, { status: 500 });
   }
 
@@ -128,7 +129,7 @@ export async function POST(request: Request) {
     .single();
 
   if (error) {
-    console.error("[api/appointments POST] fetch after insert", { error: error.message });
+    log.error("api/appointments POST fetch after insert", { error: error.message });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
@@ -140,7 +141,7 @@ export async function POST(request: Request) {
     }));
     const { error: asError } = await supabase.from("appointment_services").insert(rows);
     if (asError) {
-      console.error("[api/appointments POST] appointment_services insert failed", { error: asError.message });
+      log.error("api/appointments POST appointment_services insert failed", { error: asError.message });
     }
   }
 

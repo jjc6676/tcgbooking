@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getAdminContext } from "@/lib/supabase/admin-auth";
+import { log } from "@/lib/logger";
 
 export async function PATCH(
   request: Request,
@@ -45,7 +46,7 @@ export async function PATCH(
     .single();
 
   if (error) {
-    console.error("[api/admin/appointments/[id]/pricing PATCH]", { error: error.message });
+    log.error("api/admin/appointments/[id]/pricing PATCH", { error: error.message });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 

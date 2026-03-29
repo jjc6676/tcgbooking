@@ -2,6 +2,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { getAdminContext } from "@/lib/supabase/admin-auth";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { log } from "@/lib/logger";
 
 const APPT_SELECT = `
   *,
@@ -48,7 +49,7 @@ export async function GET(request: Request) {
   const { data, error } = await query;
 
   if (error) {
-    console.error("[api/admin/appointments GET]", { error: error.message, status });
+    log.error("api/admin/appointments GET", { error: error.message, status });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
@@ -180,7 +181,7 @@ export async function POST(request: Request) {
           { status: 409 }
         );
       }
-      console.error("[api/admin/appointments POST]", { error: rpcError.message });
+      log.error("api/admin/appointments POST", { error: rpcError.message });
       return NextResponse.json({ error: rpcError.message }, { status: 500 });
     }
 
@@ -227,7 +228,7 @@ export async function POST(request: Request) {
     .single();
 
   if (error) {
-    console.error("[api/admin/appointments POST]", { error: error.message, stylistId });
+    log.error("api/admin/appointments POST", { error: error.message, stylistId });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
@@ -239,7 +240,7 @@ export async function POST(request: Request) {
     }));
     const { error: asError } = await serviceClient.from("appointment_services").insert(rows);
     if (asError) {
-      console.error("[api/admin/appointments POST] appointment_services", { error: asError.message });
+      log.error("api/admin/appointments POST appointment_services", { error: asError.message });
     }
   }
 

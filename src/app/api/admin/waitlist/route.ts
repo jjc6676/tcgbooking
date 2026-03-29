@@ -1,6 +1,7 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { getAdminContext } from "@/lib/supabase/admin-auth";
 import { NextResponse } from "next/server";
+import { log } from "@/lib/logger";
 
 const WAITLIST_SELECT = `
   *,
@@ -31,7 +32,7 @@ export async function GET(request: Request) {
   const { data, error } = await query;
 
   if (error) {
-    console.error("[api/admin/waitlist GET]", error.message);
+    log.error("api/admin/waitlist GET", { error: error.message });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
@@ -86,7 +87,7 @@ export async function POST(request: Request) {
     .single();
 
   if (error) {
-    console.error("[api/admin/waitlist POST]", error.message);
+    log.error("api/admin/waitlist POST", { error: error.message });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 

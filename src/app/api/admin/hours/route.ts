@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getAdminContext } from "@/lib/supabase/admin-auth";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { log } from "@/lib/logger";
 
 // ─── Zod validation ──────────────────────────────────────────────────────────
 
@@ -34,7 +35,7 @@ export async function GET(request: Request) {
   ]);
 
   if (hoursResult.error) {
-    console.error("[api/admin/hours GET]", { error: hoursResult.error.message });
+    log.error("api/admin/hours GET", { error: hoursResult.error.message });
     return NextResponse.json({ error: hoursResult.error.message }, { status: 500 });
   }
 
@@ -79,7 +80,7 @@ export async function POST(request: Request) {
     .single();
 
   if (error) {
-    console.error("[api/admin/hours POST]", { error: error.message, day_of_week });
+    log.error("api/admin/hours POST", { error: error.message, day_of_week });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 

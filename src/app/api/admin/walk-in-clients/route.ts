@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getAdminContext } from "@/lib/supabase/admin-auth";
 import { z } from "zod";
+import { log } from "@/lib/logger";
 
 // Validation schema for walk-in client creation
 const WalkInClientSchema = z.object({
@@ -40,7 +41,7 @@ export async function GET(request: Request) {
   const { data, error } = await query;
 
   if (error) {
-    console.error("[api/admin/walk-in-clients GET]", { error: error.message });
+    log.error("api/admin/walk-in-clients GET", { error: error.message });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
@@ -89,7 +90,7 @@ export async function PATCH(request: Request) {
     .single();
 
   if (error) {
-    console.error("[api/admin/walk-in-clients PATCH]", { error: error.message });
+    log.error("api/admin/walk-in-clients PATCH", { error: error.message });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
@@ -133,7 +134,7 @@ export async function POST(request: Request) {
     .single();
 
   if (error) {
-    console.error("[api/admin/walk-in-clients POST]", { error: error.message });
+    log.error("api/admin/walk-in-clients POST", { error: error.message });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 

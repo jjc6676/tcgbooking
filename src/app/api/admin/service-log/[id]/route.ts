@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getAdminContext } from "@/lib/supabase/admin-auth";
+import { log } from "@/lib/logger";
 
 export async function PATCH(
   request: Request,
@@ -33,7 +34,7 @@ export async function PATCH(
     .single();
 
   if (error) {
-    console.error("[api/admin/service-log/[id] PATCH]", { error: error.message });
+    log.error("api/admin/service-log/[id] PATCH", { error: error.message });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
@@ -56,7 +57,7 @@ export async function DELETE(
     .eq("stylist_id", stylistId);
 
   if (error) {
-    console.error("[api/admin/service-log/[id] DELETE]", { error: error.message });
+    log.error("api/admin/service-log/[id] DELETE", { error: error.message });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
