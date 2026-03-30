@@ -923,39 +923,29 @@ function ClientDetailInner({ params }: { params: { clientId: string } }) {
                           </div>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${statusColors[a.status] ?? "bg-[#f5f0eb] text-[#8a7e78]"}`}>
-                          {a.status.replace("_", " ")}
-                        </span>
-                        {(a.status === "confirmed" || a.status === "cancelled") && editingPricing !== a.id && (
+                      <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${statusColors[a.status] ?? "bg-[#f5f0eb] text-[#8a7e78]"}`}>
+                        {a.status.replace("_", " ")}
+                      </span>
+                    </div>
+                    {editingPricing !== a.id && (
+                      <div className="flex items-center gap-3 mt-3 pt-2.5 border-t border-[#f5f0eb]">
+                        {(a.status === "confirmed" || a.status === "cancelled") && (
                           <button
                             onClick={() => startPricingEdit(a)}
-                            className="p-1.5 rounded-lg text-[#8a7e78] hover:text-[#9b6f6f] hover:bg-[#f5f0eb] transition-all"
-                            title="Edit pricing"
+                            className="text-xs font-medium text-[#9b6f6f] hover:text-[#8a5f5f] transition-colors min-h-[44px] flex items-center"
                           >
-                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                            </svg>
+                            Edit pricing
                           </button>
                         )}
-                        {editingPricing !== a.id && (
-                          <button
-                            onClick={() => deleteAppointment(a.id)}
-                            disabled={deletingApptId === a.id}
-                            className="text-[#c9a96e] hover:text-red-500 transition-colors min-h-[44px] flex items-center disabled:opacity-40"
-                            title="Delete appointment"
-                          >
-                            {deletingApptId === a.id ? (
-                              <span className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin block" />
-                            ) : (
-                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                            )}
-                          </button>
-                        )}
+                        <button
+                          onClick={() => deleteAppointment(a.id)}
+                          disabled={deletingApptId === a.id}
+                          className="text-xs font-medium text-[#b09090] hover:text-red-500 transition-colors min-h-[44px] flex items-center disabled:opacity-40 ml-auto"
+                        >
+                          {deletingApptId === a.id ? "Removing…" : "Remove"}
+                        </button>
                       </div>
-                    </div>
+                    )}
 
                     {/* Inline pricing edit */}
                     {editingPricing === a.id && (
