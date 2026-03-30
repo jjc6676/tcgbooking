@@ -10,6 +10,7 @@ const WalkInClientSchema = z.object({
   phone: z.string().max(30, "Phone too long").optional().nullable(),
   email: z.string().email("Invalid email").max(255, "Email too long").optional().nullable().or(z.literal("")),
   notes: z.string().max(5000, "Notes too long").optional().nullable(),
+  linked_to_profile_id: z.string().uuid("Invalid profile id").optional().nullable(),
 });
 
 // Sanitize search input to prevent SQL injection in ilike patterns
@@ -26,12 +27,22 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const search = searchParams.get("q")?.toLowerCase() ?? "";
+  const linkedTo = searchParams.get("linked_to"); // filter dependents for a specific profile
 
   let query = serviceClient
     .from("walk_in_clients")
     .select("*")
     .eq("stylist_id", stylistId)
+    .is("merged_into_profile_id", null)
     .order("created_at", { ascending: false });
+
+  if (linkedTo) {
+    query = query.eq("linked_to_profile_id", linkedTo);
+  } else {
+    // By default, exclude dependents from the main walk-in list
+    // (they appear under their parent's profile instead)
+    query = query.is("linked_to_profile_id", null);
+  }
 
   if (search) {
     const sanitized = sanitizeSearch(search);
@@ -117,9 +128,19 @@ export async function POST(request: Request) {
     );
   }
 
-  const { full_name, phone, email, notes } = parsed.data;
+  const { full_name, phone, email, notes, linked_to_profile_id } = parsed.data;
 
   const serviceClient = createServiceClient();
+  const cleanEmail = email?.trim() || null;
+
+  // Check if a registered account exists with this email — non-blocking warning
+  let emailWarning: string | null = null;
+  if (cleanEmail) {
+    const { data: existingUser } = await serviceClient.auth.admin.getUserByEmail(cleanEmail);
+    if (existingUser?.user) {
+      emailWarning = "A registered account with this email already exists. You can merge them later from the Clients page.";
+    }
+  }
 
   const { data, error } = await serviceClient
     .from("walk_in_clients")
@@ -127,8 +148,9 @@ export async function POST(request: Request) {
       stylist_id: stylistId,
       full_name: full_name.trim(),
       phone: phone?.trim() || null,
-      email: email?.trim() || null,
+      email: cleanEmail,
       notes: notes?.trim() || null,
+      linked_to_profile_id: linked_to_profile_id ?? null,
     })
     .select()
     .single();
@@ -138,5 +160,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ client: data }, { status: 201 });
+  return NextResponse.json({ client: data, warning: emailWarning }, { status: 201 });
 }

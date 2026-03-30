@@ -11,6 +11,7 @@ export interface ClientRow {
   lastAppointment: string;
   firstAppointment?: string;
   clientType: "auth" | "walkin";
+  linkedToProfileId?: string | null;
 }
 
 export interface ClientDetail {

@@ -4,6 +4,14 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useToast } from "@/components/Toast";
 import type { ClientRow } from "@/types/clients";
+import MergeReviewDialog from "@/components/MergeReviewDialog";
+
+interface MergeSuggestion {
+  id: string;
+  match_reason: string;
+  walk_in: { id: string; full_name: string; email?: string | null };
+  auth_client: { id: string; full_name: string | null };
+}
 
 interface ClientsPageClientProps {
   initialClients: ClientRow[];
@@ -32,6 +40,42 @@ export default function ClientsPageClient({
   const [showAdd, setShowAdd] = useState(false);
   const [addForm, setAddForm] = useState({ full_name: "", phone: "", email: "", notes: "" });
   const [addSubmitting, setAddSubmitting] = useState(false);
+
+  // Merge suggestions
+  const [suggestions, setSuggestions] = useState<MergeSuggestion[]>([]);
+  const [activeMerge, setActiveMerge] = useState<{ suggestionId?: string; walkInId?: string; authId?: string } | null>(null);
+
+  // Manual "Link to account" — walk-in selected, waiting for admin to pick auth client
+  const [linkingWalkIn, setLinkingWalkIn] = useState<ClientRow | null>(null);
+  const [linkSearch, setLinkSearch] = useState("");
+  const [linkSearchResults, setLinkSearchResults] = useState<ClientRow[]>([]);
+  const [linkSearchLoading, setLinkSearchLoading] = useState(false);
+
+  const fetchSuggestions = useCallback(() => {
+    fetch("/api/admin/merge-suggestions")
+      .then((r) => r.json())
+      .then(({ suggestions: s }) => setSuggestions(s ?? []))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => { fetchSuggestions(); }, [fetchSuggestions]);
+
+  // Debounced search for the "link to account" auth-client picker
+  useEffect(() => {
+    if (!linkingWalkIn || !linkSearch.trim()) {
+      setLinkSearchResults([]);
+      return;
+    }
+    const t = setTimeout(() => {
+      setLinkSearchLoading(true);
+      fetch(`/api/admin/clients?q=${encodeURIComponent(linkSearch)}&limit=10`)
+        .then((r) => r.json())
+        .then(({ clients }) => setLinkSearchResults((clients ?? []).filter((c: ClientRow) => c.clientType === "auth")))
+        .catch(() => {})
+        .finally(() => setLinkSearchLoading(false));
+    }, 300);
+    return () => clearTimeout(t);
+  }, [linkSearch, linkingWalkIn]);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 300);
@@ -85,7 +129,11 @@ export default function ClientsPageClient({
         body: JSON.stringify(addForm),
       });
       if (res.ok) {
+        const data = await res.json();
         toast("Client added!", "success");
+        if (data.warning) {
+          setTimeout(() => toast(data.warning, "warning"), 400);
+        }
         setShowAdd(false);
         setAddForm({ full_name: "", phone: "", email: "", notes: "" });
         // Refresh list
@@ -182,7 +230,102 @@ export default function ClientsPageClient({
         </div>
       )}
 
+      {/* Merge Review Dialog */}
+      {activeMerge && (
+        <MergeReviewDialog
+          suggestionId={activeMerge.suggestionId}
+          walkInClientId={activeMerge.walkInId}
+          authClientId={activeMerge.authId}
+          onClose={() => setActiveMerge(null)}
+          onMerged={() => {
+            setActiveMerge(null);
+            fetchSuggestions();
+            setLoading(true);
+            setPage(1);
+            fetchClients(debouncedSearch, 1, false).finally(() => setLoading(false));
+          }}
+        />
+      )}
+
+      {/* Manual link picker — select auth client to link walk-in to */}
+      {linkingWalkIn && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/40" onClick={() => { setLinkingWalkIn(null); setLinkSearch(""); }} />
+          <div
+            className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl shadow-xl p-5 max-w-2xl mx-auto lg:inset-x-auto lg:w-[600px] lg:left-1/2 lg:-translate-x-1/2"
+            style={{ paddingBottom: "calc(5rem + env(safe-area-inset-bottom))" }}
+          >
+            <div className="w-10 h-1 bg-[#e8e2dc] rounded-full mx-auto mb-4" />
+            <h3 className="font-display text-lg text-[#1a1714] mb-1">Link to registered account</h3>
+            <p className="text-xs text-[#8a7e78] mb-4">
+              Search for the registered client to merge <span className="font-semibold text-[#1a1714]">{linkingWalkIn.full_name}</span> into.
+            </p>
+            <input
+              type="text"
+              value={linkSearch}
+              onChange={(e) => setLinkSearch(e.target.value)}
+              placeholder="Search by name or email…"
+              className="w-full border border-[#e8e2dc] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-[#faf9f7] mb-3"
+              style={{ fontSize: 16 }}
+              autoFocus
+            />
+            {linkSearchLoading && (
+              <div className="flex justify-center py-4">
+                <div className="w-5 h-5 border-2 border-[#9b6f6f] border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
+            {!linkSearchLoading && linkSearchResults.length > 0 && (
+              <div className="bg-white rounded-xl border border-[#e8e2dc] divide-y divide-[#f5f0eb] overflow-hidden">
+                {linkSearchResults.map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => {
+                      setLinkingWalkIn(null);
+                      setLinkSearch("");
+                      setActiveMerge({ walkInId: linkingWalkIn.id, authId: c.id });
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#faf9f7] transition-colors text-left"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#f5ede8] to-[#e8d8d0] flex items-center justify-center flex-shrink-0 border border-[#e8e2dc]">
+                      <span className="text-[#9b6f6f] font-semibold text-xs">
+                        {(c.full_name ?? "?").charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-[#1a1714] truncate">{c.full_name ?? "(no name)"}</p>
+                      <p className="text-xs text-[#8a7e78] truncate">{c.email ?? "—"}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+            {!linkSearchLoading && linkSearch.trim() && linkSearchResults.length === 0 && (
+              <p className="text-sm text-[#8a7e78] text-center py-4">No registered clients found.</p>
+            )}
+          </div>
+        </>
+      )}
+
       <div className="max-w-2xl">
+        {/* Merge suggestions banner */}
+        {suggestions.length > 0 && (
+          <div className="mb-4 flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+            <svg className="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-xs text-amber-800 flex-1">
+              <span className="font-semibold">{suggestions.length} potential {suggestions.length === 1 ? "duplicate" : "duplicates"} found</span>
+              {" — "}a walk-in client may match a registered account.
+            </p>
+            <button
+              onClick={() => setActiveMerge({ suggestionId: suggestions[0].id })}
+              className="text-xs font-semibold text-amber-700 hover:text-amber-900 flex-shrink-0 underline"
+            >
+              Review
+            </button>
+          </div>
+        )}
+
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
             <h1 className="font-display text-3xl text-[#1a1714]">Clients</h1>
@@ -241,59 +384,74 @@ export default function ClientsPageClient({
           <>
             <div className="bg-white rounded-2xl border border-[#e8e2dc] divide-y divide-[#f5f0eb] overflow-hidden">
               {clients.map((c) => (
-                <Link
-                  key={c.id}
-                  href={`/admin/clients/${c.id}${c.clientType === "walkin" ? "?type=walkin" : ""}`}
-                  className="flex items-center gap-4 px-5 py-4 hover:bg-[#faf9f7] transition-colors"
-                >
-                  {/* Avatar */}
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#f5ede8] to-[#e8d8d0] flex items-center justify-center flex-shrink-0 border border-[#e8e2dc]">
-                    <span className="text-[#9b6f6f] font-semibold text-base">
-                      {(c.full_name ?? c.email ?? "?").charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-semibold text-[#1a1714] truncate">
-                        {c.full_name ?? "(no name)"}
-                      </p>
-                      {c.clientType === "walkin" && (
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#c9a96e]/15 text-[#a08540] flex-shrink-0">
-                          Walk-in
-                        </span>
-                      )}
+                <div key={c.id} className="flex items-center gap-4 px-5 py-4 hover:bg-[#faf9f7] transition-colors">
+                  <Link
+                    href={`/admin/clients/${c.id}${c.clientType === "walkin" ? "?type=walkin" : ""}`}
+                    className="flex items-center gap-4 flex-1 min-w-0"
+                  >
+                    {/* Avatar */}
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#f5ede8] to-[#e8d8d0] flex items-center justify-center flex-shrink-0 border border-[#e8e2dc]">
+                      <span className="text-[#9b6f6f] font-semibold text-base">
+                        {(c.full_name ?? c.email ?? "?").charAt(0).toUpperCase()}
+                      </span>
                     </div>
-                    <p className="text-xs text-[#8a7e78] truncate">{c.email ?? "—"}</p>
-                  </div>
 
-                  {/* Stats */}
-                  <div className="text-right flex-shrink-0">
-                    <p className="text-sm font-semibold text-[#1a1714]">{c.totalAppointments}</p>
-                    <p className="text-xs text-[#8a7e78]">
-                      {c.totalAppointments === 1 ? "visit" : "visits"}
-                    </p>
-                  </div>
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-semibold text-[#1a1714] truncate">
+                          {c.full_name ?? "(no name)"}
+                        </p>
+                        {c.clientType === "walkin" && (
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#c9a96e]/15 text-[#a08540] flex-shrink-0">
+                            {c.linkedToProfileId ? "Dependent" : "Walk-in"}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-[#8a7e78] truncate">{c.email ?? "—"}</p>
+                    </div>
 
-                  {/* Last date */}
-                  <div className="text-right flex-shrink-0 hidden sm:block">
-                    <p className="text-xs text-[#8a7e78]">Last visit</p>
-                    <p className="text-xs font-medium text-[#1a1714]">
-                      {c.lastAppointment
-                        ? new Date(c.lastAppointment).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: new Date(c.lastAppointment).getFullYear() !== new Date().getFullYear() ? "numeric" : undefined,
-                          })
-                        : "—"}
-                    </p>
-                  </div>
+                    {/* Stats */}
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-sm font-semibold text-[#1a1714]">{c.totalAppointments}</p>
+                      <p className="text-xs text-[#8a7e78]">
+                        {c.totalAppointments === 1 ? "visit" : "visits"}
+                      </p>
+                    </div>
 
-                  <svg className="w-4 h-4 text-[#c9a96e] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
+                    {/* Last date */}
+                    <div className="text-right flex-shrink-0 hidden sm:block">
+                      <p className="text-xs text-[#8a7e78]">Last visit</p>
+                      <p className="text-xs font-medium text-[#1a1714]">
+                        {c.lastAppointment
+                          ? new Date(c.lastAppointment).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: new Date(c.lastAppointment).getFullYear() !== new Date().getFullYear() ? "numeric" : undefined,
+                            })
+                          : "—"}
+                      </p>
+                    </div>
+                  </Link>
+
+                  {/* Walk-in only: link to account button */}
+                  {c.clientType === "walkin" && !c.linkedToProfileId && (
+                    <button
+                      onClick={() => { setLinkingWalkIn(c); setLinkSearch(""); }}
+                      title="Link to registered account"
+                      className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#f5ede8] text-[#c9a96e] transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                      </svg>
+                    </button>
+                  )}
+                  {c.clientType === "auth" && (
+                    <svg className="w-4 h-4 text-[#c9a96e] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  )}
+                </div>
               ))}
             </div>
 

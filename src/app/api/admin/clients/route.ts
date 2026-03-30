@@ -59,8 +59,10 @@ export async function GET(request: Request) {
       : Promise.resolve({ data: [] as { id: string; full_name: string | null }[] }),
     serviceClient
       .from("walk_in_clients")
-      .select("id, full_name, phone, email, created_at")
-      .eq("stylist_id", stylistId),
+      .select("id, full_name, phone, email, created_at, linked_to_profile_id")
+      .eq("stylist_id", stylistId)
+      .is("merged_into_profile_id", null)
+      .is("linked_to_profile_id", null),
   ]);
 
   const profiles = profilesResult.data ?? [];
@@ -113,6 +115,7 @@ export async function GET(request: Request) {
       lastAppointment: stats?.lastDate ?? w.created_at,
       firstAppointment: w.created_at,
       clientType: "walkin" as const,
+      linkedToProfileId: (w as { linked_to_profile_id?: string | null }).linked_to_profile_id ?? null,
     };
   });
 

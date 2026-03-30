@@ -1012,6 +1012,11 @@ function ClientDetailInner({ params }: { params: { clientId: string } }) {
           </div>
         )}
 
+        {/* Family members (dependents) — auth clients only */}
+        {!isWalkin && (
+          <FamilyMembersSection profileId={clientId} />
+        )}
+
         {/* Delete client */}
         <div className="border-t border-[#e8e2dc] pt-6 mt-8 mb-8">
           <button
@@ -1117,5 +1122,133 @@ function ClientDetailInner({ params }: { params: { clientId: string } }) {
         </div>
       )}
     </>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Family Members (dependents) section for auth client detail page
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface Dependent {
+  id: string;
+  full_name: string;
+  phone?: string | null;
+  notes?: string | null;
+}
+
+function FamilyMembersSection({ profileId }: { profileId: string }) {
+  const [dependents, setDependents] = useState<Dependent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showAdd, setShowAdd] = useState(false);
+  const [addName, setAddName] = useState("");
+  const [addSubmitting, setAddSubmitting] = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/admin/walk-in-clients?linked_to=${profileId}`)
+      .then((r) => r.json())
+      .then(({ clients }) => setDependents(clients ?? []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [profileId]);
+
+  async function handleAddDependent(e: React.FormEvent) {
+    e.preventDefault();
+    if (!addName.trim()) return;
+    setAddSubmitting(true);
+    try {
+      const res = await fetch("/api/admin/walk-in-clients", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ full_name: addName.trim(), linked_to_profile_id: profileId }),
+      });
+      if (res.ok) {
+        const { client } = await res.json();
+        setDependents((prev) => [...prev, client]);
+        setAddName("");
+        setShowAdd(false);
+      }
+    } finally {
+      setAddSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="mb-5">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-sm font-semibold text-[#1a1714]">Family Members</p>
+        <button
+          onClick={() => setShowAdd((v) => !v)}
+          className="text-xs font-semibold text-[#9b6f6f] hover:text-[#8a5f5f] flex items-center gap-1 min-h-[44px]"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          Add
+        </button>
+      </div>
+
+      {showAdd && (
+        <form onSubmit={handleAddDependent} className="bg-[#faf9f7] rounded-xl border border-[#e8e2dc] p-4 mb-3 flex gap-2 items-center">
+          <input
+            type="text"
+            value={addName}
+            onChange={(e) => setAddName(e.target.value)}
+            placeholder="Family member's name…"
+            required
+            autoFocus
+            className="flex-1 border border-[#e8e2dc] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#9b6f6f] bg-white"
+            style={{ fontSize: 16 }}
+          />
+          <button
+            type="submit"
+            disabled={addSubmitting || !addName.trim()}
+            className="px-4 py-2 bg-[#9b6f6f] text-white text-sm font-semibold rounded-full hover:bg-[#8a5f5f] disabled:opacity-50 transition-all active:scale-95 min-h-[44px]"
+          >
+            {addSubmitting ? "Adding…" : "Add"}
+          </button>
+          <button
+            type="button"
+            onClick={() => { setShowAdd(false); setAddName(""); }}
+            className="px-3 py-2 text-sm text-[#8a7e78] hover:text-[#1a1714] transition-colors min-h-[44px]"
+          >
+            Cancel
+          </button>
+        </form>
+      )}
+
+      {loading ? (
+        <div className="flex justify-center py-4">
+          <div className="w-5 h-5 border-2 border-[#9b6f6f] border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : dependents.length === 0 && !showAdd ? (
+        <p className="text-xs text-[#a09890] py-1">No family members added yet.</p>
+      ) : dependents.length > 0 ? (
+        <div className="bg-white rounded-2xl border border-[#e8e2dc] divide-y divide-[#f5f0eb] overflow-hidden">
+          {dependents.map((d) => (
+            <Link
+              key={d.id}
+              href={`/admin/clients/${d.id}?type=walkin`}
+              className="flex items-center gap-3 px-5 py-3.5 hover:bg-[#faf9f7] transition-colors"
+            >
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#f5ede8] to-[#e8d8d0] flex items-center justify-center flex-shrink-0 border border-[#e8e2dc]">
+                <span className="text-[#9b6f6f] font-semibold text-xs">
+                  {d.full_name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-[#1a1714] truncate">{d.full_name}</p>
+                {d.phone && <p className="text-xs text-[#8a7e78]">{d.phone}</p>}
+              </div>
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#e8f0e8] text-[#5a8a5a] flex-shrink-0">
+                Dependent
+              </span>
+              <svg className="w-4 h-4 text-[#c9a96e] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+          ))}
+        </div>
+      ) : null}
+    </div>
   );
 }
