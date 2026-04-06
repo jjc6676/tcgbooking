@@ -62,7 +62,7 @@ async function sendEmail(to: string, subject: string, html: string): Promise<voi
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ from: `${STUDIO.senderName} <${STUDIO.fromEmail}>`, to, subject, html }),
+    body: JSON.stringify({ from: `${STUDIO.shortName} <${STUDIO.fromEmail}>`, to, subject, html }),
   });
 }
 

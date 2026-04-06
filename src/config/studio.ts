@@ -5,11 +5,9 @@
 
 export const STUDIO = {
   /** Full studio name */
-  name: "Keri Choplin Hair Studio",
+  name: "Keri Choplin",
   /** Short name for email headers, nav, etc. */
-  shortName: "Keri Choplin Hair",
-  /** Display name used in the "From" field of outgoing emails */
-  senderName: "Keri Choplin",
+  shortName: "Keri Choplin",
   /** Owner's first name (used in conversational copy) */
   ownerName: "Keri",
   /** Monogram letter for email templates */
