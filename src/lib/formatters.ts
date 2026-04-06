@@ -16,7 +16,19 @@ export function formatTime(iso: string, options?: { timeZone?: string }): string
 }
 
 /**
- * Format ISO date to time string using UTC timezone
+ * Format appointment time (e.g., "9:30 AM").
+ *
+ * NOTE on storage convention: appointment `start_at` / `end_at` are `timestamptz`
+ * in Postgres, but the booking write path stores Central wall-clock time labeled
+ * as UTC (i.e. an 11:30 AM Central booking is persisted as `...T11:30:00Z`).
+ * Formatting with `timeZone: "UTC"` reads back the original Central wall clock.
+ *
+ * Use this helper (not `formatTime` above) for any appointment `start_at`/`end_at`.
+ * `formatTime` applies `STUDIO.timezone` ("America/Chicago") and will double-shift,
+ * producing a time 5–6 hours earlier than intended.
+ *
+ * TODO: once the booking write path is migrated to store real UTC, collapse this
+ * into `formatTime` with the studio timezone and update call sites.
  */
 export function formatTimeUTC(iso: string): string {
   return new Date(iso).toLocaleTimeString("en-US", {

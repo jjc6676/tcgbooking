@@ -7,15 +7,21 @@ import type { BlockedTime } from "@/lib/supabase/types";
 function formatRange(startIso: string, endIso: string): string {
   const start = new Date(startIso);
   const end = new Date(endIso);
-  const sameDay = start.toDateString() === end.toDateString();
+  // Times are stored as Central wall-clock labeled as UTC (see src/lib/formatters.ts).
+  // Use getUTC* for same-day comparison and pass timeZone: "UTC" to readers.
+  const sameDay =
+    start.getUTCFullYear() === end.getUTCFullYear() &&
+    start.getUTCMonth() === end.getUTCMonth() &&
+    start.getUTCDate() === end.getUTCDate();
   const dateStr = start.toLocaleDateString([], {
     weekday: "short", month: "short", day: "numeric",
-    year: start.getFullYear() !== new Date().getFullYear() ? "numeric" : undefined,
+    year: start.getUTCFullYear() !== new Date().getFullYear() ? "numeric" : undefined,
+    timeZone: "UTC",
   });
-  const startTime = start.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-  const endTime = end.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  const startTime = start.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", timeZone: "UTC" });
+  const endTime = end.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", timeZone: "UTC" });
   if (sameDay) return `${dateStr} · ${startTime} – ${endTime}`;
-  const endDateStr = end.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
+  const endDateStr = end.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
   return `${dateStr} – ${endDateStr}`;
 }
 

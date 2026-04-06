@@ -899,11 +899,13 @@ function ClientDetailInner({ params }: { params: { clientId: string } }) {
                             month: "short",
                             day: "numeric",
                             year: new Date(a.start_at).getFullYear() !== new Date().getFullYear() ? "numeric" : undefined,
+                            timeZone: "UTC",
                           })}{" "}
                           ·{" "}
                           {new Date(a.start_at).toLocaleTimeString("en-US", {
                             hour: "numeric",
                             minute: "2-digit",
+                            timeZone: "UTC",
                           })}
                         </p>
                         {/* Pricing info */}
