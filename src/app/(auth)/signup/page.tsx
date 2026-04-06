@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function SignupPage() {
+  const router = useRouter();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,13 +25,15 @@ export default function SignupPage() {
     setError(null);
 
     const supabase = createClient();
-    const { error } = await supabase.auth.signUp({
+    // Note: role is assigned server-side by the handle_new_user() trigger.
+    // Do not send a role in metadata — the trigger ignores it and only the
+    // studio owner's email is granted the 'stylist' role.
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
           full_name: fullName,
-          role: "client",
         },
         emailRedirectTo: `${location.origin}/auth/callback`,
       },
@@ -38,9 +42,18 @@ export default function SignupPage() {
     if (error) {
       setError(error.message);
       setLoading(false);
-    } else {
-      setSuccess(true);
+      return;
     }
+
+    // If email confirmation is disabled in Supabase, signUp returns an
+    // active session — sign the user straight in and send them to /book.
+    if (data.session) {
+      router.push("/book");
+      router.refresh();
+      return;
+    }
+
+    setSuccess(true);
   }
 
   if (success) {
