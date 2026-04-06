@@ -180,7 +180,7 @@ export default function QuickBlockSheet({ onBlocked }: Props) {
                 <div className="space-y-1.5 mb-3">
                   {conflicts.map((c) => (
                     <p key={c.id} className="text-xs text-amber-700">
-                      {c.client_name} — {c.service_name} ({new Date(c.start_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })})
+                      {c.client_name} — {c.service_name} ({new Date(c.start_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", timeZone: "UTC" })})
                     </p>
                   ))}
                 </div>

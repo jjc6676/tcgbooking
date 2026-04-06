@@ -5,26 +5,12 @@ import PendingRequestsList from "@/components/PendingRequestsList";
 import DashboardQuickActions from "@/components/DashboardQuickActions";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { STUDIO } from "@/config/studio";
+import { formatTimeUTC, formatDuration, formatDateShort } from "@/lib/formatters";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: `Dashboard · ${STUDIO.name}`,
 };
-
-function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    timeZone: STUDIO.timezone,
-  });
-}
-
-function formatDuration(min: number): string {
-  if (min < 60) return `${min}m`;
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  return m > 0 ? `${h}h ${m}m` : `${h}h`;
-}
 
 function getTodayRange(): { start: string; end: string } {
   const now = new Date();
@@ -71,15 +57,6 @@ function getUpcomingRange(): { start: string; end: string } {
     start: tomorrow.toISOString().split("T")[0]! + "T00:00:00",
     end: endDate.toISOString().split("T")[0]! + "T23:59:59",
   };
-}
-
-function formatShortDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    timeZone: STUDIO.timezone,
-  });
 }
 
 function getGreeting(): string {
@@ -337,7 +314,7 @@ export default async function AdminDashboardPage() {
               return (
                 <div key={appt.id} className="px-4 py-3.5 flex items-center gap-3">
                   <div className="flex-shrink-0 text-center min-w-[56px]">
-                    <p className="text-sm font-bold text-[#1a1714]">{formatTime(appt.start_at as string)}</p>
+                    <p className="text-sm font-bold text-[#1a1714]">{formatTimeUTC(appt.start_at as string)}</p>
                     <p className="text-[10px] text-[#8a7e78]">{svcDuration > 0 ? formatDuration(svcDuration) : ""}</p>
                   </div>
                   <div className="flex-shrink-0 flex flex-col items-center self-stretch py-1">
@@ -395,7 +372,7 @@ export default async function AdminDashboardPage() {
                 const svcNames = allSvcs.map((s) => s.name).join(", ") || "Service";
                 const svcDuration = allSvcs.reduce((sum, s) => sum + s.duration_minutes, 0);
 
-                const dateStr = formatShortDate(appt.start_at as string);
+                const dateStr = formatDateShort(appt.start_at as string);
                 const showDate = dateStr !== lastDate;
                 lastDate = dateStr;
 
@@ -408,7 +385,7 @@ export default async function AdminDashboardPage() {
                     )}
                     <div className="px-4 py-3 flex items-center gap-3">
                       <div className="flex-shrink-0 text-center min-w-[56px]">
-                        <p className="text-sm font-bold text-[#1a1714]">{formatTime(appt.start_at as string)}</p>
+                        <p className="text-sm font-bold text-[#1a1714]">{formatTimeUTC(appt.start_at as string)}</p>
                         <p className="text-[10px] text-[#8a7e78]">{svcDuration > 0 ? formatDuration(svcDuration) : ""}</p>
                       </div>
                       <div className="flex-shrink-0 flex flex-col items-center self-stretch py-1">
