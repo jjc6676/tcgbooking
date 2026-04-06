@@ -34,7 +34,7 @@ async function sendEmail(to: string, subject: string, html: string): Promise<voi
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: `${STUDIO.shortName} <${fromEmail}>`,
+      from: `${STUDIO.senderName} <${fromEmail}>`,
       to,
       subject,
       html,

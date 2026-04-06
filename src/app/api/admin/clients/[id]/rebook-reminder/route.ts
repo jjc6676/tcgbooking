@@ -15,7 +15,7 @@ async function sendEmailViaResend(to: string, subject: string, html: string) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: `${STUDIO.shortName} <${fromEmail}>`,
+      from: `${STUDIO.senderName} <${fromEmail}>`,
       to,
       subject,
       html,
