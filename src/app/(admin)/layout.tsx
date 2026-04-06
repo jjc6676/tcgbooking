@@ -240,9 +240,6 @@ export default async function AdminLayout({
                 <p className="text-white font-semibold text-base leading-none font-display">
                   {STUDIO.ownerName}
                 </p>
-                <p className="text-[#c9a96e] text-[10px] tracking-widest uppercase leading-tight mt-0.5">
-                  Hair Studio
-                </p>
               </div>
             </div>
           </div>
